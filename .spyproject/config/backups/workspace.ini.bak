@@ -1,0 +1,12 @@
+[workspace]
+restore_data_on_startup = True
+save_data_on_exit = True
+save_history = True
+save_non_project_files = False
+project_type = 'empty-project-type'
+recent_files = ['..\\..\\Aero Design\\ProgramaMaestro-20211019T045941Z-001\\ProgramaMaestro\\ProgramaBaseAlas.py', 'main_MBSE.py', 'aero_surface_importer.py', 'geometry.py', 'XFLR5 exports\\N0009_cg0.245_H1.5_V0.10_T2N_VU0.10_Vv0.03_L0.6.xml', 'tools_resampler.py']
+
+[main]
+version = 0.2.0
+recent_files = []
+
