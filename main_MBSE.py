@@ -53,7 +53,7 @@ WORKING_DIRECTORY = 'E:/Documentos/Thesis - Master/Master' # XML File with the a
 XMLfile = 'E:/Documentos/Thesis - Master/Master/XFLR5 exports/N0009_cg0.245_H1.5_V0.10_T2N_VU0.10_Vv0.03_L0.6.xml'
 
 # %% Classes
-
+# %%% Data Definition Classes
 class VacationDaysShortageError(Exception):
     """Custom error that is raised when not enough vacation days are available."""
 
@@ -141,18 +141,39 @@ class Airfoil():
             raise TypeError
         
     def compute_properties(self):
-        self.area = -np.trapz(self.data.y,x = self.data.x)
+        self.area = -np.trapz(self.data.y,x = self.data.x) #Numerical integration
         datasort = self.data.sort_values(['x','y'], ascending = [True,False])
-        self.BoA = datasort.head(1)
-        self.BoS = self.data.head(1)
-        self.BoS2 = self.data.tail(1)
+        self.BoA = datasort.iloc[0]
+        self.BoS = self.data.iloc[0]
+        self.BoS2 = self.data.iloc[-1]
         
-        self.extrados = self.data.loc[self.BoS.index[0] : self.BoA.index[0]]
-        self.extrados = self.extrados.iloc[::-1, :]
-        self.intrados = self.data.loc[self.BoA.index[0] : self.BoS2.index[0]]
+        self.extrados = self.data.loc[self.BoS.name : self.BoA.name]
+        self.extrados = self.extrados.iloc[::-1, :] #Reverse the order of the array (interpolation requirement)
+        self.intrados = self.data.loc[self.BoA.name : self.BoS2.name]
         
         self.center = np.array([0.25,0.5*(np.interp(0.25, self.extrados.x, self.extrados.y)
                          +np.interp(0.25, self.intrados.x, self.intrados.y))])
+        
+    def inertia(self):
+        self.centroid = self.data.mean(axis=0)
+        
+        x = self.data.x.to_numpy() 
+        y = self.data.y.to_numpy()
+        
+        N = range(len(self.data)-1)
+        M = np.array([(x[i]-x[i+1])*(y[i]+y[i+1])/2 for i in N]) #Area of each trapz
+        My = np.array([(x[i]+x[i+1])/2 for i in N])*M
+        Mx = np.array([(y[i]+y[i+1])/4 for i in N])*M
+        X = sum(My)/sum(M)
+        Y =sum(Mx)/sum(M)
+        
+        self.centroid = pd.DataFrame([X , Y],columns=['x','y'])
+        
+        
+        # for i in range(len(self.data)-1):
+        #     M[i]=(x[i]-x[i+1])*(y[i]+y[i+1])/2
+        #     My[i]=([x[i]+x[i+1]]/2)*M[i]
+        #     Mx[i]=([y[i]+y[i+1]]/4)*M[i]
     
     def plot_airfoil(self):
         #plt.scatter(self.data.x, self.data.y,marker='o',edgecolors='black',s=3)
@@ -270,21 +291,32 @@ class Aircraft:
 
 
 def parse_xml() -> Aircraft:
-    """Parses an XML exported from XFLR5 into classes."""
+    """Parses an XML exported from XFLR5 into Aircraft object."""
     
+    # try: 
+    #     if os.path.exists(XMLfile):
+    #         xml_file_path = XMLfile
+    # except NameError: XMLfile = 'None'
     
-    root = tk.Tk() #Initialise library for pop windows
-    root.withdraw() #Close GUI window
     if os.path.exists(XMLfile):
         xml_file_path = XMLfile
     else:
+        
+        root = tk.Tk() #Initialise library for pop windows
+        root.withdraw() #Close GUI window
         
         print('The defined XML file {} does not exist.\n Select one on the File Explorer Window'.format(XMLfile))
         
         while True:
             xml_file_path = filedialog.askopenfilename(filetypes=[("XML Documents", "*.xml")])
+            
+            if xml_file_path == '':
+                raise SystemExit("No XML file selected. Ending execution")
+            
             ext = os.path.splitext(xml_file_path)[-1].casefold()
+            
             if ext == '.xml':
+                print(f"Source file found: {xml_file_path}")
                 break
             else:
                 print(f"Unknown extension option: {ext}.")
@@ -402,7 +434,7 @@ def sections_dataframe(XMLsections):
  
     return df
 
-# %% Geometry Processing
+# %%% Geometry Processing
 
 @dataclass
 class GeometricCurve():
@@ -422,8 +454,21 @@ class GeometricCurve():
             self.x = self.data3d.x.to_numpy()
             self.y = self.data3d.y.to_numpy()
             self.z = self.data3d.z.to_numpy()
-
-
+            
+    def get_npdata(self):
+        return self.data3d.to_numpy()
+    
+    def resample(self, nsamples , get = False):
+        coordinates = resample_curve(self.get_npdata(), nsamples)
+        self.set_data(coordinates)
+        
+        if get:
+            return resample_curve(self.get_npdata(), nsamples)
+    
+    def __len__(self):
+        return len(self.data3d)    
+        
+        
 @dataclass
 class GeometricSurface():
     """Represents a geometric surface with data as lists of the x, y, and z coordinates
@@ -437,12 +482,19 @@ class GeometricSurface():
     
     def __post_init__(self) -> None:
         self.curves : List[GeometricCurve] = []
+        self.borders : List[GeometricCurve] = []
 
     def add_curve(self, curve: GeometricCurve) -> None:
         """Add a parametric curve to the list of surfaces."""
         self.curves.append(curve)
+        
+    def add_border(self, curve: GeometricCurve) -> None:
+        """Add a parametric border to the list of surfaces."""
+        self.borders.append(curve)
 
     def surf_from_curves(self):
+        
+        self.standarize_curves()
         
         self.xx = np.array([curve.x for curve in self.curves])
         self.yy = np.array([curve.y for curve in self.curves])
@@ -454,9 +506,18 @@ class GeometricSurface():
     def add_surf_plot(self,ax,color = 'C0'):
         ax.plot_surface(self.xx, self.yy, self.zz) #, facecolors=color
         
-
-
-
+    def standarize_curves(self, nsamples = 150):
+        """ Verifies that all curves have the same number of points """
+        it = iter(self.curves)
+        the_len = len(next(it))
+        if not all(len(l) == the_len for l in it):
+            
+             print('Not all curves have same length...resampling')
+             
+             for curve in self.curves:
+                 curve.resample(nsamples)
+             
+             
 
 class GeometryProcessor():
     """ Behaviour Oriented Class
@@ -496,7 +557,27 @@ class GeometryProcessor():
         return [surface for surface in self.surfaces if surface.surf_type is surf_type]
     
     def find_aspect_ratios(self):
+        """
+        This method returns all minimum and maximum coordinates for x, y and z 
+        of the stored surface data. Then determines optimum aspect ratio for the plot. 
+        (So unit length scales are the same)
         
+        Notes: Probably unneeded as we can derive the same values directly from the Axes3d object
+        
+        minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
+
+        Returns
+        -------
+        xlim : TYPE
+            DESCRIPTION.
+        ylim : TYPE
+            DESCRIPTION.
+        zlim : TYPE
+            DESCRIPTION.
+        box_aspect : TYPE
+            DESCRIPTION.
+
+        """
                
         max_x = np.max([np.max(surface.xx) for surface in self.surfaces])
         max_y = np.max([np.max(surface.yy) for surface in self.surfaces])
@@ -527,19 +608,22 @@ class GeometryProcessor():
         
     
     def plot_aircraft(self,plot_num=1):
-        fig = plt.figure(figsize=(18, 10),num=plot_num, clear=True)
-        ax = fig.add_subplot(1, 1, 1, projection='3d')
+        
+        fig = plt.figure(num=plot_num, clear=True,figsize=plt.figaspect(0.5))
+        #fig, (axs,axs1) = plt.subplots(1, 2, num=plot_num, clear=True)
+        ax = fig.add_subplot(1, 2, 2, projection='3d')
+        
         ax.view_init(vertical_axis='y')
+        ax.set_proj_type(proj_type='ortho')
+  
         
         for surface in self.surfaces:
             surface.add_surf_plot(ax)
 
-        xlim, ylim , zlim , box_aspect = self.find_aspect_ratios()
+        #Set plot parameter to enforce correct scales        
+
+        xlim, ylim, zlim, box_aspect  = find_aspect_ratios(ax)
         
-        
-        minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
-        
-        print(ax.get_w_lims())
         
         ax.set(xlabel='x', 
                ylabel='y', 
@@ -554,16 +638,73 @@ class GeometryProcessor():
         
         # if Bug is not fixed yet!!!! -> box_aspect needs to be shifted right
         box_aspect = tuple(np.roll(box_aspect,shift = 1))
-        
-        
         ax.set_box_aspect(aspect = box_aspect)
-        print(ax.viewLim)
+        
+        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+        ax1.view_init(vertical_axis='y')
+        ax1.set_proj_type(proj_type='ortho')
+        
+        for surface in self.surfaces:
+            for curve in surface.curves:
+                data = curve.get_npdata()
+                ax1.plot3D(*data.T)
+        
+        ax1.set(xlabel='x', 
+               ylabel='y', 
+               zlabel='z',
+               xlim = xlim,
+               ylim = ylim,
+               zlim = zlim,
+               # xticks = [-4, -2, 2, 4],
+               # yticks = [-4, -2, 2, 4],
+               # zticks = [-1, 0, 1],
+               title=self.aircraft.name)
+        ax1.set_box_aspect(aspect = box_aspect)
+        
+        #print(ax.viewLim)
         figManager = plt.get_current_fig_manager()
         figManager.window.showMaximized()
-        fig.tight_layout()
+        #fig.tight_layout()
         
         return None
+
+def find_aspect_ratios(ax):
+    """
+    This method returns all minimum and maximum coordinates for x, y and z 
+    of the stored surface data. Then determines optimum aspect ratio for the plot. 
+    (So unit length scales are the same)
+    
+    Notes: Probably unneeded as we can derive the same values directly from the Axes3d object
+    
+    minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
+
+    Returns
+    -------
+    xlim : TYPE
+        DESCRIPTION.
+    ylim : TYPE
+        DESCRIPTION.
+    zlim : TYPE
+        DESCRIPTION.
+    box_aspect : TYPE
+        DESCRIPTION.
+
+    """
+           
+    minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
+    
+    xlim = [minx,maxx]
+    ylim = [miny,maxy]
+    zlim = [minz,maxz]
+    
+    def interval(x): return abs(x[1] - x[0])
+    
+    lims = [xlim , ylim , zlim]
+    lims_len = [interval(lim) for lim in lims]
+    k = np.min(lims_len)
+    box_aspect = tuple(lims_len/k)
         
+    return xlim, ylim, zlim, box_aspect        
     
 
 def transform_coordinates(section: Section)->np.ndarray:
@@ -683,63 +824,10 @@ def resample_curve(array3d, nsamples:int):
     
     return resample
 
-def plot_surface(UAV):
-    
-    surface = UAV.surfaces[0]
-    
-    
-    
-    fig = plt.figure(num=4, clear=True)
-    ax = fig.add_subplot(1, 1, 1, projection='3d')
-    ax.view_init(vertical_axis='y')
-    
-    # (theta, phi) = np.meshgrid(np.linspace(0, 2 * np.pi, 280),
-    #                            np.linspace(0, 2 * np.pi, 280))
-    
-    # x = (3 + np.cos(phi)) * np.cos(theta)
-    # z = (3 + np.cos(phi)) * np.sin(theta)
-    # y = np.sin(phi)
-    xx = [section.airfoil.data.x.to_numpy() for section in surface.sections]
-    yy = [section.airfoil.data.y.to_numpy() for section in surface.sections]
-    zz = [section.airfoil.data.z.to_numpy() for section in surface.sections]
-    
-    
-    k = 4
-    
-    xlim = [-k, k*1.2]  #2k
-    ylim = [-k/2, k/2] #k
-    zlim = [-k, k] #2k
-    
-    #box_aspect = (4,2,4) #(x,y,z)
-    box_aspect = (4,4,2) #(z,x,y)
-    
-    def fun(t, f): return (np.cos(f + 2 * t) + 1) / 2
-    
-    
-    ax.plot_surface(xx, yy, zz, facecolors=cm.jet(fun(xx, yy)))
-    
-    ax.set(xlabel='x', 
-           ylabel='y', 
-           zlabel='z',
-           xlim = xlim,
-           ylim = ylim,
-           zlim = zlim,
-           # xticks = [-4, -2, 2, 4],
-           # yticks = [-4, -2, 2, 4],
-           # zticks = [-1, 0, 1],
-           title='Donut!')
-    
-    ax.set_box_aspect(aspect = box_aspect)
-    plt.get_backend()
-    figManager = plt.get_current_fig_manager()
-    figManager.window.showMaximized()
-    fig.tight_layout()
 
 # %% Main
 
-
-
-def main(UAV: Aircraft) -> Aircraft:
+def main(UAV: Aircraft):
     """Main function."""
     
     UAV.print_parameters()
@@ -748,7 +836,7 @@ def main(UAV: Aircraft) -> Aircraft:
     UAV_Geometry.create_geometries()
     UAV_Geometry.plot_aircraft()
     
-    return UAV_Geometry
+    return UAV, UAV_Geometry
     
 
 if __name__ == "__main__":
@@ -756,7 +844,7 @@ if __name__ == "__main__":
     # create the factory
     UAV = parse_xml()
     
-    main(UAV)
+    rUAV, rUAV_Geometry = main(UAV)
 
 # UAV = parse_xml()   
 # a = 2
