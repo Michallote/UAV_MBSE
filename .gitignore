@@ -1,0 +1,8 @@
+*.txt
+*.bas
+*.swp
+.venv/*
+__pycache__/*
+*.sldcrv
+*.xfl
+xflr5_files/*

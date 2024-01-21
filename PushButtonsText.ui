@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QWidget" name="MainWindow">
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="accessibleName">
+   <string/>
+  </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>571</width>
+     <height>381</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="4" column="0">
+     <widget class="QPlainTextEdit" name="plainTextEdit_2"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPlainTextEdit" name="Airfoil_plainText"/>
+    </item>
+    <item row="0" column="0">
+     <widget class="QPlainTextEdit" name="XML_plainText"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="Airfoil_file_Button">
+      <property name="text">
+       <string>Airfoil Folder</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="text">
+       <string>Working Directory</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="XML_file_Button">
+      <property name="text">
+       <string>Read XML File</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPlainTextEdit" name="plainTextEdit_4"/>
+    </item>
+    <item row="5" column="1">
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="text">
+       <string>OpPoint analysis</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QPlainTextEdit" name="plainTextEdit_5"/>
+    </item>
+    <item row="6" column="1">
+     <widget class="QPushButton" name="pushButton_5">
+      <property name="text">
+       <string>Polar analysis</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

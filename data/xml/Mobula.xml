@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE explane>
+<explane version="1.0">
+    <Units>
+        <length_unit_to_meter>1</length_unit_to_meter>
+        <mass_unit_to_kg>1</mass_unit_to_kg>
+    </Units>
+    <Plane>
+        <Name>Mobula</Name>
+        <Description></Description>
+        <Inertia>
+            <Point_Mass>
+                <Tag></Tag>
+                <Mass> 12.900</Mass>
+                <coordinates>      0.193,           0,           0</coordinates>
+            </Point_Mass>
+            <Point_Mass>
+                <Tag></Tag>
+                <Mass>  0.250</Mass>
+                <coordinates>      0.265,        1.05,        -0.1</coordinates>
+            </Point_Mass>
+            <Point_Mass>
+                <Tag></Tag>
+                <Mass>  0.250</Mass>
+                <coordinates>      0.265,       -1.05,        -0.1</coordinates>
+            </Point_Mass>
+        </Inertia>
+        <has_body>false</has_body>
+        <wing>
+            <Name>Main Wing</Name>
+            <Type>MAINWING</Type>
+            <Color>
+                <red>124</red>
+                <green>156</green>
+                <blue>251</blue>
+                <alpha>255</alpha>
+            </Color>
+            <Description></Description>
+            <Position>          0,           0,           0</Position>
+            <Tilt_angle>  0.000</Tilt_angle>
+            <Symetric>true</Symetric>
+            <isFin>false</isFin>
+            <isDoubleFin>false</isDoubleFin>
+            <isSymFin>false</isSymFin>
+            <Inertia>
+                <Volume_Mass>  1.200</Volume_Mass>
+            </Inertia>
+            <Sections>
+                <Section>
+                    <y_position>  0.000</y_position>
+                    <Chord>  0.780</Chord>
+                    <xOffset>  0.000</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  1.500</Twist>
+                    <x_number_of_panels>20</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>16</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>GOE 383 AIRFOIL</Left_Side_FoilName>
+                    <Right_Side_FoilName>GOE 383 AIRFOIL</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  0.297</y_position>
+                    <Chord>  0.780</Chord>
+                    <xOffset>  0.000</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  1.500</Twist>
+                    <x_number_of_panels>20</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>10</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>GOE 383 AIRFOIL</Left_Side_FoilName>
+                    <Right_Side_FoilName>GOE 383 AIRFOIL</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  0.479</y_position>
+                    <Chord>  0.597</Chord>
+                    <xOffset>  0.110</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  0.750</Twist>
+                    <x_number_of_panels>20</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>10</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>GOE 383 AIRFOIL-0.5 FX-73-CL-2-152</Left_Side_FoilName>
+                    <Right_Side_FoilName>GOE 383 AIRFOIL-0.5 FX-73-CL-2-152</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  0.661</y_position>
+                    <Chord>  0.413</Chord>
+                    <xOffset>  0.220</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  0.000</Twist>
+                    <x_number_of_panels>20</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>16</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
+                    <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  0.994</y_position>
+                    <Chord>  0.363</Chord>
+                    <xOffset>  0.220</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  0.000</Twist>
+                    <x_number_of_panels>20</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>16</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
+                    <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  1.252</y_position>
+                    <Chord>  0.314</Chord>
+                    <xOffset>  0.220</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  0.000</Twist>
+                    <x_number_of_panels>20</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>20</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
+                    <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  1.650</y_position>
+                    <Chord>  0.219</Chord>
+                    <xOffset>  0.230</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist> -3.000</Twist>
+                    <x_number_of_panels>13</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>1</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
+                    <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>
+                </Section>
+            </Sections>
+        </wing>
+        <wing>
+            <Name>Elevator</Name>
+            <Type>ELEVATOR</Type>
+            <Color>
+                <red>181</red>
+                <green>203</green>
+                <blue>182</blue>
+                <alpha>255</alpha>
+            </Color>
+            <Description></Description>
+            <Position>        1.5,           0,         0.1</Position>
+            <Tilt_angle>  0.000</Tilt_angle>
+            <Symetric>true</Symetric>
+            <isFin>false</isFin>
+            <isDoubleFin>false</isDoubleFin>
+            <isSymFin>false</isSymFin>
+            <Inertia>
+                <Volume_Mass>  0.300</Volume_Mass>
+            </Inertia>
+            <Sections>
+                <Section>
+                    <y_position>  0.000</y_position>
+                    <Chord>  0.256</Chord>
+                    <xOffset>  0.000</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist> -2.500</Twist>
+                    <x_number_of_panels>14</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>15</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>NACA 0009</Left_Side_FoilName>
+                    <Right_Side_FoilName>NACA 0009</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  0.600</y_position>
+                    <Chord>  0.256</Chord>
+                    <xOffset>  0.000</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist> -2.500</Twist>
+                    <x_number_of_panels>13</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>5</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>NACA 0009</Left_Side_FoilName>
+                    <Right_Side_FoilName>NACA 0009</Right_Side_FoilName>
+                </Section>
+            </Sections>
+        </wing>
+        <wing>
+            <Name>Fin</Name>
+            <Type>FIN</Type>
+            <Color>
+                <red>212</red>
+                <green>144</green>
+                <blue>140</blue>
+                <alpha>255</alpha>
+            </Color>
+            <Description></Description>
+            <Position>        1.5,       0.625,       0.126</Position>
+            <Tilt_angle>  0.000</Tilt_angle>
+            <Symetric>true</Symetric>
+            <isFin>true</isFin>
+            <isDoubleFin>true</isDoubleFin>
+            <isSymFin>false</isSymFin>
+            <Inertia>
+                <Volume_Mass>  0.100</Volume_Mass>
+            </Inertia>
+            <Sections>
+                <Section>
+                    <y_position>  0.000</y_position>
+                    <Chord>  0.250</Chord>
+                    <xOffset>  0.000</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  0.000</Twist>
+                    <x_number_of_panels>7</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>7</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>NACA 0009</Left_Side_FoilName>
+                    <Right_Side_FoilName>NACA 0009</Right_Side_FoilName>
+                </Section>
+                <Section>
+                    <y_position>  0.300</y_position>
+                    <Chord>  0.150</Chord>
+                    <xOffset>  0.100</xOffset>
+                    <Dihedral>  0.000</Dihedral>
+                    <Twist>  0.000</Twist>
+                    <x_number_of_panels>13</x_number_of_panels>
+                    <x_panel_distribution>COSINE</x_panel_distribution>
+                    <y_number_of_panels>5</y_number_of_panels>
+                    <y_panel_distribution>UNIFORM</y_panel_distribution>
+                    <Left_Side_FoilName>NACA 0009</Left_Side_FoilName>
+                    <Right_Side_FoilName>NACA 0009</Right_Side_FoilName>
+                </Section>
+            </Sections>
+        </wing>
+    </Plane>
+</explane>
