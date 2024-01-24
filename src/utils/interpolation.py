@@ -4,40 +4,73 @@ from typing import Callable, Tuple
 import numpy as np
 
 
-def resample_curve(array3d, nsamples: int):
+def _linear_interpolate(curve: np.ndarray, indices: np.ndarray) -> np.ndarray:
     """
-    Resample an array based on linear interpolation between indexes.
+    Perform linear interpolation on a curve at given indices.
 
     Parameters
     ----------
-    array3d : np.array()
-              Can be (n,m) dimentional
-    nsamples : int
-
+    curve : np.ndarray
+        The curve to be interpolated, can be (n, m) dimensional.
+    indices : np.ndarray
+        The indices at which to interpolate.
 
     Returns
     -------
-    resample : TYPE
-        DESCRIPTION.
-
+    np.ndarray
+        The interpolated values.
     """
-    n_orig = len(array3d)  # Read original array size
-    t = np.linspace(
-        0, n_orig - 1, nsamples
-    )  # Resample as if index was the independent variable
-    np_int = np.vectorize(int)  # Create function applicable element-wise
-    right = np_int(np.ceil(t))  # Array of upper bounds of each new element
-    left = np_int(np.floor(t))  # Array of lower bounds of each new element
+    left_indices = np.floor(indices).astype(int)
+    right_indices = np.ceil(indices).astype(int)
+    fraction = indices - left_indices
 
-    # Linear interpolation p = a + (b-a)*t
+    delta = curve[right_indices] - curve[left_indices]
+    return curve[left_indices] + delta * fraction[:, None]
 
-    delta = array3d[right] - array3d[left]  # (b-a)
-    t_p = t - left  # t Array of fraction between a -> b for each element
-    resample = (
-        array3d[left] + delta * t_p[:, None]
-    )  # p Element - wise Linear interpolation
 
-    return resample
+def resample_curve(curve: np.ndarray, num_samples: int) -> np.ndarray:
+    """
+    Resample a curve (array) based on linear interpolation.
+
+    Parameters
+    ----------
+    curve : np.ndarray
+        The curve to be resampled, can be (n, m) dimensional.
+    num_samples : int
+        Number of samples in the resampled curve.
+
+    Returns
+    -------
+    np.ndarray
+        The resampled curve.
+    """
+    original_length = curve.shape[0]
+    interpolated_indices = np.linspace(0, original_length - 1, num_samples)
+    return _linear_interpolate(curve, interpolated_indices)
+
+
+def vector_interpolation(
+    x: np.ndarray, xp: np.ndarray, curve: np.ndarray
+) -> np.ndarray:
+    """
+    Perform multi-dimensional interpolation of curves.
+
+    Parameters
+    ----------
+    x : float
+        The value to interpolate.
+    xp : np.ndarray
+        The x-coordinates of the data points.
+    curve : np.ndarray
+        The curve to interpolate.
+
+    Returns
+    -------
+    np.ndarray
+        The interpolated values.
+    """
+    interpolation_indices = np.interp(x, xp, np.arange(len(xp)))
+    return _linear_interpolate(curve, interpolation_indices)
 
 
 def find_max(

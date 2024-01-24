@@ -13,6 +13,7 @@ class SpatialArray(np.ndarray):
         Create a new instance of SpatialArray.
         """
         obj = np.asarray(array).view(cls)
+
         return obj
 
     def __array_finalize__(self, obj):

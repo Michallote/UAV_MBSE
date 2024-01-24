@@ -1,16 +1,17 @@
+"""Module providing classes with object relational mapping 
+for XFLR5 planes"""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum, auto
-from typing import List
+from typing import Iterator
 
 import numpy as np
 import pandas as pd
 
-from src.aerodynamics.airfoil import Airfoil
+from src.aerodynamics.airfoil import Airfoil, AirfoilFactory
 from src.geometry.spatial_array import SpatialArray
-from src.utils.interpolation import resample_curve
-from src.utils.xml_parser import parse_xml_file
+from src.utils.interpolation import vector_interpolation
 
 
 class SurfaceType(Enum):
@@ -22,29 +23,41 @@ class SurfaceType(Enum):
     FIN = auto()
 
     # @classmethod
-    def __repr__(self):
-        return "{} ({})".format(self.name, self.value)
-
-    def to_str(self):
-        return "{}".format(self.name)
+    def __repr__(self) -> str:
+        return f"{self.name} ({self.value})"
 
 
 class Aircraft:
     """Represents an Aircraft with Aerodynamic Surfaces and Properties."""
 
-    def __init__(self, name, surfaces, has_body, inertia, description, units) -> None:
-        self.name: str = name
-        self.surfaces: List[AeroSurface] = surfaces
-        self.has_body: bool = has_body
-        self.inertia: List[PointMass] = inertia
-        self.description: str = description
-        self.units: dict = units
+    name: str
+    surfaces: list[AeroSurface]
+    has_body: bool
+    inertia: list[PointMass] | None
+    description: str
+    units: dict
+
+    def __init__(
+        self,
+        name: str,
+        surfaces: list[AeroSurface],
+        has_body: bool,
+        inertia: list[PointMass] | None,
+        description: str,
+        units: dict,
+    ) -> None:
+        self.name = name
+        self.surfaces = surfaces
+        self.has_body = has_body
+        self.inertia = inertia
+        self.description = description
+        self.units = units
 
     def add_surface(self, surface: AeroSurface) -> None:
         """Add a lifting surface to the list of surfaces."""
         self.surfaces.append(surface)
 
-    def find_surfaces(self, surf_type: SurfaceType) -> List[AeroSurface]:
+    def find_surfaces(self, surf_type: SurfaceType) -> list[AeroSurface]:
         """Find all lifting surfaces with a particular type in the surfaces list"""
         return [surface for surface in self.surfaces if surface.surf_type is surf_type]
 
@@ -73,11 +86,25 @@ class Aircraft:
         for surface in self.surfaces:
             list(surface.df["Wingspan"])
 
-    def get_aircraft_df(self):
-        self.df = pd.concat(
-            [surface.df for surface in self.surfaces], ignore_index=True
-        )
-        return self.df.copy()
+    @property
+    def df(self) -> pd.DataFrame:
+        """Return a dataframe of the aircraft sections"""
+        df_list = []
+        for surface in self.surfaces:
+            df = surface.df.copy()
+            df["surface_type"] = surface.surf_type
+            df_list.append(df)
+
+        return pd.concat(df_list, ignore_index=True)
+
+    @staticmethod
+    def from_dict(data: dict) -> Aircraft:
+        """Creates an Aircraft instance from a dictionary"""
+        return parse_plane(data)
+
+    def __iter__(self) -> Iterator[AeroSurface]:
+        for surface in self.surfaces:
+            yield surface
 
 
 class AeroSurface:
@@ -87,23 +114,29 @@ class AeroSurface:
         self,
         name: str,
         position: np.ndarray,
+        color: tuple | None,
         surf_type: SurfaceType,
         tilt: float,
         symmetric: bool,
         is_fin: bool,
-        is_doublefin: bool,
-        is_symfin: bool,
-        sections: List[Section] = None,
-    ):
+        is_double_fin: bool,
+        is_sym_fin: bool,
+        inertia: dict,
+        sections: list[Section],
+    ) -> None:
         self.name = name
         self.position = position
+        self.color = color
         self.surf_type = surf_type
         self.tilt = tilt
         self.symmetric = symmetric
         self.is_fin = is_fin
-        self.is_doublefin = is_doublefin
-        self.is_symfin = is_symfin
-        self.sections = sections if sections is not None else []
+        self.is_double_fin = is_double_fin
+        self.is_sym_fin = is_sym_fin
+        self.inertia = inertia
+        self.sections = sections
+        # Initialize the y_offsets of the sections
+        self.calc_y_offset()
 
     def add_section(self, section: Section) -> None:
         """Add a section to the list of sections."""
@@ -112,22 +145,30 @@ class AeroSurface:
     def set_color(self, color: tuple) -> None:  # Specify the type of color if possible
         self.color = color
 
-    def add_dataframe(self, df: Any) -> None:  # Specify the type of df if possible
-        self.df = df
+    @property
+    def df(self) -> pd.DataFrame:
+        """Transform the sections stored into a dataframe for visualization"""
+        sections = self.sections
+        df_dict = [
+            {key: value for key, value in asdict(section).items() if key != "airfoil"}
+            for section in sections
+        ]
+        return pd.DataFrame(df_dict)
 
     def calc_y_offset(self) -> None:
+        """Calculates the y_offset component for each section given."""
         var_sections = self.sections
         delta_span = [
             var_sections[i].distance_to(var_sections[i + 1])
             for i in range(len(var_sections) - 1)
         ]
-        dihedral = np.sin(np.radians([section.Dihedral for section in self.sections]))[
+        dihedral = np.sin(np.radians([section.dihedral for section in self.sections]))[
             :-1
         ]
-        yOffsets = np.insert(np.cumsum(delta_span * dihedral), 0, 0.0)
+        y_offsets = np.insert(np.cumsum(delta_span * dihedral), 0, 0.0)
 
-        for section, yOffset in zip(self.sections, yOffsets):
-            section.yOffset = yOffset
+        for section, y_offset in zip(self.sections, y_offsets):
+            section.y_offset = y_offset
 
     def get_ribs_position(self, rib_spacing: float = 0.15) -> np.ndarray:
         wingspans = np.array([section.wingspan for section in self.sections])
@@ -146,10 +187,12 @@ class AeroSurface:
         areas = df["Area"].to_numpy()
         ribs_area = np.interp(ribs_position, wingspans, areas)
         centroids = np.array(list(df["Centroid"]))
-        ribs_centroid = resample_curve(ribs_position, wingspans, centroids)
+        ribs_centroid = vector_interpolation(ribs_position, wingspans, centroids)
 
     def __repr__(self) -> str:
-        return f"({self.name}, {self.surf_type}, No. Sections: {len(self.sections)})"
+        return (
+            f"({self.name}, {repr(self.surf_type)}, No. Sections: {len(self.sections)})"
+        )
 
 
 @dataclass
@@ -186,7 +229,7 @@ class Section:
 class PointMass:
     mass: float
     coordinates: SpatialArray
-    tag: str
+    tag: str | None
 
 
 def create_point_mass(point_mass_data: dict) -> PointMass:
@@ -197,47 +240,66 @@ def create_point_mass(point_mass_data: dict) -> PointMass:
     )
 
 
-def create_inertia(inertia_data: dict) -> List[PointMass]:
+def create_plane_inertia(inertia_data: dict) -> list[PointMass]:
+    """Parses the pint masses in the aircraft into a PointMass list
+
+    Parameters
+    ----------
+    inertia_data : dict
+        inertia data from dictionary
+
+    Returns
+    -------
+    List[PointMass]
+        _description_
+    """
     point_masses = [create_point_mass(pm) for pm in inertia_data["Point_Mass"]]
     return point_masses
 
 
 def create_color(color_data: dict) -> tuple:
-    return tuple(
-        red=color_data["red"],
-        green=color_data["green"],
-        blue=color_data["blue"],
-        alpha=color_data["alpha"],
-    )
+    """Creates a color tuple from a dict."""
+    red = color_data["red"]
+    green = color_data["green"]
+    blue = color_data["blue"]
+    alpha = color_data["alpha"]
+
+    return (red, green, blue, alpha)
 
 
 def create_section(section_data: dict) -> Section:
+    """Parses a section dictionary data into an Section instance"""
+    foil_name = section_data["Right_Side_FoilName"]
+    airfoil = AirfoilFactory().create_airfoil(foil_name)
+
     return Section(
-        y_position=section_data["y_position"],
+        wingspan=section_data["y_position"],
         chord=section_data["Chord"],
-        xOffset=section_data["xOffset"],
+        x_offset=section_data["xOffset"],
+        y_offset=0,
         dihedral=section_data["Dihedral"],
         twist=section_data["Twist"],
-        x_number_of_panels=section_data["x_number_of_panels"],
-        x_panel_distribution=section_data["x_panel_distribution"],
-        y_number_of_panels=section_data["y_number_of_panels"],
-        y_panel_distribution=section_data["y_panel_distribution"],
-        left_side_foil_name=section_data["Left_Side_FoilName"],
-        right_side_foil_name=section_data["Right_Side_FoilName"],
+        x_panels=section_data["x_number_of_panels"],
+        x_panel_dist=section_data["x_panel_distribution"],
+        y_panels=section_data["y_number_of_panels"],
+        y_panel_dist=section_data["y_panel_distribution"],
+        foil_name=foil_name,
+        airfoil=airfoil,
     )
 
 
 def create_wing(wing_data: dict) -> AeroSurface:
+    """Parses an input wing definition dictionary to an AeroSurface instance"""
     sections = [create_section(sec) for sec in wing_data["Sections"]["Section"]]
     color = create_color(wing_data["Color"]) if "Color" in wing_data else None
-    inertia = create_inertia(wing_data["Inertia"]) if "Inertia" in wing_data else None
-    return AeroSurface(
+    inertia = wing_data["Inertia"]
+    surface = AeroSurface(
         name=wing_data["Name"],
-        wing_type=wing_data["Type"],
-        color=color,
         position=SpatialArray(wing_data["Position"]),
-        tilt_angle=wing_data["Tilt_angle"],
-        symetric=wing_data["Symetric"],
+        color=color,
+        surf_type=SurfaceType[wing_data["Type"]],
+        tilt=wing_data["Tilt_angle"],
+        symmetric=wing_data["Symetric"],
         is_fin=wing_data["isFin"],
         is_double_fin=wing_data["isDoubleFin"],
         is_sym_fin=wing_data["isSymFin"],
@@ -245,11 +307,18 @@ def create_wing(wing_data: dict) -> AeroSurface:
         sections=sections,
     )
 
+    return surface
+
 
 def parse_plane(data: dict) -> Aircraft:
+    """Creates an Aircraft instance from an input dicionary.
+    The input dictionary is provided by the XFLR5 xml after parsing"""
     wings = [create_wing(wing) for wing in data["Plane"]["wing"]]
+
     inertia = (
-        create_inertia(data["Plane"]["Inertia"]) if "Inertia" in data["Plane"] else None
+        create_plane_inertia(data["Plane"]["Inertia"])
+        if "Inertia" in data["Plane"]
+        else None
     )
     plane = Aircraft(
         name=data["Plane"]["Name"],
@@ -260,30 +329,3 @@ def parse_plane(data: dict) -> Aircraft:
         units=data["Units"],
     )
     return plane
-
-
-def print_keys_and_types(d, indent_level=0):
-    """
-    Recursively prints the keys and types of items in a nested dictionary or list of dictionaries.
-
-    :param d: The dictionary or list of dictionaries to explore.
-    :param indent_level: Current indentation level for pretty printing.
-    """
-    indent = "    " * indent_level
-    if isinstance(d, dict):
-        for key, value in d.items():
-            print(f"{indent}{key}: {type(value).__name__}")
-            if isinstance(value, (dict, list)):
-                print_keys_and_types(value, indent_level + 1)
-    elif isinstance(d, list):
-        for index, item in enumerate(d):
-            print(f"{indent}[{index}]: {type(item).__name__} - List Item")
-            if isinstance(item, (dict, list)):
-                print_keys_and_types(item, indent_level + 1)
-
-
-print_keys_and_types(parsed_xml)
-
-# Example usage
-plane_data = {}  # Replace with your actual data dictionary
-plane_object = parse_plane(plane_data)

@@ -1,4 +1,6 @@
 """Aerodynamics Module"""
+import copy
+import os
 from functools import cached_property
 
 import matplotlib.pyplot as plt
@@ -194,5 +196,62 @@ def slice_shift(x):
     return x[:-1], x[1:]
 
 
-if __name__ == "__main__":
+class AirfoilFactory:
+    """A singleton class to hold configuration data.
+    Factory class to create Airfoil instances."""
+
+    _instance = None
+    folder_path = ""
+    _cache = {}
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AirfoilFactory, cls).__new__(cls)
+            cls._instance.folder_path = None
+        return cls._instance
+
+    def set_folder_path(self, path: str):
+        """Set the folder path."""
+        self.folder_path = path
+
+    def get_folder_path(self) -> str:
+        """Get the folder path."""
+        return self.folder_path
+
+    def create_airfoil(self, foilname: str) -> Airfoil:
+        """Create an Airfoil instance from a file in the configured folder."""
+
+        if foilname in self._cache:
+            return copy.deepcopy(self._cache[foilname])
+        else:
+            filename = f"{foilname}.dat"
+
+        folder_path = self.get_folder_path()
+        full_path = os.path.join(folder_path, filename)
+        return Airfoil.from_file(full_path)
+
+    def cache_airfoils(self) -> None:
+        """Precompute Airfoils and store them to a dictionary."""
+        # Iterate over all files in the 'data' directory
+        for root, _, files in os.walk(self.folder_path):
+            for filename in files:
+                if filename.endswith(".dat"):
+                    # Construct the full path to the file
+                    full_path = os.path.join(root, filename)
+
+                    # Execute foo on the .dat file
+                    airfoil = Airfoil.from_file(full_path)
+                    self._cache[airfoil.name] = airfoil
+
+
+def main():
+    """Main function"""
     airfoil = Airfoil.from_file("data/airfoils/FX 73-CL2-152.dat")
+    airfoil_factory = AirfoilFactory()
+    airfoil_factory.set_folder_path("data/airfoils")
+    airfoil_factory.cache_airfoils()
+    print(airfoil)
+
+
+if __name__ == "__main__":
+    main()

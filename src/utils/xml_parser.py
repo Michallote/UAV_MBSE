@@ -84,6 +84,26 @@ def parse_type(text: str) -> Union[str, float, bool, list, dict]:
     return text
 
 
+def print_keys_and_types(d, indent_level=0):
+    """
+    Recursively prints the keys and types of items in a nested dictionary or list of dictionaries.
+
+    :param d: The dictionary or list of dictionaries to explore.
+    :param indent_level: Current indentation level for pretty printing.
+    """
+    indent = "    " * indent_level
+    if isinstance(d, dict):
+        for key, value in d.items():
+            print(f"{indent}{key}: {type(value).__name__}")
+            if isinstance(value, (dict, list)):
+                print_keys_and_types(value, indent_level + 1)
+    elif isinstance(d, list):
+        for index, item in enumerate(d):
+            print(f"{indent}[{index}]: {type(item).__name__} - List Item")
+            if isinstance(item, (dict, list)):
+                print_keys_and_types(item, indent_level + 1)
+
+
 def main() -> None:
     """test cases"""
     xml_file_path = "data/xml/Mobula.xml"
