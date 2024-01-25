@@ -1,4 +1,6 @@
 """Aerodynamics Module"""
+from __future__ import annotations
+
 import copy
 import os
 from functools import cached_property
@@ -7,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.geometry.spatial_array import SpatialArray
-from src.utils.interpolation import find_max
+from src.utils.interpolation import find_max, resample_curve
 
 
 class Airfoil:
@@ -19,7 +21,7 @@ class Airfoil:
         self.segment_airfoil()
 
     @staticmethod
-    def from_file(file_path: str) -> "Airfoil":
+    def from_file(file_path: str) -> Airfoil:
         """Creates Airfoil object from a file
 
         Parameters
@@ -101,6 +103,8 @@ class Airfoil:
         # Reverse the extrados so x is in ascending order
         self.extrados = SpatialArray(data[index_le::-1])
         self.index_le = index_le
+        self.index_te = 0
+        self.index_te2 = -1
 
     @cached_property
     def centroid(self) -> SpatialArray:
@@ -172,6 +176,12 @@ class Airfoil:
         """Returns x coordinate of max camber"""
         x_camber, _ = find_max(self.camber, n_iter=n_iter)
         return x_camber
+
+    def resample(self, n_samples: int) -> Airfoil:
+        """Resamples the airfoil and returns another Airfoil object with
+        the new resampled coordinates."""
+        coordinates = resample_curve(self.data, n_samples)
+        return Airfoil(name=self.name, data=coordinates)
 
     def plot_airfoil(self):
         """Plot the airfoil"""

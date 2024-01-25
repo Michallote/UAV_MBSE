@@ -1,9 +1,15 @@
 """Geometry Module"""
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
+import os
+from itertools import chain
+from os.path import join, normpath
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import LightSource
+
+from src.aerodynamics.airfoil import Airfoil
 from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
 from src.geometry.spatial_array import SpatialArray
 from src.utils.interpolation import resample_curve
@@ -19,10 +25,14 @@ class GeometricCurve:
 
     name: str
     data: np.ndarray
+    airfoil: Airfoil | None
 
-    def __init__(self, name: str, data: np.ndarray) -> None:
+    def __init__(
+        self, name: str, data: np.ndarray, airfoil: Airfoil | None = None
+    ) -> None:
         self.name = name
         self.data = data
+        self.airfoil = airfoil
 
     @property
     def x(self) -> np.ndarray:
@@ -39,18 +49,54 @@ class GeometricCurve:
         """Returns the numpy array of z-values of the data coordinates"""
         return self.data[:, 2]
 
-    def to_gcs(self):
+    @property
+    def normal(self) -> SpatialArray:
+        """
+        Calculate the average normal vector for a 3D curve
+
+        Parameters:
+        curve (np.ndarray): Numpy array of shape (n, 3) representing the curve with x, y, z coordinates.
+
+        Returns:
+        np.ndarray: Array of normal vectors for each point on the curve.
+        """
+
+        # Calculate tangent vectors as differences between successive points
+        tangents = np.diff(self.data, axis=0)
+        # Shift arrays to compute cross product pairs
+        xi, xf = tangents[:-1], tangents[1:]
+        normals = np.cross(xi, xf)
+        # Normalize normal vectors and compute mean
+        normal = np.mean(normals / np.linalg.norm(normals, axis=1), axis=0)
+
+        return SpatialArray(normal)
+
+    @property
+    def gamma(self) -> float:
+        """Angle of rotation along the y-axis."""
+        return np.arccos(self.normal.z)  # type: ignore
+
+    def to_gcs(self, reference_system: str = "SW", units: str = "mm"):
         """
         GCS = Global Coordinate System
         Returns the coordinates as a Numpy array.
         """
-        units, reference_system, reflect_axis = get_ref_coordinate_system(
-            output_reference_system="SW", output_units="mm"
+        units_factor, output_reference_system, reflect_axis = get_ref_coordinate_system(
+            reference_system, units
         )
-        data = units * self.data
-        output_data = data.mul(reflect_axis, axis="columns")[reference_system]
+        data = units_factor * self.data
 
-        return output_data
+        factors = np.array([reflect_axis[col] for col in ["x", "y", "z"]])
+        # Multiply the data array with the factors
+        reflected_data = data * factors
+
+        # Create a mapping from axis names to indices
+        axis_to_index = {axis: index for index, axis in enumerate(["x", "y", "z"])}
+
+        # Translate new axis order to indices
+        new_order_indices = [axis_to_index[axis] for axis in output_reference_system]
+
+        return reflected_data[:, new_order_indices]
 
     def resample(self, n_samples: int) -> GeometricCurve:
         """Resample the curve to have n_samples
@@ -66,9 +112,14 @@ class GeometricCurve:
             A resampled GeometricCurve
         """
         coordinates = resample_curve(self.data, n_samples)
-        return GeometricCurve(self.name, coordinates)
+        if self.airfoil is not None:
+            airfoil = self.airfoil.resample(n_samples)
+            return GeometricCurve(self.name, coordinates, airfoil=airfoil)
+        else:
+            return GeometricCurve(self.name, coordinates)
 
-    def section_area(self):
+    @property
+    def area(self):
         """
         Stokes theorem used for computing the area through a parameterized
         line integral of a 3D curve.
@@ -85,9 +136,80 @@ class GeometricCurve:
         yi, yf = roll(y)
         zi, zf = roll(z)
 
-        return (1.0 / 2.0) * (
+        return (0.5) * (
             (xf + xi) * ((yf - yi) * (np.cos(gamma)) + (zf - zi) * (np.sin(gamma)))
         )
+
+    @property
+    def leading_edge(self) -> SpatialArray:
+        """Retrieves the leading edge of the airfoil as a SpatialArray.
+
+        Returns
+        -------
+        SpatialArray
+            leading edge coordinates
+
+        Raises
+        ------
+        AttributeError
+            airfoil is not set for the curve i.e. is a border guiding curve
+        """
+
+        try:
+            leading_edge_index = self.airfoil.index_le  # type: ignore
+            return SpatialArray(self.data[leading_edge_index])
+        except AttributeError as exc:
+            raise AttributeError(
+                "The airfoil attribute must be set before accessing the leading edge."
+            ) from exc
+
+    @property
+    def trailing_edge(self) -> SpatialArray:
+        """Retrieves the upper surface trailing edge of the airfoil as a SpatialArray.
+
+        Returns
+        -------
+        SpatialArray
+            trailing edge coordinates
+
+        Raises
+        ------
+        AttributeError
+            airfoil is not set for the curve i.e. is a border guiding curve
+        """
+        try:
+            trailing_edge_index = self.airfoil.index_te  # type: ignore
+            return SpatialArray(self.data[trailing_edge_index])
+        except AttributeError as exc:
+            raise AttributeError(
+                "The airfoil attribute must be set before accessing the trailing edge."
+            ) from exc
+
+    @property
+    def trailing_edge2(self) -> SpatialArray:
+        """Retrieves the lower surface trailing edge of the airfoil as a SpatialArray.
+
+        Returns
+        -------
+        SpatialArray
+            trailing edge coordinates
+
+        Raises
+        ------
+        AttributeError
+            airfoil is not set for the curve i.e. is a border guiding curve
+        """
+        try:
+            trailing_edge_index = self.airfoil.index_te2  # type: ignore
+            return SpatialArray(self.data[trailing_edge_index])
+        except AttributeError as exc:
+            raise AttributeError(
+                "The airfoil attribute must be set before accessing the trailing edge."
+            ) from exc
+
+    def __len__(self) -> int:
+        """Return the len of the data attribute"""
+        return len(self.data)
 
     @staticmethod
     def from_section(
@@ -129,66 +251,126 @@ class GeometricCurve:
             airfoil_cordinates, globalpos, is_fin
         )
 
-        return GeometricCurve(name=airfoil.name, data=curve3d)
+        return GeometricCurve(name=airfoil.name, data=curve3d, airfoil=airfoil)
 
 
-@dataclass
 class GeometricSurface:
-    """Represents a geometric surface with data as lists of the x, y, and z coordinates
+    """Represents a geometric surface with data as arrays of the x, y, and z coordinates
     for each location of a patch. A surface from the points is specified by the matrices
     and will then connect those points by linking the values next to each other in the matrix
     """
 
-    xx: np.ndarray = np.array([])
-    yy: np.ndarray = np.array([])
-    zz: np.ndarray = np.array([])
+    curves: list[GeometricCurve]
+    borders: list[GeometricCurve]
+    name: str | None
+    color: tuple[float] | None
+    surface_type: SurfaceType
+    xx: np.ndarray
+    yy: np.ndarray
+    zz: np.ndarray
 
-    def __post_init__(self) -> None:
-        self.curves: List[GeometricCurve] = []
-        self.borders: List[GeometricCurve] = []
+    def __init__(
+        self,
+        curves: list[GeometricCurve],
+        surface_type: SurfaceType,
+        name=None,
+        color=None,
+    ) -> None:
+        self.curves: list[GeometricCurve] = curves
+        self.surface_type = surface_type
+        self.name = name
+        self.color = color
+        self.standarize_curves()
+        self.borders: list[GeometricCurve] = self.borders_from_curves()
+        self.surf_from_curves()
 
     def add_curve(self, curve: GeometricCurve) -> None:
         """Add a parametric curve to the list of airfoil curves."""
         self.curves.append(curve)
+        self.surf_from_curves()
 
     def add_border(self, curve: GeometricCurve) -> None:
         """Add a parametric border (Border of Attack or Trailing Edge) to the list of wing leading or trailing edges."""
         self.borders.append(curve)
 
     def surf_from_curves(self):
+        """Compute the surface matrices from the curves"""
         self.standarize_curves()
 
         self.xx = np.array([curve.x for curve in self.curves])
         self.yy = np.array([curve.y for curve in self.curves])
         self.zz = np.array([curve.z for curve in self.curves])
 
-    def edge_from_curves():
-        pass
+    def borders_from_curves(self) -> list[GeometricCurve]:
+        """Compute the leading and trailing edges of the provided curves"""
+        le = np.array([curve.leading_edge for curve in self.curves])
+        te = np.array([curve.trailing_edge for curve in self.curves])
+        te2 = np.array([curve.trailing_edge2 for curve in self.curves])
+
+        return [
+            GeometricCurve(name="leading_edge", data=le),
+            GeometricCurve(name="trailing_edge", data=te),
+            GeometricCurve(name="trailing_edge2", data=te2),
+        ]
 
     def set_color(self, color) -> None:
+        """Set the color of the surface"""
         self.color = color
 
     def add_surf_plot(self, ax, color="default", ls=LightSource(azdeg=-35, altdeg=45)):
+        """add surface plot"""
         if color == "default":
             color = self.color
+
+            color = tuple(value / 255 for value in color)
         # rgb = ls.shade(self.yy, cmap=cm.gist_earth, vert_exag=0.1, blend_mode='soft')
 
         ax.plot_surface(
             self.xx, self.yy, self.zz, lightsource=ls, color=color
         )  # , facecolors=color
 
-    def standarize_curves(self, nsamples=150):
+    def standarize_curves(self, n_samples=150) -> None:
         """Verifies that all curves have the same number of points"""
         curve_lengths = [len(curve) for curve in self.curves]
 
         if len(set(curve_lengths)) != 1:
             print("Not all curves have same length...resampling")
+            self.resample_curves(n_samples)
 
-            for curve in self.curves:
-                curve.resample(nsamples)
+    def resample_curves(self, n_samples: int):
+        """Resample all curves to enforce an uniform number of coordinates per curve"""
+        for curve in self.curves:
+            curve = curve.resample(n_samples)
 
-    def get_curve_list(self):
-        return [curve.get_npdata(CGS=True) for curve in self.curves]
+    def get_curve_list(self) -> list[np.ndarray]:
+        return [curve.to_gcs() for curve in self.curves]
+
+    @staticmethod
+    def from_aero_surface(surface: AeroSurface) -> GeometricSurface:
+        """Creates a Geometric Surface from an AeroSurface instance
+
+        Parameters
+        ----------
+        surface : AeroSurface
+            Aerodynamic definition of the lifting surface
+
+        Returns
+        -------
+        GeometricSurface
+            Geometry
+        """
+        globalpos = surface.position
+        surf_type = surface.surf_type  # SurfaceType.FIN
+        curves = [
+            GeometricCurve.from_section(section, globalpos, surf_type)
+            for section in surface.sections
+        ]
+        return GeometricSurface(
+            curves=curves,
+            surface_type=surf_type,
+            name=surface.name,
+            color=surface.color,
+        )
 
 
 class GeometryProcessor:
@@ -197,94 +379,29 @@ class GeometryProcessor:
 
     def __init__(self, aircraft: Aircraft) -> None:
         self.aircraft = aircraft
-        self.surfaces: list[GeometricSurface] = []
+        self.surfaces: list[GeometricSurface] = self._create_geometry()
 
-    def create_geometries(self) -> None:
-        for surface in self.aircraft:
-            geosurface = GeometricSurface()
-            geosurface.set_color(surface.color)
-            globalpos = surface.position
-            surf_type = surface.surf_type  # SurfaceType.FIN
+    def _create_geometry(self) -> list[GeometricSurface]:
+        """Creates the surface
 
-            BoA = []
-            BoS = []
-            BoS2 = []
-            centroid_list = []
-            area_list = []
-
-            for section in surface.sections:
-                curve = GeometricCurve()
-                airfoil = section.airfoil
-                curve.set_name(airfoil.name)
-                twist = -np.radians(section.Twist)
-                chord = section.chord
-                offset = np.array([section.xOffset, section.yOffset])
-                wingspan = section.wingspan
-                coordinates = section.airfoil.get_data(dim="2D", output_format="np")
-                center = section.airfoil.center
-                centroid = section.airfoil.centroid
-
-                # Section Curve 3D
-                airfoil_cordinates = transform_coordinates(
-                    coordinates, center, twist, chord, offset, wingspan
-                )
-                curve.set_data(airfoil_cordinates)
-                curve3d = transform_to_GCS(airfoil_cordinates, globalpos, surf_type)
-
-                curve.set_data(curve3d)
-
-                centroid3d = transform_coordinates(
-                    centroid, center, twist, chord, offset, wingspan
-                )
-                globalcentroid3d = transform_to_GCS(centroid3d, globalpos, surf_type)
-                curve.set_properties(globalcentroid3d, (chord**2) * airfoil.area)
-
-                ledges_pointers = [
-                    airfoil.BoA.name,
-                    airfoil.BoS.name,
-                    airfoil.BoS2.name,
-                ]  # Recall the pointers in the array
-                BoA_cords, BoS_cords, BoS2_cords = curve3d[ledges_pointers]
-
-                BoA.append(BoA_cords)
-                BoS.append(BoS_cords)
-                BoS2.append(BoS2_cords)
-                centroid_list.append(curve.centroid.as_numpy())
-                area_list.append(curve.area)
-
-                geosurface.add_curve(curve)
-
-            for i, element in enumerate([BoA, BoS, BoS2]):
-                border = GeometricCurve()
-                border.set_name(["BoA", "BoS", "BoS2"][i])
-                coordinate = np.array(element)
-                border.set_data(coordinate)
-
-                geosurface.add_border(border)
-
-            surface.df["Area"] = area_list
-
-            surface.df["Centroid"] = centroid_list
-
-            surface.df["BoA"] = BoA
-
-            surface.df["BoS"] = BoS
-
-            surface.df["BoS2"] = BoS2
-
-            surface.df["Surface"] = surf_type
-
-            geosurface.surf_from_curves()
-
-            self.add_surface(geosurface)
+        Returns
+        -------
+        list[GeometricSurface]
+            _description_
+        """
+        return [
+            GeometricSurface.from_aero_surface(surface) for surface in self.aircraft
+        ]
 
     def add_surface(self, surface: GeometricSurface) -> None:
         """Add a geometric surface (x,y,z) data matrices to the list of surfaces."""
         self.surfaces.append(surface)
 
-    def find_surfaces(self, surf_type: SurfaceType) -> List[AeroSurface]:
+    def find_surfaces(self, surf_type: SurfaceType) -> list[GeometricSurface]:
         """Find all lifting surfaces with a particular type in the surfaces list"""
-        return [surface for surface in self.surfaces if surface.surf_type is surf_type]
+        return [
+            surface for surface in self.surfaces if surface.surface_type is surf_type
+        ]
 
     def find_aspect_ratios(self):
         """
@@ -522,13 +639,22 @@ class GeometryProcessor:
 
         return None
 
-    def export_curves(self, output_reference_system="SW", output_units="mm"):
+    def export_curves(
+        self,
+        output_path: str,
+        ext: str = "sldcrv",
+        reference_system: str = "SW",
+        units: str = "mm",
+    ):
         """
         This method generates .txt files of the Geometric Curves in the specified folder
 
         Parameters
         ----------
-        output_reference_system : string , optional
+        output_path : string . Location of the output folder where files will be saved
+        ext : string. File extension ('txt' or 'sldcrv') default is 'sldcrv'
+            DESCRIPTION The name of the extension of the export files
+        reference_system : string , optional
             DESCRIPTION. The output system of reference default is 'SW' (SolidWorks).
 
             Output Reference Systems:
@@ -538,7 +664,7 @@ class GeometryProcessor:
         (Wing)   Spanwise     X        -Y          Z          Z
 
 
-        output_units : string , 'mm' milimeters, 'M' meters, 'in' inches
+        units : string , 'mm' milimeters, 'm' meters, 'in' inches
             DESCRIPTION. The units for data output, default is 'mm'.
 
         Returns
@@ -546,59 +672,33 @@ class GeometryProcessor:
         None.
 
         """
-        units_dict = {"M": 1.0, "mm": 1000.0, "in": 1 / 39.3701}
 
-        units = units_dict[output_units]
+        main_folder = join(normpath(output_path), f"Curves_{self.aircraft.name}")
 
-        coordinate_system = {
-            "XFLR5": ["x", "z", "y"],
-            "SW": ["z", "y", "x"],
-            "Python": ["x", "y", "z"],
-            "MATLAB": ["x", "y", "z"],
-        }
-        reflections = {
-            "XFLR5": {"x": 1, "z": -1, "y": 1},
-            "SW": {"z": 1, "y": 1, "x": -1},
-            "Python": {"x": 1, "y": 1, "z": 1},
-            "MATLAB": {"x": 1, "y": 1, "z": 1},
-        }
+        os.makedirs(main_folder, exist_ok=True)
 
-        reference_system = coordinate_system[output_reference_system]
-        reflect_axis = reflections[output_reference_system]
+        # Export the Section Airfoil Files
+        for i, (surface, curve) in enumerate(self.get_curve_iterator()):
+            local_folder = join(main_folder, surface.surface_type.name)
+            os.makedirs(local_folder, exist_ok=True)
 
-        mainfoldername = os.path.join(
-            os.path.normpath(WORKING_DIRECTORY), "Curves_" + self.aircraft.name
-        )
+            file_name = f"{i}_{curve.name}_{surface.name}.{ext}".replace(" ", "_")
+            file_name = join(local_folder, file_name)
 
-        if not os.path.exists(mainfoldername):
-            os.makedirs(mainfoldername)
+            output_data = curve.to_gcs(reference_system, units)
 
-        for aero_surf, geo_surf in zip(self.aircraft.surfaces, self.surfaces):
-            localpath = os.path.join(mainfoldername, aero_surf.name)
-            identifier = aero_surf.surf_type.to_str()
+            np.savetxt(file_name, output_data, fmt="%f")
 
-            if not os.path.exists(localpath):
-                os.makedirs(localpath)
+    def get_curve_iterator(self):
+        """
+        Returns an iterator that iterates over each surface and its curves and borders.
 
-            # Export the Section Airfoil Files
-            for i, curve in enumerate(geo_surf.curves):
-                data = units * curve.data3d
-                output_data = data.mul(reflect_axis, axis="columns")[reference_system]
-                name = curve.name
-                fname = os.path.join(
-                    localpath,
-                    "Section_" + str(i) + "_" + name + " " + identifier + ".txt",
-                )
+        Yields
+        ------
+        tuple
+            A tuple containing a surface and a curve or border.
 
-                np.savetxt(fname, output_data.values, fmt="%f")
-
-            # Export the Surface Trailing and Leading Edges Files
-            for i, border in enumerate(geo_surf.borders):
-                data = units * border.data3d
-                output_data = data.mul(reflect_axis, axis="columns")[reference_system]
-
-                name = border.name
-
-                fname = os.path.join(localpath, name + " " + identifier + ".txt")
-
-                np.savetxt(fname, output_data.values, fmt="%f")
+        """
+        for surface in self.surfaces:
+            for curve in chain(surface.borders, surface.curves):
+                yield surface, curve

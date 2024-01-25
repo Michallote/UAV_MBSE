@@ -11,7 +11,7 @@ import pandas as pd
 
 from src.aerodynamics.airfoil import Airfoil, AirfoilFactory
 from src.geometry.spatial_array import SpatialArray
-from src.utils.interpolation import vector_interpolation
+from src.utils.xml_parser import parse_xml_file
 
 
 class SurfaceType(Enum):
@@ -64,22 +64,18 @@ class Aircraft:
     def print_parameters(self):
         """Print to console all data frames"""
         for surface in self.surfaces:
-            print(
-                "\n Name: {}\n{}".format(
-                    surface.name,
-                    surface.df[
-                        [
-                            "Wingspan",
-                            "Chord",
-                            "Twist",
-                            "xOffset",
-                            "yOffset",
-                            "Dihedral",
-                            "FoilName",
-                        ]
-                    ].to_string(),
-                )
-            )
+            description = surface.df[
+                [
+                    "Wingspan",
+                    "Chord",
+                    "Twist",
+                    "xOffset",
+                    "yOffset",
+                    "Dihedral",
+                    "FoilName",
+                ]
+            ].to_string()
+            print(f"\n Name: {surface.name}\n{description}")
 
     def ribs_for_analysis(self):
         """Generates a list with ribs locations for each surface"""
@@ -102,6 +98,12 @@ class Aircraft:
         """Creates an Aircraft instance from a dictionary"""
         return parse_plane(data)
 
+    @staticmethod
+    def from_xml(path: str):
+        """Creates an Aircraft instance from an XML file"""
+        plane_data = parse_xml_file(path)
+        return Aircraft.from_dict(plane_data)
+
     def __iter__(self) -> Iterator[AeroSurface]:
         for surface in self.surfaces:
             yield surface
@@ -110,10 +112,22 @@ class Aircraft:
 class AeroSurface:
     """Basic representation of an aerodynamic surface on the aircraft."""
 
+    name: str
+    position: SpatialArray
+    color: tuple | None
+    surf_type: SurfaceType
+    tilt: float
+    symmetric: bool
+    is_fin: bool
+    is_double_fin: bool
+    is_sym_fin: bool
+    inertia: dict
+    sections: list[Section]
+
     def __init__(
         self,
         name: str,
-        position: np.ndarray,
+        position: SpatialArray,
         color: tuple | None,
         surf_type: SurfaceType,
         tilt: float,
@@ -143,6 +157,13 @@ class AeroSurface:
         self.sections.append(section)
 
     def set_color(self, color: tuple) -> None:  # Specify the type of color if possible
+        """Set surface color
+
+        Parameters
+        ----------
+        color : tuple
+            (R,G,B) tuple 0 -> 255
+        """
         self.color = color
 
     @property
@@ -171,6 +192,7 @@ class AeroSurface:
             section.y_offset = y_offset
 
     def get_ribs_position(self, rib_spacing: float = 0.15) -> np.ndarray:
+        """Get rib spacing"""
         wingspans = np.array([section.wingspan for section in self.sections])
         n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / rib_spacing)
         section_ribs = [
@@ -179,15 +201,6 @@ class AeroSurface:
         ]
         ribs_position = np.unique(np.concatenate(section_ribs))
         return ribs_position
-
-    def get_ribs_df(self) -> None:
-        df = self.df
-        ribs_position = self.get_ribs_position()
-        wingspans = df["Wingspan"].to_numpy()
-        areas = df["Area"].to_numpy()
-        ribs_area = np.interp(ribs_position, wingspans, areas)
-        centroids = np.array(list(df["Centroid"]))
-        ribs_centroid = vector_interpolation(ribs_position, wingspans, centroids)
 
     def __repr__(self) -> str:
         return (
@@ -227,12 +240,26 @@ class Section:
 
 @dataclass
 class PointMass:
+    """Represents a punctual mass for Inertia calculations"""
+
     mass: float
     coordinates: SpatialArray
     tag: str | None
 
 
 def create_point_mass(point_mass_data: dict) -> PointMass:
+    """Returns a Point Mass for a parsed PM dictionary
+
+    Parameters
+    ----------
+    point_mass_data : dict
+        Dictionary from the parsed plane structure
+
+    Returns
+    -------
+    PointMass
+        Puntual mass in space.
+    """
     return PointMass(
         mass=point_mass_data["Mass"],
         coordinates=SpatialArray(point_mass_data["coordinates"]),

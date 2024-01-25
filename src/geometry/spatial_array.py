@@ -34,7 +34,7 @@ class SpatialArray(np.ndarray):
             raise ValueError(f"Unsupported array shape for {dim}D coordinate")
 
     @property
-    def x(self):
+    def x(self) -> float | np.ndarray:
         """
         Returns the x-coordinate(s) of the array.
         """
@@ -42,7 +42,7 @@ class SpatialArray(np.ndarray):
         return self[0] if self.ndim == 1 else np.array(self[:, 0])
 
     @property
-    def y(self):
+    def y(self) -> float | np.ndarray:
         """
         Returns the y-coordinate(s) of the array.
         """
@@ -50,7 +50,7 @@ class SpatialArray(np.ndarray):
         return self[1] if self.ndim == 1 else np.array(self[:, 1])
 
     @property
-    def z(self):
+    def z(self) -> float | np.ndarray:
         """
         Returns the z-coordinate(s) of the array.
         """

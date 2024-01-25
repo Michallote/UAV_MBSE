@@ -1,6 +1,7 @@
 from src.aerodynamics.airfoil import AirfoilFactory
 from src.aerodynamics.data_structures import Aircraft
-from src.utils.xml_parser import parse_xml_file
+from src.geometry.geometry import GeometryProcessor
+from src.visualization.aircraft_plotter import AircraftPlotter
 
 
 def main():
@@ -8,10 +9,13 @@ def main():
     airfoil_factory.set_folder_path("data/airfoils")
     airfoil_factory.cache_airfoils()
 
-    airfoil = airfoil_factory.create_airfoil("GOE 383 AIRFOIL")
+    aircraft = Aircraft.from_xml("data/xml/Mobula2.xml")
 
-    plane_data = parse_xml_file("data/xml/Mobula2.xml")
-    aircraft = Aircraft.from_dict(plane_data)
+    geometry = GeometryProcessor(aircraft)
+    geometry.export_curves(output_path="data/output", reference_system="SW", units="mm")
+    visualizer = AircraftPlotter(aircraft, geometry.surfaces)
+
+    visualizer.plot_aircraft()
 
 
 if __name__ == "__main__":

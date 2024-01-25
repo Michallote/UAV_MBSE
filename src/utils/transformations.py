@@ -108,15 +108,15 @@ def rotation_matrix3d(theta: float, axis="x", units="radians") -> np.ndarray:
 
 
 def get_ref_coordinate_system(
-    output_reference_system="SW", output_units="mm"
+    reference_system="SW", units="mm"
 ) -> tuple[float, list[str], dict[str, int]]:
     """_summary_
 
     Parameters
     ----------
-    output_reference_system : str, available options: XFLR5 SW Python MATLAB
+    reference_system : str, available options: XFLR5 SW Python MATLAB
         data to be transformed into the reference system, by default "SW"
-    output_units : str, 'm' -> meters, 'mm' -> milimeters, 'in' -> inches
+    units : str, 'm' -> meters, 'mm' -> milimeters, 'in' -> inches
         _description_, by default "mm"
 
     Returns
@@ -126,7 +126,7 @@ def get_ref_coordinate_system(
     """
     units_dict = {"m": 1.0, "mm": 1000.0, "in": 1 / 39.3701}
 
-    units = units_dict[output_units]
+    units_factor = units_dict[units]
 
     coordinate_system = {
         "XFLR5": ["x", "z", "y"],
@@ -141,7 +141,7 @@ def get_ref_coordinate_system(
         "MATLAB": {"x": 1, "y": 1, "z": 1},
     }
 
-    reference_system = coordinate_system[output_reference_system]
-    reflect_axis = reflections[output_reference_system]
+    reference_system_def = coordinate_system[reference_system]
+    reflect_axis = reflections[reference_system]
 
-    return units, reference_system, reflect_axis
+    return units_factor, reference_system_def, reflect_axis
