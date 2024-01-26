@@ -141,7 +141,7 @@ def get_ref_coordinate_system(
         "MATLAB": {"x": 1, "y": 1, "z": 1},
     }
 
-    reference_system_def = coordinate_system[reference_system]
+    reference_system = coordinate_system[reference_system]
     reflect_axis = reflections[reference_system]
 
-    return units_factor, reference_system_def, reflect_axis
+    return units_factor, reference_system, reflect_axis

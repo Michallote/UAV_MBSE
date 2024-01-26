@@ -320,9 +320,14 @@ def create_wing(wing_data: dict) -> AeroSurface:
     sections = [create_section(sec) for sec in wing_data["Sections"]["Section"]]
     color = create_color(wing_data["Color"]) if "Color" in wing_data else None
     inertia = wing_data["Inertia"]
+    # Transform XFLR5 coordinates to python
+    xflr5_to_py = [0, 2, 1]  # flip y and z axis [x,y,z]_xfl -> [x,z,y]
+    position = np.array(wing_data["Position"])
+    position = position[xflr5_to_py]
+
     surface = AeroSurface(
         name=wing_data["Name"],
-        position=SpatialArray(wing_data["Position"]),
+        position=SpatialArray(position),
         color=color,
         surf_type=SurfaceType[wing_data["Type"]],
         tilt=wing_data["Tilt_angle"],
