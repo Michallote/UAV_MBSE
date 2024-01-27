@@ -80,7 +80,7 @@ class MatplotlibAircraftPlotter:
         yy = surface.yy
         zz = surface.zz
 
-        xx, yy, zz = AircraftPlotter.roll_to_vertical_axis(
+        xx, yy, zz = MatplotlibAircraftPlotter.roll_to_vertical_axis(
             (xx, yy, zz), vertical_axis=vertical_axis
         )
 
@@ -88,7 +88,7 @@ class MatplotlibAircraftPlotter:
 
     @staticmethod
     def plot_curve(curve: GeometricCurve, ax: Axes3D, vertical_axis):
-        x, y, z = AircraftPlotter.roll_to_vertical_axis(
+        x, y, z = MatplotlibAircraftPlotter.roll_to_vertical_axis(
             (curve.x, curve.y, curve.z), vertical_axis=vertical_axis
         )
         ax.plot3D(x, y, z)
