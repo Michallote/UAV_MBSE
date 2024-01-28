@@ -61,7 +61,7 @@ def transform_to_global_coordinate_system(
         Curves.
     globalpos : np.ndarray
         DESCRIPTION.
-    surf_type : SurfaceType
+    surface_type : SurfaceType
         DESCRIPTION.
 
     Returns
@@ -141,7 +141,7 @@ def get_ref_coordinate_system(
         "MATLAB": {"x": 1, "y": 1, "z": 1},
     }
 
-    reference_system = coordinate_system[reference_system]
+    reference_system_order = coordinate_system[reference_system]
     reflect_axis = reflections[reference_system]
 
-    return units_factor, reference_system, reflect_axis
+    return units_factor, reference_system_order, reflect_axis

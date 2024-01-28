@@ -1,3 +1,4 @@
+from src.visualization.base_class import BaseAircraftPlotter
 from src.visualization.matplotlib_plotter import MatplotlibAircraftPlotter
 from src.visualization.plotly_plotter import PlotlyAircraftPlotter
 
@@ -9,9 +10,7 @@ class AircraftPlotter:
     """
 
     @staticmethod
-    def get_plotter(
-        backend: str = "Plotly",
-    ) -> MatplotlibAircraftPlotter | PlotlyAircraftPlotter:
+    def get_plotter(backend: str = "Plotly") -> BaseAircraftPlotter:
         """
         Returns a plotter class based on the specified backend.
 
@@ -26,8 +25,8 @@ class AircraftPlotter:
             ValueError: If an unsupported backend is specified.
         """
         if backend.lower() == "matplotlib":
-            return MatplotlibAircraftPlotter
+            return MatplotlibAircraftPlotter()
         elif backend.lower() == "plotly":
-            return PlotlyAircraftPlotter
+            return PlotlyAircraftPlotter()
         else:
             raise ValueError(f"Unsupported backend: {backend}")

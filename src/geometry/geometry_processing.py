@@ -23,14 +23,19 @@ class GeometricCurve:
 
     name: str
     data: np.ndarray
-    airfoil: Airfoil | None
+    section: Section | None
 
     def __init__(
-        self, name: str, data: np.ndarray, airfoil: Airfoil | None = None
+        self,
+        name: str,
+        data: np.ndarray,
+        airfoil: Airfoil | None = None,
+        section: Section | None = None,
     ) -> None:
         self.name = name
         self.data = data
         self.airfoil = airfoil
+        self.section = section
 
     @property
     def x(self) -> np.ndarray:
@@ -112,7 +117,9 @@ class GeometricCurve:
         coordinates = resample_curve(self.data, n_samples)
         if self.airfoil is not None:
             airfoil = self.airfoil.resample(n_samples)
-            return GeometricCurve(self.name, coordinates, airfoil=airfoil)
+            return GeometricCurve(
+                self.name, coordinates, airfoil=airfoil, section=self.section
+            )
         else:
             return GeometricCurve(self.name, coordinates)
 
@@ -211,7 +218,7 @@ class GeometricCurve:
 
     @staticmethod
     def from_section(
-        section: Section, globalpos: SpatialArray, surf_type: SurfaceType
+        section: Section, globalpos: SpatialArray, surface_type: SurfaceType
     ) -> GeometricCurve:
         """Create a GeometricCurve from a section, global_postion,
         and surface_type
@@ -222,7 +229,7 @@ class GeometricCurve:
             section object
         globalpos : SpatialArray
             global_position of the surface the section belongs to
-        surf_type : SurfaceType, FIN triggers a 90 degree rotation.
+        surface_type : SurfaceType, FIN triggers a 90 degree rotation.
             MAINWING, SECONDARYWING and ELEVATOR do not trigger a rotation.
 
         Returns
@@ -243,13 +250,39 @@ class GeometricCurve:
             coordinates, center, twist, chord, offset, wingspan
         )
 
-        is_fin = surf_type is SurfaceType.FIN
+        is_fin = surface_type is SurfaceType.FIN
 
         curve3d = transform_to_global_coordinate_system(
             airfoil_cordinates, globalpos, is_fin
         )
 
-        return GeometricCurve(name=airfoil.name, data=curve3d, airfoil=airfoil)
+        return GeometricCurve(
+            name=airfoil.name, data=curve3d, airfoil=airfoil, section=section
+        )
+
+    def __getattr__(self, attr):
+        """Delegate attribute access to Section if not found in GeometricCurve."""
+        if hasattr(self.section, attr):
+            possible_attr = getattr(self.airsectioncraft, attr)
+            if callable(possible_attr):
+                raise AttributeError(f"Method access is restricted: '{attr}'")
+            return possible_attr
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{attr}'"
+        )
+
+    def __dir__(self) -> list[str]:
+        """Customize dir() to include non-callable attributes from the section object."""
+        geom_attrs = set(super().__dir__())  # Default attributes
+        aero_attrs = set(
+            attr
+            for attr in dir(self.section)
+            if not callable(getattr(self.section, attr))
+        )
+        # Combine both sets of attributes, excluding callable ones from _aero_surface
+        combined_attrs = geom_attrs.union(aero_attrs)
+        return list(combined_attrs)
 
 
 class GeometricSurface:
@@ -260,9 +293,6 @@ class GeometricSurface:
 
     curves: list[GeometricCurve]
     borders: list[GeometricCurve]
-    name: str | None
-    color: tuple[float] | None
-    surface_type: SurfaceType
     xx: np.ndarray
     yy: np.ndarray
     zz: np.ndarray
@@ -270,14 +300,10 @@ class GeometricSurface:
     def __init__(
         self,
         curves: list[GeometricCurve],
-        surface_type: SurfaceType,
-        name=None,
-        color=None,
+        surface: AeroSurface,
     ) -> None:
         self.curves: list[GeometricCurve] = curves
-        self.surface_type = surface_type
-        self.name = name
-        self.color = color
+        self._aero_surface = surface
         self.standarize_curves()
         self.borders: list[GeometricCurve] = self.borders_from_curves()
         self.surf_from_curves()
@@ -346,20 +372,45 @@ class GeometricSurface:
             Geometry
         """
         globalpos = surface.position
-        surf_type = surface.surf_type  # SurfaceType.FIN
+        surface_type = surface.surface_type  # SurfaceType.FIN
         curves = [
-            GeometricCurve.from_section(section, globalpos, surf_type)
+            GeometricCurve.from_section(section, globalpos, surface_type)
             for section in surface.sections
         ]
         return GeometricSurface(
             curves=curves,
-            surface_type=surf_type,
-            name=surface.name,
-            color=surface.color,
+            surface=surface
+            # surface_type=surface_type,
+            # name=surface.name,
+            # color=surface.color,
         )
 
+    def __getattr__(self, attr):
+        """Delegate attribute access to AeroSurface if not found in GeometricSurface."""
+        if hasattr(self._aero_surface, attr):
+            possible_attr = getattr(self._aero_surface, attr)
+            if callable(possible_attr):
+                raise AttributeError(f"Method access is restricted: '{attr}'")
+            return possible_attr
 
-class GeometryProcessor:
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{attr}'"
+        )
+
+    def __dir__(self) -> list[str]:
+        """Customize dir() to include non-callable attributes from the _aero_surface object."""
+        geo_surface_attrs = set(super().__dir__())  # Default attributes
+        aero_surface_attrs = set(
+            attr
+            for attr in dir(self._aero_surface)
+            if not callable(getattr(self._aero_surface, attr))
+        )
+        # Combine both sets of attributes, excluding callable ones from _aero_surface
+        combined_attrs = geo_surface_attrs.union(aero_surface_attrs)
+        return list(combined_attrs)
+
+
+class AircraftGeometry:
     """Behaviour Oriented Class
     Processes Aircraft to create 3D models."""
 
@@ -383,10 +434,10 @@ class GeometryProcessor:
         """Add a geometric surface (x,y,z) data matrices to the list of surfaces."""
         self.surfaces.append(surface)
 
-    def find_surfaces(self, surf_type: SurfaceType) -> list[GeometricSurface]:
+    def find_surfaces(self, surface_type: SurfaceType) -> list[GeometricSurface]:
         """Find all lifting surfaces with a particular type in the surfaces list"""
         return [
-            surface for surface in self.surfaces if surface.surface_type is surf_type
+            surface for surface in self.surfaces if surface.surface_type is surface_type
         ]
 
     def export_curves(
@@ -452,3 +503,27 @@ class GeometryProcessor:
         for surface in self.surfaces:
             for curve in chain(surface.borders, surface.curves):
                 yield surface, curve
+
+    def __getattr__(self, attr):
+        """Delegate attribute access to Aircraft if not found in AircraftGeometry."""
+        if hasattr(self.aircraft, attr):
+            possible_attr = getattr(self.aircraft, attr)
+            if callable(possible_attr):
+                raise AttributeError(f"Method access is restricted: '{attr}'")
+            return possible_attr
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{attr}'"
+        )
+
+    def __dir__(self) -> list[str]:
+        """Customize dir() to include non-callable attributes from the aircraft object."""
+        geom_attrs = set(super().__dir__())  # Default attributes
+        aero_attrs = set(
+            attr
+            for attr in dir(self.aircraft)
+            if not callable(getattr(self.aircraft, attr))
+        )
+        # Combine both sets of attributes, excluding callable ones from _aero_surface
+        combined_attrs = geom_attrs.union(aero_attrs)
+        return list(combined_attrs)

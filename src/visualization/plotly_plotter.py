@@ -9,20 +9,18 @@ from bs4 import BeautifulSoup
 from plotly.offline import plot
 from plotly.subplots import make_subplots
 
-from src.geometry.geometry import GeometricCurve, GeometricSurface
+from src.geometry.geometry_processing import (
+    AircraftGeometry,
+    GeometricCurve,
+    GeometricSurface,
+)
+from src.visualization.base_class import BaseAircraftPlotter
 
 
-class PlotlyAircraftPlotter:
-    def __init__(self, aircraft, surfaces: list[GeometricSurface]):
-        """
-        Initializes the plotter with an aircraft and its geometric surfaces.
-
-        Parameters:
-        aircraft (Aircraft): The aircraft to be plotted.
-        surfaces (list[GeometricSurface]): The geometric surfaces of the aircraft.
-        """
-        self.aircraft = aircraft
-        self.surfaces = surfaces
+class PlotlyAircraftPlotter(BaseAircraftPlotter):
+    """
+    Creates a visualization for Aircraft Surfaces and Curves using the Plotly backend
+    """
 
     @staticmethod
     def plot_surface(surface, fig: go.Figure, row, col, color=None):
@@ -91,7 +89,7 @@ class PlotlyAircraftPlotter:
             col,
         )
 
-    def plot_aircraft(self):
+    def plot_aircraft(self, aircraft: AircraftGeometry):
         """
         Plots the aircraft using the geometric data.
         """
@@ -106,11 +104,11 @@ class PlotlyAircraftPlotter:
         )
 
         # Plot surfaces
-        for surface in self.surfaces:
+        for surface in aircraft.surfaces:
             self.plot_surface(surface, fig, row=1, col=1)
 
         # Plot curves and borders
-        for surface in self.surfaces:
+        for surface in aircraft.surfaces:
             for i, curve in enumerate(chain(surface.curves, surface.borders)):
                 name = _create_name(surface, curve, i)
 
@@ -129,7 +127,7 @@ class PlotlyAircraftPlotter:
         camera = dict(up=up, eye=eye)
 
         fig.update_layout(
-            title=self.aircraft.name,
+            title=aircraft.name,
             scene=dict(camera=camera),
             scene2=dict(camera=camera),
             template="plotly_dark",
@@ -138,7 +136,7 @@ class PlotlyAircraftPlotter:
         # fig.show()
 
         add_subplot_synchronization(
-            fig, filename=self.aircraft.name, output_path="data/output"
+            fig, filename=aircraft.name, output_path="data/output"
         )
 
     @staticmethod
@@ -183,6 +181,7 @@ class PlotlyAircraftPlotter:
 def add_subplot_synchronization(
     fig: go.Figure, filename: str, output_path: str = "data/output"
 ):
+    """Adds camera synchronization into a figure with 2 subplots."""
     # get the a div
     div = plot(fig, include_plotlyjs=False, output_type="div")
 

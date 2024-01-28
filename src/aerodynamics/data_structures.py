@@ -57,9 +57,11 @@ class Aircraft:
         """Add a lifting surface to the list of surfaces."""
         self.surfaces.append(surface)
 
-    def find_surfaces(self, surf_type: SurfaceType) -> list[AeroSurface]:
+    def find_surfaces(self, surface_type: SurfaceType) -> list[AeroSurface]:
         """Find all lifting surfaces with a particular type in the surfaces list"""
-        return [surface for surface in self.surfaces if surface.surf_type is surf_type]
+        return [
+            surface for surface in self.surfaces if surface.surface_type is surface_type
+        ]
 
     def print_parameters(self):
         """Print to console all data frames"""
@@ -88,7 +90,7 @@ class Aircraft:
         df_list = []
         for surface in self.surfaces:
             df = surface.df.copy()
-            df["surface_type"] = surface.surf_type
+            df["surface_type"] = surface.surface_type
             df_list.append(df)
 
         return pd.concat(df_list, ignore_index=True)
@@ -115,7 +117,7 @@ class AeroSurface:
     name: str
     position: SpatialArray
     color: tuple | None
-    surf_type: SurfaceType
+    surface_type: SurfaceType
     tilt: float
     symmetric: bool
     is_fin: bool
@@ -129,7 +131,7 @@ class AeroSurface:
         name: str,
         position: SpatialArray,
         color: tuple | None,
-        surf_type: SurfaceType,
+        surface_type: SurfaceType,
         tilt: float,
         symmetric: bool,
         is_fin: bool,
@@ -141,7 +143,7 @@ class AeroSurface:
         self.name = name
         self.position = position
         self.color = color
-        self.surf_type = surf_type
+        self.surface_type = surface_type
         self.tilt = tilt
         self.symmetric = symmetric
         self.is_fin = is_fin
@@ -202,10 +204,12 @@ class AeroSurface:
         ribs_position = np.unique(np.concatenate(section_ribs))
         return ribs_position
 
+    @property
+    def wingspans(self) -> np.ndarray:
+        return np.array([section.wingspan for section in self.sections])
+
     def __repr__(self) -> str:
-        return (
-            f"({self.name}, {repr(self.surf_type)}, No. Sections: {len(self.sections)})"
-        )
+        return f"({self.name}, {repr(self.surface_type)}, No. Sections: {len(self.sections)})"
 
 
 @dataclass
@@ -329,7 +333,7 @@ def create_wing(wing_data: dict) -> AeroSurface:
         name=wing_data["Name"],
         position=SpatialArray(position),
         color=color,
-        surf_type=SurfaceType[wing_data["Type"]],
+        surface_type=SurfaceType[wing_data["Type"]],
         tilt=wing_data["Tilt_angle"],
         symmetric=wing_data["Symetric"],
         is_fin=wing_data["isFin"],

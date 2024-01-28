@@ -24,8 +24,12 @@ def _linear_interpolate(curve: np.ndarray, indices: np.ndarray) -> np.ndarray:
     right_indices = np.ceil(indices).astype(int)
     fraction = indices - left_indices
 
+    # Reshape fraction to be broadcast-compatible with curve
+    fraction_shape = (-1,) + (1,) * (curve.ndim - 1)
+    fraction = fraction.reshape(fraction_shape)
+
     delta = curve[right_indices] - curve[left_indices]
-    return curve[left_indices] + delta * fraction[:, None]
+    return curve[left_indices] + delta * fraction
 
 
 def resample_curve(curve: np.ndarray, num_samples: int) -> np.ndarray:

@@ -5,20 +5,18 @@ import numpy as np
 from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from src.geometry.geometry import GeometricCurve, GeometricSurface
+from src.geometry.geometry_processing import (
+    AircraftGeometry,
+    GeometricCurve,
+    GeometricSurface,
+)
+from src.visualization.base_class import BaseAircraftPlotter
 
 
-class MatplotlibAircraftPlotter:
-    def __init__(self, aircraft, surfaces: list[GeometricSurface]):
-        """
-        Initializes the plotter with an aircraft and its geometric surfaces.
-
-        Parameters:
-        aircraft (Aircraft): The aircraft to be plotted.
-        surfaces (list[GeometricSurface]): The geometric surfaces of the aircraft.
-        """
-        self.aircraft = aircraft
-        self.surfaces = surfaces
+class MatplotlibAircraftPlotter(BaseAircraftPlotter):
+    """
+    Creates a visualization for Aircraft Surfaces and Curves using the Matplotlib backend
+    """
 
     def _find_aspect_ratios(self, vertical_axis="y"):
         """
@@ -63,7 +61,7 @@ class MatplotlibAircraftPlotter:
 
     @staticmethod
     def plot_surface(
-        surface,
+        surface: GeometricSurface,
         ax,
         color="default",
         ls=LightSource(azdeg=-35, altdeg=45),
@@ -88,12 +86,13 @@ class MatplotlibAircraftPlotter:
 
     @staticmethod
     def plot_curve(curve: GeometricCurve, ax: Axes3D, vertical_axis):
+        """Plot a xurve in the selected referenci system"""
         x, y, z = MatplotlibAircraftPlotter.roll_to_vertical_axis(
             (curve.x, curve.y, curve.z), vertical_axis=vertical_axis
         )
         ax.plot3D(x, y, z)
 
-    def plot_aircraft(self, plot_num=1, vertical_axis="y"):
+    def plot_aircraft(self, aircraft: AircraftGeometry, plot_num=1, vertical_axis="y"):
         """
         Plots the aircraft using the geometric data.
 
@@ -133,7 +132,7 @@ class MatplotlibAircraftPlotter:
                 xlim=xlim,
                 ylim=ylim,
                 zlim=zlim,
-                title=self.aircraft.name,
+                title=aircraft.name,
             )
 
             # Setting the view angle to make y-axis appear vertical
@@ -141,11 +140,11 @@ class MatplotlibAircraftPlotter:
             # ax_i.view_init(azim=-30, elev=-210, roll=90)  #
         # Plot surfaces
         ls = LightSource(azdeg=-35, altdeg=45)
-        for surface in self.surfaces:
+        for surface in aircraft.surfaces:
             self.plot_surface(surface, ax, ls=ls, vertical_axis=vertical_axis)
 
         # Plot curves and borders
-        for surface in self.surfaces:
+        for surface in aircraft.surfaces:
             for curve in chain(surface.curves, surface.borders):
                 self.plot_curve(curve, ax1, vertical_axis=vertical_axis)
 
