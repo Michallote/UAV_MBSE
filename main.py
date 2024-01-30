@@ -15,12 +15,13 @@ def main():
     aircraft_geom.export_curves(
         output_path="data/output", reference_system="SW", units="mm"
     )
-    visualizer = AircraftPlotter.get_plotter(backend="Plotly")
+    visualizer = AircraftPlotter.get_plotter(backend="Matplotlib")
 
     visualizer.plot_aircraft(aircraft_geom)
 
     structural_model = StructuralModel(aircraft_geom, max_rib_spacing=0.15)
     structural_model.calculate_ribs()
+    input()
 
 
 if __name__ == "__main__":

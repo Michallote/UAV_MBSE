@@ -183,6 +183,23 @@ class Airfoil:
         coordinates = resample_curve(self.data, n_samples)
         return Airfoil(name=self.name, data=coordinates)
 
+    def set_z(self, z: float):
+        """Sets the z position on the array
+
+        Parameters
+        ----------
+        z : float
+            z-coordinate
+        """
+        import numpy as np
+
+        data = self.data
+        # Create a column of zeros
+        zeros_column = np.zeros((data.shape[0], 1))
+
+        # Horizontally stack the original array with the zeros column
+        self.data = np.hstack((data, zeros_column))
+
     def plot_airfoil(self):
         """Plot the airfoil"""
         # plt.scatter(self.data.x, self.data.y,marker='o',edgecolors='black',s=3)

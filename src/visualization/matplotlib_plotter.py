@@ -18,20 +18,20 @@ class MatplotlibAircraftPlotter(BaseAircraftPlotter):
     Creates a visualization for Aircraft Surfaces and Curves using the Matplotlib backend
     """
 
-    def _find_aspect_ratios(self, vertical_axis="y"):
+    def _find_aspect_ratios(self, surfaces, vertical_axis="y"):
         """
         Calculates the aspect ratios for plotting based on the geometric surfaces.
 
         Returns:
         tuple: (xlim, ylim, zlim, box_aspect)
         """
-        max_x = np.max([np.max(surface.xx) for surface in self.surfaces])
-        max_y = np.max([np.max(surface.yy) for surface in self.surfaces])
-        max_z = np.max([np.max(surface.zz) for surface in self.surfaces])
+        max_x = np.max([np.max(surface.xx) for surface in surfaces])
+        max_y = np.max([np.max(surface.yy) for surface in surfaces])
+        max_z = np.max([np.max(surface.zz) for surface in surfaces])
 
-        min_x = np.min([np.min(surface.xx) for surface in self.surfaces])
-        min_y = np.min([np.min(surface.yy) for surface in self.surfaces])
-        min_z = np.min([np.min(surface.zz) for surface in self.surfaces])
+        min_x = np.min([np.min(surface.xx) for surface in surfaces])
+        min_y = np.min([np.min(surface.yy) for surface in surfaces])
+        min_z = np.min([np.min(surface.zz) for surface in surfaces])
 
         xlim = (min_x, max_x)
         ylim = (min_y, max_y)
@@ -104,7 +104,7 @@ class MatplotlibAircraftPlotter(BaseAircraftPlotter):
         ax1: Axes3D = fig.add_subplot(1, 2, 2, projection="3d")
 
         xlim, ylim, zlim, box_aspect = self._find_aspect_ratios(
-            vertical_axis=vertical_axis
+            aircraft.surfaces, vertical_axis=vertical_axis
         )
         # box_aspect = tuple(np.roll(box_aspect, shift=1))
         # ax.view_init(vertical_axis="y")
