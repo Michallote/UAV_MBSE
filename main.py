@@ -1,6 +1,6 @@
 from src.aerodynamics.airfoil import AirfoilFactory
 from src.aerodynamics.data_structures import Aircraft
-from src.geometry.geometry_processing import AircraftGeometry
+from src.geometry.aircraft_geometry import AircraftGeometry
 from src.structures.structural_model import StructuralModel
 from src.visualization import AircraftPlotter  # type: ignore
 

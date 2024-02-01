@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from src.geometry.geometry_processing import (
+from src.geometry.aircraft_geometry import (
     AircraftGeometry,
     GeometricCurve,
     GeometricSurface,
@@ -100,8 +100,8 @@ class MatplotlibAircraftPlotter(BaseAircraftPlotter):
         plot_num (int): Plot number identifier.
         """
         fig = plt.figure(num=plot_num, clear=True, figsize=plt.figaspect(0.5))
-        ax: Axes3D = fig.add_subplot(1, 2, 1, projection="3d")
-        ax1: Axes3D = fig.add_subplot(1, 2, 2, projection="3d")
+        ax: Axes3D = fig.add_subplot(1, 2, 1, projection="3d")  # type: ignore
+        ax1: Axes3D = fig.add_subplot(1, 2, 2, projection="3d")  # type: ignore
 
         xlim, ylim, zlim, box_aspect = self._find_aspect_ratios(
             aircraft.surfaces, vertical_axis=vertical_axis

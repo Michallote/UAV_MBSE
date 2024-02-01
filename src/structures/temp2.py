@@ -257,3 +257,225 @@ fig.update_layout(
 
 # Show the figure
 fig.show()
+
+
+def evaluate_surface_intersection(xx, yy, zz, p, n) -> np.ndarray:
+    n = n / np.linalg.norm(n)
+
+    # First we calculate the Q vectors.
+    # Stack the xx, yy, zz grids to form a 3D array where each element is a 3D coordinate
+    coordinates = np.stack((xx, yy, zz), axis=-1)
+
+    # Subtract p from each 3D coordinate
+    q = coordinates - p
+
+    dot_products = np.einsum("ijk,k->ij", q, n)
+
+    sdf_sign = dot_products > 0
+
+    intersections = []
+
+    for i in range(sdf_sign.shape[0]):
+        for j in range(sdf_sign.shape[1]):
+            try:
+                u_idx = [[i, j], [i, j + 1]]
+
+                if sdf_sign[*u_idx[0]] != sdf_sign[*u_idx[1]]:  # Horizontal change
+                    intersections.append(u_idx)
+            except:
+                pass
+            try:
+                v_idx = [[i, j], [i + 1, j]]
+
+                if sdf_sign[*v_idx[0]] != sdf_sign[*v_idx[1]]:  # Vertical change
+                    intersections.append(v_idx)
+            except:
+                pass
+
+    intersection_points = []
+
+    for indices in intersections:
+        id_a, id_b = indices
+        p1, p2 = coordinates[*id_a], coordinates[*id_b]
+
+        intersection_point = line_plane_intersection(p1, p2, p, n)
+        intersection_points.append(intersection_point)
+
+    return np.array(intersection_points)
+
+
+def line_plane_intersection(
+    p1: np.ndarray, p2: np.ndarray, p: np.ndarray, n: np.ndarray
+) -> np.ndarray:
+    """
+    Calculate the intersection point of a line segment with an infinite plane.
+
+    Parameters:
+    p1 (np.ndarray): The starting point of the line segment.
+    p2 (np.ndarray): The ending point of the line segment.
+    p (np.ndarray): A point on the plane.
+    n (np.ndarray): The normal vector of the plane.
+
+    Returns:
+    np.ndarray: The intersection point if it exists, otherwise None.
+    """
+    line_dir = p2 - p1  # Direction vector of the line
+    n_dot_line_dir = np.dot(n, line_dir)  # Perpendicular distance to p2' through n
+
+    # Check if the line and plane are parallel
+    if np.isclose(n_dot_line_dir, 0):
+        return None
+
+    # Calculate the parameter t for the line equation
+    t = np.dot(n, p - p1) / n_dot_line_dir
+
+    # Check if the intersection point lies within the line segment
+    if 0 <= t <= 1:
+        intersection_point = p1 + t * line_dir
+        return intersection_point
+    else:
+        return None
+
+
+line_plane_intersection(
+    np.array([-1, 0, 0]),
+    np.array([1, 0, 0]),
+    np.array([0.2, 0, 0]),
+    np.array([1, 0, 0]),
+)
+
+x = np.linspace(-0.5, 2, 9)
+y = np.linspace(-0.5, 2, 9)
+
+xx, yy = np.meshgrid(x, y)
+zz = np.sin(xx**2) + np.cos(yy**2)
+p = np.array([0.43, 0, 0])
+n = np.array([1, 0, 0])
+
+curve = SpatialArray(evaluate_surface_intersection(xx, yy, zz, p, n))
+
+
+fig = go.Figure(
+    data=[
+        go.Surface(z=zz, x=xx, y=yy),
+    ],
+    specs={"is_3d": True},
+)
+
+
+fig.add_trace(
+    go.Scatter3d(
+        x=curve.x,
+        y=curve.y,
+        z=curve.z,
+        mode="lines+markers",  # Combine lines and markers
+        line=dict(color="black", width=10),  # Thick black line
+        marker=dict(size=5, color="red"),  # Red markers
+    )
+)
+
+
+# Update layout for a better view
+fig.update_layout(
+    title="3D Surface Plot",
+    # autosize=False,
+    # width=500,
+    # height=500,
+    margin=dict(l=65, r=50, b=65, t=90),
+    scene=dict(
+        xaxis=dict(showbackground=False),
+        yaxis=dict(showbackground=False),
+        zaxis=dict(showbackground=False),
+        aspectmode="data",
+    ),
+)
+
+# Show the figure
+fig.show()
+
+
+# Calculate the centroid
+centroid = np.mean(curve, axis=0)
+
+anchor = np.argsort(np.apply_along_axis(sorting_function, 1, example_array))
+
+
+# Example function for sorting: sum of squares of the columns
+def sorting_function(row):
+    return np.sum(np.square(row))
+
+
+sort_row = lambda x: np.sum(np.square(x))
+
+# Example array of shape (n, 3)
+example_array = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [2, 3, 1]])
+
+sorted_order = np.argsort(np.apply_along_axis(func1d=sort_row, axis=1, arr=curve))
+
+anchor = sorted_order[0]
+
+# Apply the sorting function to each row and sort the array
+sorted_array = example_array[
+    np.argsort(np.apply_along_axis(sorting_function, 1, example_array))
+]
+
+
+# Calculate angles from centroid
+angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
+
+# Sort points by angles
+sorted_points = points[np.argsort(angles)]
+
+
+def project_points_to_plane(points, plane_point, plane_normal):
+    """Return a curve in 3D space proyected to a plane using a set of local coordinates"""
+    # Normalize the normal vector
+    plane_normal = plane_normal / np.linalg.norm(plane_normal)
+
+    # Create local coordinate system on the plane
+    # Find a vector not parallel to plane_normal
+    if not np.isclose(plane_normal[0], 0):
+        vec = np.array([-plane_normal[1], plane_normal[0], 0])
+    else:
+        vec = np.array([0, plane_normal[2], -plane_normal[1]])
+    # First local axis (U)
+    U = np.cross(plane_normal, vec)
+    U = U / np.linalg.norm(U)
+    # Second local axis (V)
+    V = np.cross(U, plane_normal)
+    V = V / np.linalg.norm(V)
+
+    projected_points = []
+    for point in points:
+        # Projection of the point onto the plane
+        diff = point - plane_point
+        projected_point = point - np.dot(diff, plane_normal) * plane_normal
+
+        # Convert to local coordinates
+        x_local = np.dot(projected_point - plane_point, U)
+        y_local = np.dot(projected_point - plane_point, V)
+
+        projected_points.append((x_local, y_local))
+
+    return np.array(projected_points)
+
+
+ppoints = project_points_to_plane(curve, p, n)
+
+
+def polar_sort(x):
+    angle = np.arctan2(x[1], x[0])
+    if angle < 0:
+        angle = angle + 2 * np.pi
+    return angle
+
+
+centroid = np.mean(ppoints, axis=0)
+sorted_array = ppoints[
+    np.argsort(np.apply_along_axis(polar_sort, 1, ppoints - centroid))
+]
+
+
+import plotly.express as px
+
+px.line(x=sorted_array[:, 0], y=sorted_array[:, 1], markers=True).show()

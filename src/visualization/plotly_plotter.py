@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from plotly.offline import plot
 from plotly.subplots import make_subplots
 
-from src.geometry.geometry_processing import (
+from src.geometry.aircraft_geometry import (
     AircraftGeometry,
     GeometricCurve,
     GeometricSurface,

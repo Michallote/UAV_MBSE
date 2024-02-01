@@ -1,4 +1,4 @@
-"""SpatialArray module is a wrapper for easier accesing of data elements"""
+"""SpatialArray module is a wrapperof np.ndarrays for easier accesing of data elements"""
 import numpy as np
 
 

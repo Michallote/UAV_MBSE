@@ -1,4 +1,4 @@
-"""Geometry Module"""
+"""Aircraft Primitives Geometry Module"""
 from __future__ import annotations
 
 import os
@@ -10,6 +10,7 @@ import numpy as np
 from src.aerodynamics.airfoil import Airfoil
 from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
 from src.geometry.spatial_array import SpatialArray
+from src.geometry.surfaces import triangle_area
 from src.utils.interpolation import resample_curve
 from src.utils.transformations import (
     get_ref_coordinate_system,
@@ -135,7 +136,9 @@ class GeometricCurve:
         z = self.z
         gamma = self.gamma
 
-        roll = lambda x: (x, np.roll(x, -1, axis=0))
+        def roll(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+            """Returns x_i and x_f (x_{i+1}) arrays for numerical calculations"""
+            return (x, np.roll(x, -1, axis=0))
 
         xi, xf = roll(x)
         yi, yf = roll(y)
@@ -144,6 +147,24 @@ class GeometricCurve:
         return (0.5) * (
             (xf + xi) * ((yf - yi) * (np.cos(gamma)) + (zf - zi) * (np.sin(gamma)))
         )
+
+    @property
+    def centroid(self) -> SpatialArray:
+        """Calculate the centroid of the rib."""
+        data = self.data
+        n = len(data) - 1
+        indices = np.array(
+            [result for i in range(n) if all_different(result := [i, i + 1, n - i])]
+        )
+        # i, j, k = indices.T
+        triangles = data[indices]
+
+        centroids = np.sum(triangles, axis=1) / 3
+        areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
+
+        centroid = np.sum(centroids * areas, axis=0) / n
+
+        return SpatialArray(centroid)
 
     @property
     def leading_edge(self) -> SpatialArray:
@@ -527,3 +548,8 @@ class AircraftGeometry:
         # Combine both sets of attributes, excluding callable ones from _aero_surface
         combined_attrs = geom_attrs.union(aero_attrs)
         return list(combined_attrs)
+
+
+def all_different(lst) -> bool:
+    """Check if all elements in the list are different."""
+    return len(set(lst)) == len(lst)
