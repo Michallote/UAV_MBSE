@@ -1,4 +1,5 @@
 """Aircraft Primitives Geometry Module"""
+
 from __future__ import annotations
 
 import os
@@ -71,7 +72,8 @@ class GeometricCurve:
         xi, xf = tangents[:-1], tangents[1:]
         normals = np.cross(xi, xf)
         # Normalize normal vectors and compute mean
-        normal = np.mean(normals / np.linalg.norm(normals, axis=1), axis=0)
+        normal = np.sum(normals, axis=0)
+        normal = normal / np.linalg.norm(normal)
 
         return SpatialArray(normal)
 
@@ -80,7 +82,7 @@ class GeometricCurve:
         """Angle of rotation along the y-axis."""
         return np.arccos(self.normal.z)  # type: ignore
 
-    def to_gcs(self, reference_system: str = "SW", units: str = "mm"):
+    def to_gcs(self, reference_system: str = "SW", units: str = "mm") -> np.ndarray:
         """
         GCS = Global Coordinate System
         Returns the coordinates as a Numpy array.
@@ -125,7 +127,7 @@ class GeometricCurve:
             return GeometricCurve(self.name, coordinates)
 
     @property
-    def area(self):
+    def area_green(self) -> float:
         """
         Stokes theorem used for computing the area through a parameterized
         line integral of a 3D curve.
@@ -144,13 +146,13 @@ class GeometricCurve:
         yi, yf = roll(y)
         zi, zf = roll(z)
 
-        return (0.5) * (
-            (xf + xi) * ((yf - yi) * (np.cos(gamma)) + (zf - zi) * (np.sin(gamma)))
+        return np.sum(
+            (0.5)
+            * ((xf + xi) * ((yf - yi) * (np.cos(gamma)) + (zf - zi) * (np.sin(gamma))))
         )
 
-    @property
-    def centroid(self) -> SpatialArray:
-        """Calculate the centroid of the rib."""
+    def triangulate_curve(self) -> np.ndarray:
+        """Create triangulation of the enclosed curve"""
         data = self.data
         n = len(data) - 1
         indices = np.array(
@@ -158,11 +160,26 @@ class GeometricCurve:
         )
         # i, j, k = indices.T
         triangles = data[indices]
+        return triangles
+
+    @property
+    def area(self) -> float:
+        """Calculate the centroid of the shape."""
+
+        triangles = self.triangulate_curve()
+        areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
+
+        return np.sum(areas)
+
+    @property
+    def centroid(self) -> SpatialArray:
+        """Calculate the centroid of the shap enclosed by curve."""
+        triangles = self.triangulate_curve()
 
         centroids = np.sum(triangles, axis=1) / 3
         areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
 
-        centroid = np.sum(centroids * areas, axis=0) / n
+        centroid = np.sum(centroids * areas, axis=0) / np.sum(areas)
 
         return SpatialArray(centroid)
 
@@ -284,7 +301,7 @@ class GeometricCurve:
     def __getattr__(self, attr):
         """Delegate attribute access to Section if not found in GeometricCurve."""
         if hasattr(self.section, attr):
-            possible_attr = getattr(self.airsectioncraft, attr)
+            possible_attr = getattr(self.section, attr)
             if callable(possible_attr):
                 raise AttributeError(f"Method access is restricted: '{attr}'")
             return possible_attr
@@ -400,7 +417,7 @@ class GeometricSurface:
         ]
         return GeometricSurface(
             curves=curves,
-            surface=surface
+            surface=surface,
             # surface_type=surface_type,
             # name=surface.name,
             # color=surface.color,

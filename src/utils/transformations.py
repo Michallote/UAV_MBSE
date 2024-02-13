@@ -81,7 +81,7 @@ def transform_to_global_coordinate_system(
     return array
 
 
-def rotation_matrix2d(theta) -> np.ndarray:
+def rotation_matrix2d(theta: float) -> np.ndarray:
     """2D Rotation Matrix"""
     c, s = np.cos(theta), np.sin(theta)
     return np.array([[c, -s], [s, c]])

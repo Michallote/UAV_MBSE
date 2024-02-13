@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    535721,      12236]
-NotebookOptionsPosition[    501481,      11722]
-NotebookOutlinePosition[    501886,      11738]
-CellTagsIndexPosition[    501843,      11735]
+NotebookDataLength[    525564,      11989]
+NotebookOptionsPosition[    492225,      11489]
+NotebookOutlinePosition[    492630,      11505]
+CellTagsIndexPosition[    492587,      11502]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -11425,8 +11425,9 @@ Cell[BoxData[{
 Cell[BoxData[
  TagBox[
   StyleBox[
-   DynamicModuleBox[{$CellContext`a$$ = -2.1237166338267, $CellContext`b$$ = \
--1.0053096491487334`, Typeset`show$$ = True, Typeset`bookmarkList$$ = {}, 
+   DynamicModuleBox[{$CellContext`a$$ = 
+    0.012566370614359279`, $CellContext`b$$ = -0.2513274122871836, 
+    Typeset`show$$ = True, Typeset`bookmarkList$$ = {}, 
     Typeset`bookmarkMode$$ = "Menu", Typeset`animator$$, Typeset`animvar$$ = 
     1, Typeset`name$$ = "\"sin t\[IAcute]tulo\"", Typeset`specs$$ = {{{
        Hold[$CellContext`a$$], 0}, -Pi, Pi}, {{
@@ -11464,7 +11465,7 @@ $CellContext`a$$, $CellContext`\[Beta] -> $CellContext`b$$}]}]],
       "Specifications" :> {{{$CellContext`a$$, 0}, -Pi, 
          Pi}, {{$CellContext`b$$, 0}, -Pi, Pi}}, "Options" :> {}, 
       "DefaultOptions" :> {}],
-     ImageSizeCache->{410., {243.13403309800196`, 248.86596690199804`}},
+     ImageSizeCache->{410., {233.13403309800196`, 238.86596690199804`}},
      SingleEvaluation->True],
     Deinitialization:>None,
     DynamicModuleValues:>{},
@@ -11481,240 +11482,6 @@ $CellContext`a$$, $CellContext`\[Beta] -> $CellContext`b$$}]}]],
    3.9150820960641727`*^9}},
  CellLabel->
   "Out[211]=",ExpressionUUID->"23d96e83-d297-4e7a-b4d6-b1b7cb3b03db"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- TagBox[
-  StyleBox[
-   DynamicModuleBox[{$CellContext`a$$ = -0.012566370614359279`, \
-$CellContext`b$$ = -1.5330972149518187`, Typeset`show$$ = True, 
-    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
-    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
-    "\"sin t\[IAcute]tulo\"", Typeset`specs$$ = {{{
-       Hold[$CellContext`a$$], 0}, -Pi, Pi}, {{
-       Hold[$CellContext`b$$], 0}, -Pi, Pi}}, Typeset`size$$ = {
-    360., {178., 182.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
-    Typeset`skipInitDone$$ = True}, 
-    DynamicBox[Manipulate`ManipulateBoxes[
-     1, StandardForm, 
-      "Variables" :> {$CellContext`a$$ = 0, $CellContext`b$$ = 0}, 
-      "ControllerVariables" :> {}, 
-      "OtherVariables" :> {
-       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
-        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
-        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
-         Typeset`skipInitDone$$}, "Body" :> Show[
-        ReplaceAll[
-         Graphics3D[{
-           $CellContext`refframe[{0, 0, 0}, $CellContext`X0, 0.35], 
-           $CellContext`refframe[$CellContext`gpos, 
-            Dot[
-             $CellContext`Rz[$CellContext`\[Alpha]], 
-             $CellContext`Rx[$CellContext`\[Beta]]], 0.35], 
-           Polygon[$CellContext`foil3D], 
-           Polygon[$CellContext`rotatedairfoil]}, ViewPoint -> {-3, 2.5, 2.5},
-           ViewVertical -> {0, 1, 0}, Boxed -> False, AxesOrigin -> {0, 0, 0},
-           PlotRange -> {$CellContext`scale, $CellContext`scale, \
-$CellContext`scale}], {$CellContext`\[Alpha] -> $CellContext`a$$, \
-$CellContext`\[Beta] -> $CellContext`b$$}], 
-        ListLinePlot3D[{$CellContext`foil3D, 
-          
-          ReplaceAll[$CellContext`rotatedairfoil, {$CellContext`\[Alpha] -> \
-$CellContext`a$$, $CellContext`\[Beta] -> $CellContext`b$$}]}]], 
-      "Specifications" :> {{{$CellContext`a$$, 0}, -Pi, 
-         Pi}, {{$CellContext`b$$, 0}, -Pi, Pi}}, "Options" :> {}, 
-      "DefaultOptions" :> {}],
-     ImageSizeCache->{410., {252.13403309800196`, 257.86596690199804`}},
-     SingleEvaluation->True],
-    Deinitialization:>None,
-    DynamicModuleValues:>{},
-    SynchronousInitialization->True,
-    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
-    UnsavedVariables:>{Typeset`initDone$$},
-    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
-   Deployed->True,
-   StripOnInput->False],
-  Manipulate`InterpretManipulate[1]]], "Input",
- CellChangeTimes->{{3.915081257304063*^9, 3.9150812698268666`*^9}},
- CellLabel->
-  "In[156]:=",ExpressionUUID->"cc5940ca-2937-45ca-9edb-3a2a2461ca11"],
-
-Cell[BoxData[
- TagBox[
-  StyleBox[
-   DynamicModuleBox[{$CellContext`a$$ = 
-    2.2619467105846507`, $CellContext`b$$ = 0, Typeset`show$$ = True, 
-    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
-    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
-    "\"sin t\[IAcute]tulo\"", Typeset`specs$$ = {{{
-       Hold[$CellContext`a$$], 2.2619467105846507`}, -Pi, Pi}, {{
-       Hold[$CellContext`b$$], 0}, -Pi, Pi}}, Typeset`size$$ = {
-    360., {178., 182.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
-    Typeset`skipInitDone$$ = True}, 
-    DynamicBox[Manipulate`ManipulateBoxes[
-     1, StandardForm, 
-      "Variables" :> {$CellContext`a$$ = 
-        2.2619467105846507`, $CellContext`b$$ = 0}, 
-      "ControllerVariables" :> {}, 
-      "OtherVariables" :> {
-       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
-        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
-        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
-         Typeset`skipInitDone$$}, "Body" :> Show[
-        ReplaceAll[
-         Graphics3D[{
-           $CellContext`refframe[{0, 0, 0}, $CellContext`X0, 0.35], 
-           $CellContext`refframe[$CellContext`gpos, 
-            Dot[
-             $CellContext`Rz[$CellContext`\[Alpha]], 
-             $CellContext`Rx[$CellContext`\[Beta]]], 0.35], 
-           Polygon[$CellContext`foil3D], 
-           Polygon[$CellContext`rotatedairfoil]}, ViewPoint -> {-3, 2.5, 2.5},
-           ViewVertical -> {0, 1, 0}, Boxed -> False, AxesOrigin -> {0, 0, 0},
-           PlotRange -> {$CellContext`scale, $CellContext`scale, \
-$CellContext`scale}], {$CellContext`\[Alpha] -> $CellContext`a$$, \
-$CellContext`\[Beta] -> $CellContext`b$$}], 
-        ListLinePlot3D[{$CellContext`foil3D, 
-          
-          ReplaceAll[$CellContext`rotatedairfoil, {$CellContext`\[Alpha] -> \
-$CellContext`a$$, $CellContext`\[Beta] -> $CellContext`b$$}]}]], 
-      "Specifications" :> {{{$CellContext`a$$, 2.2619467105846507`}, -Pi, 
-         Pi}, {{$CellContext`b$$, 0}, -Pi, Pi}}, "Options" :> {}, 
-      "DefaultOptions" :> {}],
-     ImageSizeCache->{410., {233.13403309800196`, 238.86596690199804`}},
-     SingleEvaluation->True],
-    Deinitialization:>None,
-    DynamicModuleValues:>{},
-    SynchronousInitialization->True,
-    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
-    UnsavedVariables:>{Typeset`initDone$$},
-    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
-   Deployed->True,
-   StripOnInput->False],
-  Manipulate`InterpretManipulate[1]]], "Output",
- CellChangeTimes->{3.9150812574777517`*^9},
- CellLabel->
-  "Out[156]=",ExpressionUUID->"db26544d-1e6c-45b6-862d-f3f064ef17cc"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{
-  RowBox[{
-   RowBox[{"Rx", "[", "\[Beta]", "]"}], ".", 
-   RowBox[{"Rz", "[", "\[Alpha]", "]"}]}], "//", "MatrixForm"}]], "Input",
- CellChangeTimes->{{3.8883305076096907`*^9, 3.888330568549406*^9}, {
-  3.9150822387423625`*^9, 3.9150822508695116`*^9}},
- CellLabel->
-  "In[213]:=",ExpressionUUID->"2a1d4d7a-ba65-4185-ade2-541d09b42d83"],
-
-Cell[BoxData[
- TagBox[
-  RowBox[{"(", "\[NoBreak]", GridBox[{
-     {
-      RowBox[{"Cos", "[", "\[Alpha]", "]"}], 
-      RowBox[{"-", 
-       RowBox[{"Sin", "[", "\[Alpha]", "]"}]}], "0"},
-     {
-      RowBox[{
-       RowBox[{"Cos", "[", "\[Beta]", "]"}], " ", 
-       RowBox[{"Sin", "[", "\[Alpha]", "]"}]}], 
-      RowBox[{
-       RowBox[{"Cos", "[", "\[Alpha]", "]"}], " ", 
-       RowBox[{"Cos", "[", "\[Beta]", "]"}]}], 
-      RowBox[{"-", 
-       RowBox[{"Sin", "[", "\[Beta]", "]"}]}]},
-     {
-      RowBox[{
-       RowBox[{"Sin", "[", "\[Alpha]", "]"}], " ", 
-       RowBox[{"Sin", "[", "\[Beta]", "]"}]}], 
-      RowBox[{
-       RowBox[{"Cos", "[", "\[Alpha]", "]"}], " ", 
-       RowBox[{"Sin", "[", "\[Beta]", "]"}]}], 
-      RowBox[{"Cos", "[", "\[Beta]", "]"}]}
-    },
-    GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
-    GridBoxSpacings->{"Columns" -> {
-        Offset[0.27999999999999997`], {
-         Offset[0.7]}, 
-        Offset[0.27999999999999997`]}, "Rows" -> {
-        Offset[0.2], {
-         Offset[0.4]}, 
-        Offset[0.2]}}], "\[NoBreak]", ")"}],
-  Function[BoxForm`e$, 
-   MatrixForm[BoxForm`e$]]]], "Output",
- CellChangeTimes->{{3.915082239900568*^9, 3.9150822512633367`*^9}},
- CellLabel->
-  "Out[213]//MatrixForm=",ExpressionUUID->"2f050340-a5ba-42e2-9348-\
-ba80be1cc5c6"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[{
- RowBox[{
-  RowBox[{"Rx", "[", "\[Gamma]", "]"}], ".", 
-  RowBox[{"Rz", "[", "\[Alpha]", "]"}], ".", 
-  RowBox[{"{", 
-   RowBox[{"1", ",", "0", ",", "0"}], "}"}]}], "\[IndentingNewLine]", 
- RowBox[{
-  RowBox[{"Rx", "[", "\[Gamma]", "]"}], ".", 
-  RowBox[{"Rz", "[", "\[Alpha]", "]"}], ".", 
-  RowBox[{"{", 
-   RowBox[{"0", ",", "1", ",", "0"}], "}"}]}], "\[IndentingNewLine]", 
- RowBox[{
-  RowBox[{"Rx", "[", "\[Gamma]", "]"}], ".", 
-  RowBox[{"Rz", "[", "\[Alpha]", "]"}], ".", 
-  RowBox[{"{", 
-   RowBox[{"0", ",", "0", ",", "1"}], "}"}]}]}], "Input",
- CellChangeTimes->{{3.915082275982237*^9, 3.915082337482986*^9}},
- CellLabel->
-  "In[218]:=",ExpressionUUID->"a3bdbbe4-c1b8-48b4-807d-658ed940a378"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"Cos", "[", "\[Alpha]", "]"}], ",", 
-   RowBox[{
-    RowBox[{"Cos", "[", "\[Gamma]", "]"}], " ", 
-    RowBox[{"Sin", "[", "\[Alpha]", "]"}]}], ",", 
-   RowBox[{
-    RowBox[{"Sin", "[", "\[Alpha]", "]"}], " ", 
-    RowBox[{"Sin", "[", "\[Gamma]", "]"}]}]}], "}"}]], "Output",
- CellChangeTimes->{
-  3.91508228249554*^9, {3.9150823193081245`*^9, 3.915082338190153*^9}},
- CellLabel->
-  "Out[218]=",ExpressionUUID->"91a9c91e-e7f8-41ea-8cdc-4f82dbf17f28"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"-", 
-    RowBox[{"Sin", "[", "\[Alpha]", "]"}]}], ",", 
-   RowBox[{
-    RowBox[{"Cos", "[", "\[Alpha]", "]"}], " ", 
-    RowBox[{"Cos", "[", "\[Gamma]", "]"}]}], ",", 
-   RowBox[{
-    RowBox[{"Cos", "[", "\[Alpha]", "]"}], " ", 
-    RowBox[{"Sin", "[", "\[Gamma]", "]"}]}]}], "}"}]], "Output",
- CellChangeTimes->{
-  3.91508228249554*^9, {3.9150823193081245`*^9, 3.9150823384001904`*^9}},
- CellLabel->
-  "Out[219]=",ExpressionUUID->"8511ef3c-1741-4566-b600-d09d0f2d8de6"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{"0", ",", 
-   RowBox[{"-", 
-    RowBox[{"Sin", "[", "\[Gamma]", "]"}]}], ",", 
-   RowBox[{"Cos", "[", "\[Gamma]", "]"}]}], "}"}]], "Output",
- CellChangeTimes->{
-  3.91508228249554*^9, {3.9150823193081245`*^9, 3.915082338630243*^9}},
- CellLabel->
-  "Out[220]=",ExpressionUUID->"84fd6bec-e92a-454f-bb4a-9f1d680ac6bf"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
@@ -12219,21 +11986,7 @@ Cell[479586, 11204, 4839, 87, 89, "Output",ExpressionUUID->"1d96a367-dabe-45f3-a
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[484462, 11296, 4843, 126, 334, "Input",ExpressionUUID->"ec288aa9-dfa3-4f18-b817-d5e2b71cbf2c"],
-Cell[489308, 11424, 2853, 58, 511, "Output",ExpressionUUID->"23d96e83-d297-4e7a-b4d6-b1b7cb3b03db"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[492198, 11487, 2671, 54, 525, InheritFromParent,ExpressionUUID->"cc5940ca-2937-45ca-9edb-3a2a2461ca11"],
-Cell[494872, 11543, 2692, 55, 491, "Output",ExpressionUUID->"db26544d-1e6c-45b6-862d-f3f064ef17cc"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[497601, 11603, 359, 8, 43, "Input",ExpressionUUID->"2a1d4d7a-ba65-4185-ade2-541d09b42d83"],
-Cell[497963, 11613, 1327, 38, 77, "Output",ExpressionUUID->"2f050340-a5ba-42e2-9348-ba80be1cc5c6"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[499327, 11656, 717, 18, 67, "Input",ExpressionUUID->"a3bdbbe4-c1b8-48b4-807d-658ed940a378"],
-Cell[500047, 11676, 500, 13, 32, "Output",ExpressionUUID->"91a9c91e-e7f8-41ea-8cdc-4f82dbf17f28"],
-Cell[500550, 11691, 522, 14, 32, "Output",ExpressionUUID->"8511ef3c-1741-4566-b600-d09d0f2d8de6"],
-Cell[501075, 11707, 354, 9, 32, "Output",ExpressionUUID->"84fd6bec-e92a-454f-bb4a-9f1d680ac6bf"]
+Cell[489308, 11424, 2865, 59, 491, "Output",ExpressionUUID->"23d96e83-d297-4e7a-b4d6-b1b7cb3b03db"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]

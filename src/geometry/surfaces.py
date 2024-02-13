@@ -1,4 +1,5 @@
 """Surface intersection algorithms"""
+
 from typing import Generator
 
 import numpy as np
@@ -156,12 +157,23 @@ def evaluate_surface_intersection(
 
     indices = find_transitions(sdf_sign)
 
-    intersection_points = [
-        line_plane_intersection(p1, p2, p, n)
-        for p1, p2 in generate_line_segments(xx, yy, zz, indices)
-    ]
+    intersection_points = np.array(
+        [
+            line_plane_intersection(p1, p2, p, n)
+            for p1, p2 in generate_line_segments(xx, yy, zz, indices)
+        ]
+    )
 
-    return SpatialArray(intersection_points)
+    # Calculate the variation for each column (max value - min value)
+    variations = intersection_points.max(axis=0) - intersection_points.min(axis=0)
+
+    # Find the index of the column with the largest variation
+    max_delta_col = np.argmax(variations)
+
+    sorted_idx = intersection_points[:, max_delta_col].argsort()
+
+    # Sort the array based on the values in the identified column
+    return SpatialArray(intersection_points[sorted_idx])
 
 
 def signed_distance_from_plane(
@@ -320,12 +332,12 @@ def project_points_to_plane(
         vec = np.array([-plane_normal[1], plane_normal[0], 0])
     else:
         vec = np.array([0, plane_normal[2], -plane_normal[1]])
-    # First local axis (U)
-    U = np.cross(plane_normal, vec)
-    U = U / np.linalg.norm(U)
     # Second local axis (V)
-    V = np.cross(U, plane_normal)
+    V = vec
     V = V / np.linalg.norm(V)
+    # First local axis (U)
+    U = np.cross(V, plane_normal)
+    U = U / np.linalg.norm(U)
 
     projected_points = []
     for point in points:

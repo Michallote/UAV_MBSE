@@ -1,8 +1,9 @@
 from src.aerodynamics.airfoil import AirfoilFactory
 from src.aerodynamics.data_structures import Aircraft
 from src.geometry.aircraft_geometry import AircraftGeometry
+from src.structures.spar import find_instersection_region  # type: ignore
 from src.structures.structural_model import StructuralModel
-from src.visualization import AircraftPlotter  # type: ignore
+from src.visualization import AircraftPlotter
 
 
 def main():
@@ -15,13 +16,13 @@ def main():
     aircraft_geom.export_curves(
         output_path="data/output", reference_system="SW", units="mm"
     )
-    visualizer = AircraftPlotter.get_plotter(backend="Matplotlib")
+    visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
     visualizer.plot_aircraft(aircraft_geom)
 
-    structural_model = StructuralModel(aircraft_geom, max_rib_spacing=0.15)
-    structural_model.calculate_ribs()
-    input()
+    surface = aircraft_geom.surfaces[0]
+
+    find_instersection_region(surface)
 
 
 if __name__ == "__main__":

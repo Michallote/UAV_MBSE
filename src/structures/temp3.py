@@ -140,9 +140,11 @@ def project_points_to_plane(points, plane_point, plane_normal) -> np.ndarray:
 
 xx, yy = np.meshgrid(x, y)
 zz = np.sin(xx**2) + np.cos(yy**2)
+
 p = np.array([0.43, 0, 0])
 n = np.array([1, 0, 0])
 
+xx, yy, zz = surface.xx, surface.yy, surface.zz
 
 curve_1 = SpatialArray(
     evaluate_surface_intersection(xx[:, :75], yy[:, :75], zz[:, :75], p, n)
@@ -222,7 +224,7 @@ def create_checkerboard_colored_surface(
         y=yy,
         surfacecolor=surface_color,
         colorscale=colorscale,
-        flatshading=True
+        flatshading=True,
         # lighting=dict(
         #     diffuse=0.8, specular=0.3, ambient=0.1, roughness=0.1, fresnel=0.1
         # ),

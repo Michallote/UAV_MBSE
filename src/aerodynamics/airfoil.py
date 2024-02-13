@@ -1,9 +1,11 @@
 """Aerodynamics Module"""
+
 from __future__ import annotations
 
 import copy
 import os
 from functools import cached_property
+from typing import Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -216,7 +218,7 @@ class Airfoil:
         plt.legend([self.name])
 
 
-def slice_shift(x):
+def slice_shift(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Returns the x[i] and x[i+1] arrays for numerical calculations xi, xf
     """
@@ -231,13 +233,13 @@ class AirfoilFactory:
     folder_path = ""
     _cache = {}
 
-    def __new__(cls):
+    def __new__(cls) -> Self:
         if cls._instance is None:
             cls._instance = super(AirfoilFactory, cls).__new__(cls)
             cls._instance.folder_path = None
         return cls._instance
 
-    def set_folder_path(self, path: str):
+    def set_folder_path(self, path: str) -> None:
         """Set the folder path."""
         self.folder_path = path
 

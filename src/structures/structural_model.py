@@ -1,4 +1,5 @@
 """Structural Module for Aircraft Analysis"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,7 +13,6 @@ from src.geometry.aircraft_geometry import (
     GeometricSurface,
 )
 from src.geometry.spatial_array import SpatialArray
-from src.geometry.surfaces import evaluate_surface_intersection, surface_centroid_area
 from src.utils.interpolation import vector_interpolation
 
 
@@ -49,67 +49,6 @@ class StructuralRib:
     def centroid(self) -> SpatialArray:
         """Calculate the centroid of the rib."""
         return self.curve.centroid
-
-
-class StructuralSpar:
-    """
-    Represents a wing spar, defined by its cross-sectional area and centroid.
-    """
-
-    curve = GeometricCurve
-    area: float
-    centroid: SpatialArray
-
-    def __init__(self, curve: GeometricCurve) -> None:
-        self.curve = curve
-        self.area = curve.area
-        self.centroid = curve.centroid
-
-    @staticmethod
-    def from_surface_and_plane(
-        surface: GeometricSurface, p: np.ndarray, n: np.ndarray
-    ) -> StructuralSpar:
-        """Creates a Spar by intersecting a surface with a plane
-        defined by a point in space and a normal vector
-
-        Parameters
-        ----------
-        surface : GeometricSurface
-            Surface delimiting the spar
-        p : np.ndarray
-            Position of a point on the plane
-        n : np.ndarray
-            Normal vector of the plane
-
-        Returns
-        -------
-        StructuralSpar
-            spar from the intersection
-        """
-        xx, yy, zz = surface.xx, surface.yy, surface.zz
-
-        # Splitting the surface by average leading edge index
-        # so it's easy to order into a closed curve
-
-        le_index = round([curve.airfoil.index_le for curve in surface.curves])  # type: ignore
-
-        curve_1 = SpatialArray(
-            evaluate_surface_intersection(
-                xx[:, :le_index], yy[:, :le_index], zz[:, :le_index], p, n
-            )
-        )
-
-        curve_2 = SpatialArray(
-            evaluate_surface_intersection(
-                xx[:, le_index:], yy[:, le_index:], zz[:, le_index:], p, n
-            )
-        )
-
-        data = np.vstack([curve_1, np.flip(curve_2, axis=0)])
-
-        curve = GeometricCurve(name="Spar", data=data)
-
-        return StructuralSpar(curve)
 
 
 class SurfaceCoating:
@@ -194,6 +133,10 @@ class StructuralModel:
         self.ribs = []
         self.spars = []
 
+        self.calculate_ribs()
+
+        self.calculate_spars()
+
     def calculate_ribs(self):
         """Calculate ribs based on the max rib spacing and the aircraft geometry."""
         # Loop through each AeroSurface in the aircraft
@@ -238,14 +181,17 @@ class StructuralModel:
         """Calculate the position and characteristics of wing spars."""
         # Loop through each AeroSurface in the aircraft
         for surface in self.aircraft.surfaces:
-            spar = self._calculate_spar_for_surface(surface)
+            spar = StructuralSpar.from_surface_and_plane(
+                surface, p=np.array([0.43, 0, 0]), n=np.array([1, 0, 0])
+            )
             self.spars.append(spar)
 
-    def _calculate_spar_for_surface(self, surface: GeometricSurface) -> StructuralSpar:
-        """Calculate spar for a single geometric surface."""
-        # Implementation of spar calculation goes here
-        # ...
-        return StructuralSpar(area=0, centroid=SpatialArray([0, 0, 0]))  # Placeholder
+    def calculate_main_spar(self, surface):
+
+        p = np.array([0.43, 0, 0])
+        n = np.array([1, 0, 0])
+
+        StructuralSpar.from_surface_and_plane(surface, p=p, n=n)
 
     def surface_coating(self):
         for surface in self.aircraft.surfaces:
