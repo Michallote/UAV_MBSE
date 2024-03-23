@@ -164,19 +164,26 @@ def aguinaldo(base_salary, startdate, aguinaldo_date, dias_aguinaldo=15):
     return monto
 
 
-base_salary = 48000
-monto_vales, excedente = vales_despensa(1200, p=1.0)  # vales_despensa(2900, p = 1)
+base_salary = 48400
+monto_vales, excedente = vales_despensa(2047, p=1.0)  # vales_despensa(2900, p = 1)
 isr = ISR(base_salary + excedente)
 cuota_IMSS = IMSS(
-    base_salary, prima_vacacional=0.6, dias_vacaciones=12, dias_aguinaldo=30
+    base_salary, prima_vacacional=0.25, dias_vacaciones=18, dias_aguinaldo=15
 )
-fondo = fondo_ahorro(base_salary, p=0.0)
-salario_bruto = base_salary - isr - cuota_IMSS + monto_vales + fondo
+fondo = fondo_ahorro(base_salary, p=0.03)
+bonos_mensuales = 0.0 * base_salary + 500
 
-bonos_mensuales = 0.2 * base_salary
+print(
+    f"{base_salary=}, {isr=:.2f}, {cuota_IMSS=:.2f}, {monto_vales=:.2f}, {fondo=:.2f}, {bonos_mensuales=:.2f}"
+)
+
+salario_neto = base_salary - isr - cuota_IMSS + monto_vales + fondo + bonos_mensuales
+
+print(f"{salario_neto=:.2f}")
+
 
 bono, impuestos_bono = bono_anual_desemp(
-    base_salary, p_bono_desemp=0.08, p_hacienda=0.25, p_medicare=0.0145, p_seguro=0.062
+    base_salary, p_bono_desemp=0.00, p_hacienda=0.25, p_medicare=0.0145, p_seguro=0.062
 )
 
 startdate = datetime.date(year=2023, month=3, day=16)

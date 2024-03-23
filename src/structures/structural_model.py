@@ -13,6 +13,8 @@ from src.geometry.aircraft_geometry import (
     GeometricSurface,
 )
 from src.geometry.spatial_array import SpatialArray
+from src.geometry.surfaces import surface_centroid_area
+from src.structures.spar import StructuralSpar
 from src.utils.interpolation import vector_interpolation
 
 
@@ -134,7 +136,6 @@ class StructuralModel:
         self.spars = []
 
         self.calculate_ribs()
-
         self.calculate_spars()
 
     def calculate_ribs(self):
@@ -154,6 +155,7 @@ class StructuralModel:
         # Number of ribs between sections
         n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / self.max_rib_spacing)
 
+        # Ensures the original positions of the sections are maintained.
         section_ribs = [
             np.linspace(wingspans[i], wingspans[i + 1], int(n + 1))
             for i, n in enumerate(n_ribs)
@@ -194,6 +196,7 @@ class StructuralModel:
         StructuralSpar.from_surface_and_plane(surface, p=p, n=n)
 
     def surface_coating(self):
+
         for surface in self.aircraft.surfaces:
             coating = SurfaceCoating(surface)
 

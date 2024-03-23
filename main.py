@@ -1,8 +1,8 @@
 from src.aerodynamics.airfoil import AirfoilFactory
-from src.aerodynamics.data_structures import Aircraft
+from src.aerodynamics.data_structures import Aircraft, SurfaceType
 from src.geometry.aircraft_geometry import AircraftGeometry
-from src.structures.spar import find_instersection_region  # type: ignore
-from src.structures.structural_model import StructuralModel
+from src.structures.spar import FlatSpar, TorsionBoxSpar
+from src.structures.structural_model import Material, StructuralModel
 from src.visualization import AircraftPlotter
 
 
@@ -20,9 +20,20 @@ def main():
 
     visualizer.plot_aircraft(aircraft_geom)
 
+    balsa = Material()
+
+    structure_config = {
+        SurfaceType.MAINWING: dict(
+            main_spar=TorsionBoxSpar, secondary_spar=FlatSpar, material=balsa
+        )
+    }
+
+    structure = StructuralModel(aircraft_geom)
+
     surface = aircraft_geom.surfaces[0]
 
-    find_instersection_region(surface)
+    optimum = TorsionBoxSpar.find_maximum_moment_of_inertia(surface, thickness=0.0003)
+    print(optimum)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import numpy as np
 
 # Create a sliding window view of size 2
 from numpy.lib.stride_tricks import sliding_window_view
+from shapely.geometry import Polygon
 
 
 class IntersectionRegistry:
@@ -150,7 +151,8 @@ def calculate_intersection_curve(
         return curve2
 
     # Traverse the curves to construct the intersection curve
-    return construct_intersection_curve(curve1, curve2)
+    intersection = construct_intersection_curve(curve1, curve2)
+    return enforce_closed_curve(intersection)
 
 
 def construct_intersection_curve(curve1: np.ndarray, curve2: np.ndarray) -> np.ndarray:
@@ -182,7 +184,6 @@ def construct_intersection_curve(curve1: np.ndarray, curve2: np.ndarray) -> np.n
 
         if current_curve == "a":
             if mask_1[pointer_a]:
-                print(f"curve1 {pointer_a=}")
                 intersection_curve.append(curve1[pointer_a])
                 mask_1[pointer_a] = False
 
@@ -198,7 +199,6 @@ def construct_intersection_curve(curve1: np.ndarray, curve2: np.ndarray) -> np.n
             pointer_a += 1
         else:
             if mask_2[pointer_b % n2]:
-                print(f"curve2 {pointer_b=}")
                 intersection_curve.append(curve2[pointer_b])
                 mask_2[pointer_b] = False
 
@@ -447,6 +447,28 @@ def generate_intersection_registry(
                 intersections_registry.add_intersection(token)
 
     return intersections_registry
+
+
+def offset_curve(points: np.ndarray, distance: float) -> np.ndarray:
+    """
+    Offsets a polygon defined by a numpy array of points by a given distance.
+
+    Args:
+    - points (np.ndarray): A numpy array of shape (n, 2), where n is the number of points,
+                            containing the x and y coordinates of the polygon's vertices.
+    - distance (float): The distance by which to offset the polygon. Positive values
+                        result in a larger polygon, negative values in a smaller one.
+
+    Returns:
+    - Polygon: A new Shapely Polygon object representing the offset polygon.
+    """
+    # Create a Polygon from the numpy array of points
+    original_polygon = Polygon(points)
+
+    # Offset the polygon by the specified distance
+    offset_polygon = original_polygon.buffer(distance)
+
+    return np.array(offset_polygon.envelope.exterior.coords)
 
 
 def legacy_calculate_intersecting_region(

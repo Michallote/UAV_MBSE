@@ -25,6 +25,7 @@ class GeometricCurve:
 
     name: str
     data: np.ndarray
+    airfoil: Airfoil | None
     section: Section | None
 
     def __init__(

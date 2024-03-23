@@ -8,3 +8,4 @@ __pycache__/*
 xflr5_files/*
 *.pyc
 data/propellers/*
+data/materials/*

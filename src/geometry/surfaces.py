@@ -87,7 +87,8 @@ def _calculate_centroid_of_half_surface(xx, yy, zz) -> tuple[np.ndarray, float]:
 def _calculate_area_of_half_surface(
     xx: np.ndarray, yy: np.ndarray, zz: np.ndarray
 ) -> np.ndarray:
-    """Calculates the area of surface triangles (bottom half) and reurns the array of each triangle formed by
+    """Calculates the area of surface triangles (bottom half) and reurns the 
+    array of each triangle formed by
     triangle[0,0] -> (vertex[0,0], vertex[1,0], vertex[0,1])
     area[0,0] -> area(triangle[0,0])
 
@@ -234,7 +235,7 @@ def find_transitions(
             try:
                 u_idx = ((i, j), (i, j + 1))
 
-                if sdf_arr[*u_idx[0]] != sdf_arr[*u_idx[1]]:  # Horizontal change
+                if sdf_arr[i, j] != sdf_arr[i, j + 1]:  # Horizontal change
                     transitions.append(u_idx)
             except (
                 IndexError
@@ -243,7 +244,7 @@ def find_transitions(
             try:
                 v_idx = ((i, j), (i + 1, j))
 
-                if sdf_arr[*v_idx[0]] != sdf_arr[*v_idx[1]]:  # Vertical change
+                if sdf_arr[i, j] != sdf_arr[i + 1, j]:  # Vertical change
                     transitions.append(v_idx)
             except (
                 IndexError
@@ -252,6 +253,37 @@ def find_transitions(
 
     return transitions
 
+def find_transitions_np(sdf_arr: np.ndarray) -> list[LineSegmentIndices]:
+    """
+    Find indices in an array where there is a transition from True to False
+    or from positive to negative.
+
+    Parameters:
+    sdf_arr (np.ndarray): A NumPy array of boolean or numeric values.
+
+    Returns:
+    List[LineSegmentIndices]: Indices of elements where the specified transitions occur.
+    """
+
+    # Convert to boolean array if not already (True for positive, False for non-positive)
+    if sdf_arr.dtype != np.bool_:
+        sdf_arr = sdf_arr > 0
+
+    transitions = []
+
+    # Find horizontal transitions
+    horizontal_changes = sdf_arr[:, :-1] != sdf_arr[:, 1:]
+    h_indices = np.argwhere(horizontal_changes)
+    for i, j in h_indices:
+        transitions.append(((i, j), (i, j + 1)))
+
+    # Find vertical transitions
+    vertical_changes = sdf_arr[:-1, :] != sdf_arr[1:, :]
+    v_indices = np.argwhere(vertical_changes)
+    for i, j in v_indices:
+        transitions.append(((i, j), (i + 1, j)))
+
+    return transitions
 
 def generate_line_segments(
     xx: np.ndarray,
@@ -324,31 +356,59 @@ def project_points_to_plane(
 ) -> np.ndarray:
     """Return a curve in 3D space proyected to a plane using a set of local coordinates"""
     # Normalize the normal vector
-    plane_normal = plane_normal / np.linalg.norm(plane_normal)
+    w = plane_normal / np.linalg.norm(plane_normal)
 
-    # Create local coordinate system on the plane
-    # Find a vector not parallel to plane_normal
-    if not np.isclose(plane_normal[0], 0):
-        vec = np.array([-plane_normal[1], plane_normal[0], 0])
-    else:
-        vec = np.array([0, plane_normal[2], -plane_normal[1]])
-    # Second local axis (V)
-    V = vec
-    V = V / np.linalg.norm(V)
-    # First local axis (U)
-    U = np.cross(V, plane_normal)
-    U = U / np.linalg.norm(U)
+    u, v, w = construct_orthonormal_basis(w)
 
     projected_points = []
     for point in points:
         # Projection of the point onto the plane
         diff = point - plane_point
-        projected_point = point - np.dot(diff, plane_normal) * plane_normal
+        projected_point = point - np.dot(diff, w) * w
 
         # Convert to local coordinates
-        x_local = np.dot(projected_point - plane_point, U)
-        y_local = np.dot(projected_point - plane_point, V)
+        x_local = np.dot(projected_point - plane_point, u)
+        y_local = np.dot(projected_point - plane_point, v)
 
         projected_points.append((x_local, y_local))
 
     return np.array(projected_points)
+
+
+def construct_orthonormal_basis(plane_normal: np.ndarray) -> np.ndarray:
+    """Creates a local coordinate system from a normal vector
+    plane_normal -> [0,0,1] produces u -> [1,0,0] v -> [0,1,0]
+
+    plane_normal -> [1,0,0] produces u -> [0,0,-1] v -> [0,1,0]
+
+
+
+    Parameters
+    ----------
+    plane_normal : np.ndarray
+        Vector normal to a plane where the u, v unit vectors reside
+
+    Returns
+    -------
+    np.ndarray
+        A 3x3 matrix where each row represents one of the 
+        unit vectors (U, V, W) of the local coordinate system.
+    """
+
+    # Normalize the normal vector
+    w = plane_normal / np.linalg.norm(plane_normal)
+
+    # Create local coordinate system on the plane
+    # Find a vector not parallel to plane_normal
+    if not np.isclose(w[0], 0):
+        initial_vector = np.array([-w[1], w[0], 0])
+    else:
+        initial_vector = np.array([0, w[2], -w[1]])
+    # Second local axis (V)
+    v = initial_vector
+    v = v / np.linalg.norm(v)
+    # First local axis (U)
+    u = np.cross(v, w)
+    u = u / np.linalg.norm(u)
+
+    return np.array([u, v, w])
