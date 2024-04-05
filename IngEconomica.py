@@ -10,6 +10,7 @@ import io
 
 import numpy as np
 import pandas as pd
+from sklearn import base
 
 ISR_string = """
            LI           LS      Cuota  tasa_excedente
@@ -33,7 +34,7 @@ lim_sup = list(df_ISR["LS"])
 cuota = list(df_ISR["Cuota"])
 percentage = list(df_ISR["tasa_excedente"])
 
-base_salary = 28874.84
+base_salary = 40000.00
 
 
 def det_niveles(base_salary):
@@ -164,78 +165,227 @@ def aguinaldo(base_salary, startdate, aguinaldo_date, dias_aguinaldo=15):
     return monto
 
 
-base_salary = 48400
-monto_vales, excedente = vales_despensa(2047, p=1.0)  # vales_despensa(2900, p = 1)
-isr = ISR(base_salary + excedente)
-cuota_IMSS = IMSS(
-    base_salary, prima_vacacional=0.25, dias_vacaciones=18, dias_aguinaldo=15
-)
-fondo = fondo_ahorro(base_salary, p=0.03)
-bonos_mensuales = 0.0 * base_salary + 500
+def calcular_salario_integrado(monto_vales: float | None = None, p_vales: float = 0.1):
 
-print(
-    f"{base_salary=}, {isr=:.2f}, {cuota_IMSS=:.2f}, {monto_vales=:.2f}, {fondo=:.2f}, {bonos_mensuales=:.2f}"
-)
+    base_salary = 40000
+    bono_puntualidad = bono_asistencia = 0.1
+    monto_teletrabajo = 133
+    dias_aguinaldo = 15
+    prima_vacacional = 0.25
+    dias_vacaciones = 18
+    p_bono_desemp = 0.08
+    monto_vales = 2047.0
 
-salario_neto = base_salary - isr - cuota_IMSS + monto_vales + fondo + bonos_mensuales
+    if monto_vales is None:
+        monto_vales, excedente = vales_despensa(base_salary, p=p_vales)
 
-print(f"{salario_neto=:.2f}")
-
-
-bono, impuestos_bono = bono_anual_desemp(
-    base_salary, p_bono_desemp=0.00, p_hacienda=0.25, p_medicare=0.0145, p_seguro=0.062
-)
-
-startdate = datetime.date(year=2023, month=3, day=16)
-aguinaldo_date = datetime.date(year=2024, month=12, day=16)
-
-monto_aguinaldo = aguinaldo(base_salary, startdate, aguinaldo_date, dias_aguinaldo=30)
-
-prima_vacacional = 0.6
-dias_vacaciones = 12
-
-monto_vacaciones = dias_vacaciones * prima_vacacional * base_salary / 30
-
-salario_total_anual_GE = (
-    salario_bruto * 12 + bono - impuestos_bono + monto_aguinaldo + monto_vacaciones
-)
-
-
-base_salary = 30000
-salario_bruto = 0
-while salario_bruto < 48200:
-    base_salary += 5
-    monto_vales, excedente = vales_despensa(1200, p=1.0)  # vales_despensa(2900, p = 1)
     isr = ISR(base_salary + excedente)
     cuota_IMSS = IMSS(
-        base_salary, prima_vacacional=0.25, dias_vacaciones=12 + 4, dias_aguinaldo=15
+        base_salary,
+        prima_vacacional=prima_vacacional,
+        dias_vacaciones=dias_vacaciones,
+        dias_aguinaldo=dias_aguinaldo,
     )
-    fondo = fondo_ahorro(base_salary, p=0)
-
-    salario_bruto = (
-        base_salary
-        - isr
-        - cuota_IMSS
-        + monto_vales
-        + fondo
-        + 0.1 * base_salary
-        + 0.1 * base_salary
+    fondo = fondo_ahorro(base_salary, p=0.03)
+    bonos_mensuales = (
+        bono_puntualidad * base_salary
+        + bono_asistencia * base_salary
+        + monto_teletrabajo
     )
 
+    print(
+        f"{base_salary=}, {isr=:.2f}, {cuota_IMSS=:.2f}, {monto_vales=:.2f}, {fondo=:.2f}, {bonos_mensuales=:.2f}"
+    )
 
-startdate = datetime.date(year=2024, month=3, day=1)
-aguinaldo_date = datetime.date(year=2024, month=12, day=16)
+    salario_neto_mensual = (
+        base_salary - isr - cuota_IMSS + monto_vales - fondo + bonos_mensuales
+    )
 
-monto_aguinaldo = aguinaldo(base_salary, startdate, aguinaldo_date, dias_aguinaldo=15)
+    print(f"{salario_neto_mensual=:.2f}")
 
-prima_vacacional = 0.25
-dias_vacaciones = 12
+    salario_anual_integrado = (salario_neto_mensual + 2 * fondo) * 12
 
-monto_vacaciones = dias_vacaciones * prima_vacacional * base_salary / 30
+    bono_anual, impuestos_bono = bono_anual_desemp(
+        base_salary,
+        p_bono_desemp=p_bono_desemp,
+    )
 
-salario_total_anual_ILSP = salario_bruto * 12 + monto_aguinaldo + monto_vacaciones
+    salario_anual_integrado += bono_anual - impuestos_bono
 
-salario_total_anual_ILSP / salario_total_anual_GE
+    startdate = datetime.date(year=2023, month=3, day=16)
+    aguinaldo_date = datetime.date(year=2024, month=12, day=16)
+
+    monto_aguinaldo = aguinaldo(
+        base_salary, startdate, aguinaldo_date, dias_aguinaldo=dias_aguinaldo
+    )
+    monto_vacaciones = dias_vacaciones * prima_vacacional * base_salary / 30
+
+    salario_anual_integrado += monto_aguinaldo + monto_vacaciones
+
+
+def calcular_salario_integrado(
+    base_salary: float,
+    bono_puntualidad: float = 0.0,
+    bono_asistencia: float = 0.0,
+    monto_teletrabajo: float = 0.0,
+    dias_aguinaldo: int = 15,
+    prima_vacacional: float = 0.25,
+    dias_vacaciones: int = 12,
+    p_bono_desemp: float = 0.0,
+    p_fondo: float = 0.00,
+    monto_vales: float | None = None,
+    p_vales: float = 0.0,
+    extra_mensuales: float = 0.0,
+    extra_anuales: float = 0.0,
+):
+
+    if monto_vales is None:
+        monto_vales, excedente = vales_despensa(base_salary, p=p_vales)
+    else:
+        excedente = 0
+
+    isr = ISR(base_salary + excedente)
+    cuota_IMSS = IMSS(
+        base_salary,
+        prima_vacacional=prima_vacacional,
+        dias_vacaciones=dias_vacaciones,
+        dias_aguinaldo=dias_aguinaldo,
+    )
+    fondo = fondo_ahorro(base_salary, p=p_fondo)
+    bonos_mensuales = (
+        bono_puntualidad * base_salary
+        + bono_asistencia * base_salary
+        + monto_teletrabajo
+        + extra_mensuales
+    )
+
+    print(
+        f"{base_salary=}, {isr=:.2f}, {cuota_IMSS=:.2f}, {monto_vales=:.2f}, {fondo=:.2f}, {bonos_mensuales=:.2f}"
+    )
+
+    salario_neto_mensual = (
+        base_salary - isr - cuota_IMSS + monto_vales - fondo + bonos_mensuales
+    )
+
+    print(f"{salario_neto_mensual=:.2f}")
+
+    salario_anual_integrado = (salario_neto_mensual + 2 * fondo) * 12
+
+    bono_anual, impuestos_bono = bono_anual_desemp(
+        base_salary,
+        p_bono_desemp=p_bono_desemp,
+    )
+
+    salario_anual_integrado += bono_anual - impuestos_bono
+
+    startdate = datetime.date(year=2023, month=3, day=16)
+    aguinaldo_date = datetime.date(year=2024, month=12, day=16)
+
+    monto_aguinaldo = aguinaldo(
+        base_salary, startdate, aguinaldo_date, dias_aguinaldo=dias_aguinaldo
+    )
+    monto_vacaciones = dias_vacaciones * prima_vacacional * base_salary / 30
+
+    salario_anual_integrado += monto_aguinaldo + monto_vacaciones + extra_anuales
+
+    print(
+        f"{monto_aguinaldo=:.2f}, {monto_vacaciones=:.2f}, {bono_anual=:.2f}, {impuestos_bono=:.2f}, {extra_anuales=:.2f}"
+    )
+
+    salario_mensual_integrado = salario_anual_integrado / 12
+
+    print(f"{salario_anual_integrado=:.2f}")
+    print(f"{salario_mensual_integrado=:.2f}")
+
+
+bluetab_prestaciones = dict(
+    base_salary=40000,
+    bono_puntualidad=0.1,
+    bono_asistencia=0.1,
+    monto_teletrabajo=133,
+    dias_aguinaldo=15,
+    prima_vacacional=0.25,
+    dias_vacaciones=18,
+    p_bono_desemp=0.08,
+    monto_vales=2047.0,
+    p_fondo=0.03,
+)
+
+scotiabank_prestaciones = dict(
+    base_salary=37000,
+    bono_puntualidad=0.0,
+    bono_asistencia=0.0,
+    monto_teletrabajo=0.0,
+    dias_aguinaldo=30,
+    prima_vacacional=0.5,
+    dias_vacaciones=20,
+    p_bono_desemp=0.1,
+    monto_vales=3302.00,
+    p_fondo=0.00,
+    extra_anuales=18989,  # Su cosa rara del IMSS.
+)
+
+ILSP_prestaciones = dict(base_salary=44810, bono_puntualidad=0.1, bono_asistencia=0.1)
+
+
+GE_prestaciones = dict(
+    base_salary=28874.84,
+    dias_aguinaldo=30,
+    dias_vacaciones=12,
+    prima_vacacional=0.6,
+    p_vales=0.1,
+    p_fondo=0.13,
+)
+
+calcular_salario_integrado(**GE_prestaciones)
+calcular_salario_integrado(**ILSP_prestaciones)
+calcular_salario_integrado(**bluetab_prestaciones)
+calcular_salario_integrado(**scotiabank_prestaciones)
+
+
+def calcular_salario_base_desde_neto(
+    neto_objetivo=45000,
+    base_salary=30000,
+    prima_vacacional=0.25,
+    dias_vacaciones=12,
+    dias_aguinaldo=15,
+    bono_puntualidad=0.0,
+    bono_asistencia=0.0,
+    monto_vales: float | None = None,
+    p_vales: float = 0.0,
+):
+    salario_neto = 0
+    while salario_neto < neto_objetivo:
+        base_salary += 5
+
+        if monto_vales is None:
+            monto_vales, excedente = vales_despensa(
+                base_salary, p=p_vales
+            )  # vales_despensa(2900, p = 1)
+        else:
+            excedente = 0
+
+        isr = ISR(base_salary + excedente)
+        cuota_IMSS = IMSS(
+            base_salary,
+            prima_vacacional=prima_vacacional,
+            dias_vacaciones=dias_vacaciones,
+            dias_aguinaldo=dias_aguinaldo,
+        )
+        fondo = fondo_ahorro(base_salary, p=0)
+
+        salario_neto = (
+            base_salary
+            - isr
+            - cuota_IMSS
+            + monto_vales
+            + fondo
+            + bono_puntualidad * base_salary
+            + bono_asistencia * base_salary
+        )
+
+    return salario_neto
+
 
 # %% Impuestos Marzo por bono
 

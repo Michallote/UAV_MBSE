@@ -2,7 +2,10 @@ from src.utils.xml_parser import is_float, parse_type, parse_xml_file
 
 
 def test_is_float_cases():
-    """Test is_float functionality"""
+    """_summary_
+    Test is_float functionality
+
+    """
 
     assert is_float("160") is True
     assert is_float("165.5") is True
@@ -16,8 +19,7 @@ def test_parse_type():
     assert parse_type("false") is False
     assert isinstance(parse_type("160.5"), float)
     assert isinstance(parse_type("160"), float)
-    assert parse_type('      0.193,           0,           0') == [0.193, 0, 0]
+    assert parse_type("      0.193,           0,           0") == [0.193, 0, 0]
 
 
-
-parse_xml_file('data/xml/test_sample.xml')
+parse_xml_file("data/xml/test_sample.xml")
