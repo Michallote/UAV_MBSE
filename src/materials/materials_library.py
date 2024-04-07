@@ -214,21 +214,24 @@ class MaterialLibrary:
             cls._instance = super(MaterialLibrary, cls).__new__(cls)
         return cls._instance
 
-    def load_materials(self, xml_path: str):
+    @classmethod
+    def load_materials(cls, xml_path: str):
         """Loads materials from the XML file and populates the library."""
         materials_xml = parse_xml_file(xml_path)
         properties_map = extract_material_properties(materials_xml)
-        property_id = self._extract_property_id(materials_xml)
-        parameter_id = self._extract_parameter_id(materials_xml, properties_map)
-        self._populate_materials(
+        property_id = cls._extract_property_id(materials_xml)
+        parameter_id = cls._extract_parameter_id(materials_xml, properties_map)
+
+        cls._populate_materials(
             materials_xml["Materials"]["MatML_Doc"]["Material"],
             property_id,
             parameter_id,
         )
 
-        return self
+        return cls
 
-    def _extract_property_id(self, materials_xml: dict) -> Dict[str, str]:
+    @staticmethod
+    def _extract_property_id(materials_xml: dict) -> Dict[str, str]:
         """Extracts property ID to name mapping."""
         return {
             pr["@attributes"]["id"]: pr["Name"]
@@ -237,8 +240,9 @@ class MaterialLibrary:
             ]
         }
 
+    @staticmethod
     def _extract_parameter_id(
-        self, materials_xml: dict, properties_map: dict
+        materials_xml: dict, properties_map: dict
     ) -> Dict[str, PhysicalProperty]:
         """Extracts parameter ID to PhysicalProperty mapping."""
         return {
@@ -251,19 +255,35 @@ class MaterialLibrary:
             ]
         }
 
-    def _populate_materials(
-        self, materials_data: List[dict], property_id, parameter_id
-    ):
+    @classmethod
+    def _populate_materials(cls, materials_data: List[dict], property_id, parameter_id):
         """Populates the library with Material objects from XML data."""
         for material_data in materials_data:
             name = material_data["BulkDetails"]["Name"]
             properties = material_data["BulkDetails"]["PropertyData"]
-            attributes = dict(parse_properties(properties, property_id, parameter_id))
-            self._materials[name.casefold()] = Material(name, attributes)
+            attributes = dict(parse_properties(properties, property_id, parameter_id))  # type: ignore
+            cls._materials[name.casefold()] = Material(name, attributes)
+
+    def add_material(self, name, attributes):
+        self._materials[name.casefold()] = Material(name, attributes)
+
+    @classmethod
+    def get_material(cls, material_name: str):
+        """Retrieve a material by name, acting similarly to __call__ for the class."""
+        if not cls._materials:
+            raise ValueError(
+                "Material library is empty. Ensure materials are loaded before accessing."
+            )
+        try:
+            instance = cls()
+            return instance[material_name]
+        except KeyError:
+            raise KeyError(f"Material '{material_name}' not found in the library.")
 
     def __getitem__(self, material_name: str) -> Material:
         """Allows access to materials by name."""
         return self._materials[material_name.casefold()]
 
     def __repr__(self) -> str:
-        return f"MaterialLibrary({', '.join(self._materials.keys())})"
+        materials_str = map(lambda x: f'"{x}"', self._materials.keys())
+        return f"MaterialLibrary({', '.join(materials_str)})"

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from ctypes import pointer
+from typing import Any
 
 import numpy as np
 
@@ -18,7 +19,7 @@ from src.geometry.surfaces import (
     evaluate_surface_intersection,
     project_points_to_plane,
 )
-from src.structures.structural_model import Material
+from src.materials import Material
 from src.utils.intersection import (
     calculate_intersection_curve,
     enforce_closed_curve,
@@ -49,7 +50,14 @@ class StructuralSpar:
         self.surface = surface
         self._strategy = strategy
         self.material = material
+
+    def _create_main_spar(self, surface, thickness, **kwargs):
+        strategy = self._strategy
         self.spar = strategy.create_main_spar(surface, thickness, **kwargs)
+
+    def _create_spar(self, surface, thickness, **kwargs):
+        strategy = self._strategy
+        self.spar = strategy.create_spar(surface, thickness, **kwargs)
 
     @property
     def mass(self) -> PointMass:
@@ -63,13 +71,49 @@ class StructuralSpar:
         """Centroid of the spar"""
         return self.spar.centroid
 
+    @staticmethod
+    def create_main_spar(
+        surface: GeometricSurface,
+        strategy: SparStrategy,
+        material: Material,
+        thickness: float,
+        **kwargs,
+    ) -> StructuralSpar:
+        instance = StructuralSpar(surface, strategy, material, thickness)
+        instance._create_main_spar(surface, thickness, **kwargs)
+        return instance
+
+    @staticmethod
+    def create_spar(
+        surface: GeometricSurface,
+        strategy: SparStrategy,
+        material: Material,
+        thickness: float,
+        **kwargs,
+    ) -> StructuralSpar:
+        instance = StructuralSpar(surface, strategy, material, thickness)
+        instance._create_spar(surface, thickness, **kwargs)
+        return instance
+
 
 class SparStrategy(ABC):
     """Represents different spar construction methods"""
 
+    @abstractmethod
+    def __init__():
+        """Initializes the geometry implementation"""
+
     @staticmethod
     @abstractmethod
     def create_main_spar(surface: GeometricSurface, thickness: float) -> SparStrategy:
+        """Creates a main spar choosing the optimal position for that type of spar.
+        Usually by maximizing and objective function."""
+
+    @staticmethod
+    @abstractmethod
+    def create_spar(
+        surface: GeometricSurface, thickness: float, **kwargs
+    ) -> SparStrategy:
         """Creates a main spar choosing the optimal position for that type of spar.
         Usually by maximizing and objective function."""
 
@@ -90,6 +134,29 @@ class FlatSpar(SparStrategy):
     def __init__(self, curve: GeometricCurve, thickness: float) -> None:
         self.curve = curve
         self.thickness = thickness
+
+    @staticmethod
+    def create_spar(
+        surface: GeometricSurface, thickness: float, p: np.ndarray, n: np.ndarray
+    ) -> FlatSpar:
+        """Creates the main spar by optimizing th position of the spar as to maximize surface area
+
+        Parameters
+        ----------
+        surface : GeometricSurface
+            _description_
+
+        Returns
+        -------
+        GeometricCurve
+            _description_
+        """
+        x_optimum = FlatSpar.find_maximum_area(surface)
+        p = np.array([x_optimum, 0, 0])
+        n = np.array([1, 0, 0])
+        curve = FlatSpar.curve_from_surface_and_plane(surface, p, n)
+
+        return FlatSpar(curve=curve, thickness=thickness)
 
     @staticmethod
     def create_main_spar(surface: GeometricSurface, thickness: float) -> FlatSpar:
@@ -133,7 +200,7 @@ class FlatSpar(SparStrategy):
         # Initial guess for x
         initial_guess = np.array([min_x + max_x]) / 2
 
-        def calculate_area(x: float, surface) -> float:
+        def calculate_area(x: np.ndarray[float, Any], surface) -> float:
             """
             Helper function to calculate the negative area for a given x to facilitate maximization.
 
