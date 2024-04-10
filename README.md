@@ -11,3 +11,24 @@ This app parses XML aircraft exported from XFLR5 and turns the definitions into 
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
         },
+
+
+
+keybindings.json
+
+    {
+        "key": "ctrl+l",
+        "command": "settings.cycle",
+        "when": "editorTextFocus",
+        "args": {
+            "id": "relativeLineNumbers",
+            "values": [
+                {
+                    "editor.lineNumbers": "on"
+                },
+                {
+                    "editor.lineNumbers": "relative"
+                }
+            ]
+        }
+    }
