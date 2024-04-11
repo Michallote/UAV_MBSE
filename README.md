@@ -32,3 +32,28 @@ keybindings.json
             ]
         }
     }
+
+
+pickler
+
+import pickle
+
+def save_to_pkl(input_file_path, output_pkl_path):
+    try:
+        # Read the binary file
+        with open(input_file_path, 'rb') as file:
+            binary_data = file.read()
+        
+        # Serialize and save the binary data to a .pkl file
+        with open(output_pkl_path, 'wb') as pkl_file:
+            pickle.dump(binary_data, pkl_file)
+        
+        print(f"Data from {input_file_path} has been saved to {output_pkl_path}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Example usage
+input_file_path = 'example_input.bin'  # Path to your input binary file
+output_pkl_path = 'output_data.pkl'    # Path to save the .pkl file
+save_to_pkl(input_file_path, output_pkl_path)
+
