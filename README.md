@@ -83,3 +83,6 @@ output_file_path = 'restored_output.bin'  # Path for saving the restored file
 restore_from_pkl(input_pkl_path, output_file_path)
 
 ```
+
+![image](https://github.com/Michallote/UAV_MBSE/assets/74160122/f8bfe71c-973f-40be-8651-1411cfbb8c59)
+
