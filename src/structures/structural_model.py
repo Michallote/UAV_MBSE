@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import chain
 
 import numpy as np
 
+from src.aerodynamics.data_structures import PointMass
 from src.geometry.aircraft_geometry import (
     AircraftGeometry,
     GeometricCurve,
@@ -45,6 +47,17 @@ class StructuralRib:
     def centroid(self) -> SpatialArray:
         """Calculate the centroid of the rib."""
         return self.curve.centroid
+
+    @property
+    def mass(self) -> PointMass:
+        """Returns the computed mass of the rib.
+        Returns: float, units: kg
+        """
+        return PointMass(
+            self.area * self.thickness * self.material.density,
+            coordinates=self.centroid,
+            tag="Rib",
+        )
 
 
 class SurfaceCoating:
@@ -101,11 +114,15 @@ class SurfaceCoating:
         return area
 
     @property
-    def mass(self) -> float:
+    def mass(self) -> PointMass:
         """Returns the computed mass of the coating.
         Returns: float, units: kg
         """
-        return self.area * self.thickness * self.material.density
+        return PointMass(
+            self.area * self.thickness * self.material.density,
+            coordinates=self.centroid,
+            tag="SurfaceCoating",
+        )
 
 
 class SurfaceStructure:
@@ -118,29 +135,35 @@ class SurfaceStructure:
         self.coatings = []
         self.config = config
 
-    def initialize_structure(self, config):
+    def initialize_structure(self):
         """Initializes the structure based on the configuration dictionary."""
+
+        config = self.config
         # Initialize the main spar
-        main_spar_config = config.get('main_spar')
+        main_spar_config = config.get("main_spar")
         if main_spar_config:
-            self.add_spar(StructuralSpar.create_main_spar(**main_spar_config))
+            self.add_spar(
+                StructuralSpar.create_main_spar(self.surface, **main_spar_config)
+            )
 
         # Initialize the secondary spar
-        secondary_spar_config = config.get('secondary_spar')
+        secondary_spar_config = config.get("secondary_spar")
         if secondary_spar_config:
-            self.add_spar(StructuralSpar(**secondary_spar_config))
+            self.add_spar(
+                StructuralSpar.create_spar(self.surface, **secondary_spar_config)
+            )
 
         # Calculate and add ribs
-        rib_config = config.get('ribs')
+        rib_config = config.get("ribs")
         if rib_config:
             calculated_ribs = self.calculate_ribs(self.surface, **rib_config)
             for rib in calculated_ribs:
                 self.add_rib(rib)
 
         # Initialize the surface coating
-        coating_config = config.get('surface_coating')
+        coating_config = config.get("surface_coating")
         if coating_config:
-            self.add_coating(SurfaceCoating(**coating_config))
+            self.add_coating(SurfaceCoating(self.surface, **coating_config))
 
     def add_spar(self, spar: StructuralSpar):
         self.spars.append(spar)
@@ -151,10 +174,11 @@ class SurfaceStructure:
     def add_coating(self, coating: SurfaceCoating):
         self.coatings.append(coating)
 
+    @staticmethod
     def calculate_ribs(
-        self,
         surface: GeometricSurface,
-        max_rib_spacing: float,
+        material: Material,
+        max_spacing: float,
         thickness: float = 3 / 16 * 2.54 / 100,
     ) -> list[StructuralRib]:
         """Calculate ribs for a single geometric surface."""
@@ -162,7 +186,7 @@ class SurfaceStructure:
         # Implementation of rib calculation and interpolation goes here
         wingspans = surface.wingspans
         # Number of ribs between sections
-        n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / max_rib_spacing)
+        n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / max_spacing)
 
         # Ensures the original positions of the sections are maintained.
         section_ribs = [
@@ -175,20 +199,46 @@ class SurfaceStructure:
         section_curves = np.array([curve.data for curve in surface.curves])
 
         ribs_geometry = vector_interpolation(rib_positions, wingspans, section_curves)
-        balsa = MaterialLibrary()["balsa"]
 
         for i, curve in enumerate(ribs_geometry):
             name = f"{surface.surface_type.name[0]}_rib_{i}"
             rib = StructuralRib(
                 curve=GeometricCurve(name=name, data=curve),
                 thickness=thickness,
-                material=balsa,
+                material=material,
             )
             ribs.append(rib)
 
         return ribs
 
-    def calculate_spar():
+    def collect_masses(self):  # -> Generator[PointMass, None, None]:
+        return (item.mass for item in chain(self.spars, self.ribs, self.coatings))
+
+    @property
+    def mass(self) -> PointMass:
+        """_summary_
+
+        Returns
+        -------
+        PointMass
+            _description_
+        """
+
+        weighted_coordinates = np.array(
+            [
+                point_mass.mass * point_mass.coordinates
+                for point_mass in self.collect_masses()
+            ]
+        )
+
+        weighted_coordinates = np.sum(weighted_coordinates, axis=0)
+
+        total_mass = sum(point_mass.mass for point_mass in self.collect_masses())
+
+        coordinates = weighted_coordinates / total_mass
+
+        return PointMass(total_mass, SpatialArray(coordinates), tag=self.surface.name)
+
 
 class StructuralModel:
     """
@@ -196,85 +246,84 @@ class StructuralModel:
     """
 
     aircraft: AircraftGeometry
-    max_rib_spacing: float  # in metres
-    ribs: list[StructuralRib]
-    spars: list[StructuralSpar]
 
     def __init__(
         self,
         aircraft: AircraftGeometry,
-        max_rib_spacing: float,
-        rib_thickness: float,
+        configuration: dict,
     ) -> None:
         self.aircraft = aircraft
-        self.max_rib_spacing = max_rib_spacing
-        self.ribs = []
-        self.spars = []
+        self.configuration = configuration
+        self.structures = []
+        self.ext_spars = []
 
-        self.calculate_ribs()
-        self.calculate_spars()
+        for surface in aircraft.surfaces:
+            surface_type = surface.surface_type
+            struct = SurfaceStructure(surface, configuration[surface_type])
+            struct.initialize_structure()
+            self.structures.append(struct)
 
-    def calculate_ribs(self):
-        """Calculate ribs based on the max rib spacing and the aircraft geometry."""
-        # Loop through each AeroSurface in the aircraft
-        for surface in self.aircraft.surfaces:
-            ribs = self._calculate_ribs_for_surface(surface)
-            self.ribs.extend(ribs)
+    # def calculate_ribs(self):
+    #     """Calculate ribs based on the max rib spacing and the aircraft geometry."""
+    #     # Loop through each AeroSurface in the aircraft
+    #     for surface in self.aircraft.surfaces:
+    #         ribs = self._calculate_ribs_for_surface(surface)
+    #         self.ribs.extend(ribs)
 
-    def _calculate_ribs_for_surface(
-        self, surface: GeometricSurface
-    ) -> list[StructuralRib]:
-        """Calculate ribs for a single geometric surface."""
-        ribs = []
-        # Implementation of rib calculation and interpolation goes here
-        wingspans = surface.wingspans
-        # Number of ribs between sections
-        n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / self.max_rib_spacing)
+    # def _calculate_ribs_for_surface(
+    #     self, surface: GeometricSurface
+    # ) -> list[StructuralRib]:
+    #     """Calculate ribs for a single geometric surface."""
+    #     ribs = []
+    #     # Implementation of rib calculation and interpolation goes here
+    #     wingspans = surface.wingspans
+    #     # Number of ribs between sections
+    #     n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / self.max_rib_spacing)
 
-        # Ensures the original positions of the sections are maintained.
-        section_ribs = [
-            np.linspace(wingspans[i], wingspans[i + 1], int(n + 1))
-            for i, n in enumerate(n_ribs)
-        ]
+    #     # Ensures the original positions of the sections are maintained.
+    #     section_ribs = [
+    #         np.linspace(wingspans[i], wingspans[i + 1], int(n + 1))
+    #         for i, n in enumerate(n_ribs)
+    #     ]
 
-        rib_positions = np.unique(np.concatenate(section_ribs))
+    #     rib_positions = np.unique(np.concatenate(section_ribs))
 
-        section_curves = np.array([curve.data for curve in surface.curves])
+    #     section_curves = np.array([curve.data for curve in surface.curves])
 
-        ribs_geometry = vector_interpolation(rib_positions, wingspans, section_curves)
-        balsa = MaterialLibrary()["balsa"]
+    #     ribs_geometry = vector_interpolation(rib_positions, wingspans, section_curves)
+    #     balsa = MaterialLibrary()["balsa"]
 
-        for i, curve in enumerate(ribs_geometry):
-            name = f"{surface.surface_type.name[0]}_rib_{i}"
-            rib = StructuralRib(
-                curve=GeometricCurve(name=name, data=curve),
-                thickness=3 / 16 * 2.54 / 100,
-                material=balsa,
-            )
-            ribs.append(rib)
+    #     for i, curve in enumerate(ribs_geometry):
+    #         name = f"{surface.surface_type.name[0]}_rib_{i}"
+    #         rib = StructuralRib(
+    #             curve=GeometricCurve(name=name, data=curve),
+    #             thickness=3 / 16 * 2.54 / 100,
+    #             material=balsa,
+    #         )
+    #         ribs.append(rib)
 
-        return ribs
+    #     return ribs
 
-    def calculate_spars(self):
-        """Calculate the position and characteristics of wing spars."""
-        # Loop through each AeroSurface in the aircraft
-        for surface in self.aircraft.surfaces:
-            spar = StructuralSpar.from_surface_and_plane(
-                surface, p=np.array([0.43, 0, 0]), n=np.array([1, 0, 0])
-            )
-            self.spars.append(spar)
+    # def calculate_spars(self):
+    #     """Calculate the position and characteristics of wing spars."""
+    #     # Loop through each AeroSurface in the aircraft
+    #     for surface in self.aircraft.surfaces:
+    #         spar = StructuralSpar.from_surface_and_plane(
+    #             surface, p=np.array([0.43, 0, 0]), n=np.array([1, 0, 0])
+    #         )
+    #         self.spars.append(spar)
 
-    def calculate_main_spar(self, surface):
+    # def calculate_main_spar(self, surface):
 
-        p = np.array([0.43, 0, 0])
-        n = np.array([1, 0, 0])
+    #     p = np.array([0.43, 0, 0])
+    #     n = np.array([1, 0, 0])
 
-        StructuralSpar.from_surface_and_plane(surface, p=p, n=n)
+    #     StructuralSpar.from_surface_and_plane(surface, p=p, n=n)
 
-    def surface_coating(self):
+    # def surface_coating(self):
 
-        for surface in self.aircraft.surfaces:
-            coating = SurfaceCoating(surface)
+    #     for surface in self.aircraft.surfaces:
+    #         coating = SurfaceCoating(surface)
 
 
 if __name__ == "__main__":

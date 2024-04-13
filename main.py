@@ -16,7 +16,7 @@ def main():
 
     aircraft_geom = AircraftGeometry(aircraft)
     aircraft_geom.export_curves(
-        output_path="data/output", reference_system="SW", units="mm"
+        output_path="data/output", ext="sldcrv", reference_system="SW", units="mm"
     )
     visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
@@ -27,7 +27,19 @@ def main():
     triplay = materials["triplay"]
     monokote = materials["monokote"]
 
-    flat_spar_balsa = {"strategy": FlatSpar, "material": balsa, "thickness": 0.003175}
+    main_flat_spar_balsa = {
+        "strategy": FlatSpar,
+        "material": balsa,
+        "thickness": 0.003175,
+    }
+
+    secondary_flat_spar_balsa = {
+        "strategy": FlatSpar,
+        "material": balsa,
+        "thickness": 0.003175,
+        "chord_position": 0.75,
+    }
+
     main_spar_triplay = {
         "strategy": TorsionBoxSpar,
         "material": triplay,
@@ -39,30 +51,25 @@ def main():
     structure_config = {
         SurfaceType.MAINWING: dict(
             main_spar=main_spar_triplay,
-            secondary_spar=flat_spar_balsa,
+            secondary_spar=secondary_flat_spar_balsa,
             ribs=rib_config,
             surface_coating=coating_config,
         ),
         SurfaceType.ELEVATOR: dict(
-            main_spar=flat_spar_balsa,
-            secondary_spar=flat_spar_balsa,
+            main_spar=main_flat_spar_balsa,
+            secondary_spar=secondary_flat_spar_balsa,
             ribs=rib_config,
             surface_coating=coating_config,
         ),
         SurfaceType.FIN: dict(
-            main_spar=flat_spar_balsa,
-            secondary_spar=flat_spar_balsa,
+            main_spar=main_flat_spar_balsa,
+            secondary_spar=secondary_flat_spar_balsa,
             ribs=rib_config,
             surface_coating=coating_config,
         ),
     }
 
-    structure = StructuralModel(aircraft_geom)
-
-    surface = aircraft_geom.surfaces[0]
-
-    optimum = TorsionBoxSpar.find_maximum_moment_of_inertia(surface, thickness=0.0003)
-    print(optimum)
+    structure = StructuralModel(aircraft_geom, structure_config)
 
 
 if __name__ == "__main__":

@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from ctypes import pointer
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -137,7 +136,11 @@ class FlatSpar(SparStrategy):
 
     @staticmethod
     def create_spar(
-        surface: GeometricSurface, thickness: float, p: np.ndarray, n: np.ndarray
+        surface: GeometricSurface,
+        thickness: float,
+        p: Optional[np.ndarray] = None,
+        n: np.ndarray = np.array([1, 0, 0]),
+        chord_position: Optional[float] = 0.75,
     ) -> FlatSpar:
         """Creates the main spar by optimizing th position of the spar as to maximize surface area
 
@@ -151,11 +154,12 @@ class FlatSpar(SparStrategy):
         GeometricCurve
             _description_
         """
-        x_optimum = FlatSpar.find_maximum_area(surface)
-        p = np.array([x_optimum, 0, 0])
-        n = np.array([1, 0, 0])
-        curve = FlatSpar.curve_from_surface_and_plane(surface, p, n)
+        if chord_position is not None:
+            root = surface.curves[0]
+            chord = root.trailing_edge - root.leading_edge
+            p = root.leading_edge + chord_position * chord
 
+        curve = FlatSpar.curve_from_surface_and_plane(surface, p, n)
         return FlatSpar(curve=curve, thickness=thickness)
 
     @staticmethod
@@ -306,6 +310,45 @@ class TorsionBoxSpar(SparStrategy):
 
         inner_contour = offset_curve(contour.data, -thickness)
         self.inner_contour = GeometricCurve(name="Inner Contour", data=inner_contour)
+
+    @staticmethod
+    def create_spar(
+        surface: GeometricSurface,
+        thickness: float,
+        p: np.ndarray,
+        n: np.ndarray,
+        width: float,
+        height: float,
+        length: float,
+    ) -> TorsionBoxSpar:
+        """Creates the main spar by optimizing th position of the spar as to maximize surface area
+
+        Parameters
+        ----------
+        surface : GeometricSurface
+            _description_
+
+        Returns
+        -------
+        GeometricCurve
+            _description_
+        """
+
+        x, y = project_points_to_plane(np.c_[*p], p, n).flatten()
+
+        orthonormal_basis = construct_orthonormal_basis(n)
+
+        box_contour = np.array(
+            [[x, y], [x + width, y], [x + width, y + height], [x, y + height]]
+        )
+
+        return TorsionBoxSpar(
+            box_contour,
+            thickness,
+            origin=SpatialArray(p),
+            basis=orthonormal_basis,
+            length=length,
+        )
 
     @staticmethod
     def create_main_spar(surface: GeometricSurface, thickness: float) -> TorsionBoxSpar:
