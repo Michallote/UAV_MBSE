@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from itertools import chain
 from os.path import join, normpath
+from typing import Literal
 
 import numpy as np
 
@@ -482,7 +483,7 @@ class AircraftGeometry:
     def export_curves(
         self,
         output_path: str,
-        ext: str = "sldcrv",
+        ext: Literal["sldcrv", "txt"] = "sldcrv",
         reference_system: str = "SW",
         units: str = "mm",
     ):
@@ -518,7 +519,7 @@ class AircraftGeometry:
         os.makedirs(main_folder, exist_ok=True)
 
         # Export the Section Airfoil Files
-        for i, (surface, curve) in enumerate(self.get_curve_iterator()):
+        for i, (surface, curve) in enumerate(self.get_curve_iterator(), start=1):
             local_folder = join(main_folder, surface.surface_type.name)
             os.makedirs(local_folder, exist_ok=True)
 
@@ -540,7 +541,7 @@ class AircraftGeometry:
 
         """
         for surface in self.surfaces:
-            for curve in chain(surface.borders, surface.curves):
+            for curve in chain(surface.curves, surface.borders):
                 yield surface, curve
 
     def __getattr__(self, attr):

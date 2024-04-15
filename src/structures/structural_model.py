@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
+from typing import Any, Generator, Iterable
 
 import numpy as np
 
@@ -211,8 +212,52 @@ class SurfaceStructure:
 
         return ribs
 
-    def collect_masses(self):  # -> Generator[PointMass, None, None]:
+    def collect_masses(self) -> Generator[PointMass, None, None]:
+        """Returns a generator of component point masses
+
+        Returns
+        -------
+        Generator[PointMass, None, None]
+            Point Masses generator.
+        """
         return (item.mass for item in chain(self.spars, self.ribs, self.coatings))
+
+    def weight_summary(self) -> PointMass:
+        """Prints a Summary of the weight of components
+
+        Returns
+        -------
+        PointMass
+            _description_
+        """
+
+        def collect(xs):
+            return (x.mass for x in xs)
+
+        print(compute_mass_center(collect(self.spars), tag="Spars"))
+        print(compute_mass_center(collect(self.ribs), tag="Ribs"))
+        print(compute_mass_center(collect(self.coatings), tag="Coatings"))
+        print(
+            compute_mass_center(self.collect_masses(), tag="Total " + self.surface.name)
+        )
+        return compute_mass_center(self.collect_masses(), tag=self.surface.name)
+
+    def summary_data(self) -> list[dict]:
+        """Generates summary weight data of properties:
+            'mass' 'x' 'y' 'z' 'tag' 'material' 'structure'
+        Returns
+        -------
+        list[dict]
+            A list of component weight data dictionaries.
+        """
+        surface_type = self.surface.surface_type.name
+        properties = collect_properties(self.spars, self.ribs, self.coatings)
+
+        # Applying the function using dictionary comprehension
+        for values in properties:
+            values["surface"] = surface_type
+
+        return properties
 
     @property
     def mass(self) -> PointMass:
@@ -223,21 +268,7 @@ class SurfaceStructure:
         PointMass
             _description_
         """
-
-        weighted_coordinates = np.array(
-            [
-                point_mass.mass * point_mass.coordinates
-                for point_mass in self.collect_masses()
-            ]
-        )
-
-        weighted_coordinates = np.sum(weighted_coordinates, axis=0)
-
-        total_mass = sum(point_mass.mass for point_mass in self.collect_masses())
-
-        coordinates = weighted_coordinates / total_mass
-
-        return PointMass(total_mass, SpatialArray(coordinates), tag=self.surface.name)
+        return compute_mass_center(self.collect_masses(), tag=self.surface.name)
 
 
 class StructuralModel:
@@ -246,6 +277,7 @@ class StructuralModel:
     """
 
     aircraft: AircraftGeometry
+    structures: list[SurfaceStructure]
 
     def __init__(
         self,
@@ -263,67 +295,133 @@ class StructuralModel:
             struct.initialize_structure()
             self.structures.append(struct)
 
-    # def calculate_ribs(self):
-    #     """Calculate ribs based on the max rib spacing and the aircraft geometry."""
-    #     # Loop through each AeroSurface in the aircraft
-    #     for surface in self.aircraft.surfaces:
-    #         ribs = self._calculate_ribs_for_surface(surface)
-    #         self.ribs.extend(ribs)
+    def summary_data(self) -> list[Any]:
+        """Gather the weight summary
 
-    # def _calculate_ribs_for_surface(
-    #     self, surface: GeometricSurface
-    # ) -> list[StructuralRib]:
-    #     """Calculate ribs for a single geometric surface."""
-    #     ribs = []
-    #     # Implementation of rib calculation and interpolation goes here
-    #     wingspans = surface.wingspans
-    #     # Number of ribs between sections
-    #     n_ribs = np.ceil((wingspans[1:] - wingspans[:-1]) / self.max_rib_spacing)
+        Returns
+        -------
+        list[Any]
+            _description_
+        """
 
-    #     # Ensures the original positions of the sections are maintained.
-    #     section_ribs = [
-    #         np.linspace(wingspans[i], wingspans[i + 1], int(n + 1))
-    #         for i, n in enumerate(n_ribs)
-    #     ]
+        properties = []
 
-    #     rib_positions = np.unique(np.concatenate(section_ribs))
+        for structure in self.structures:
+            properties.extend(structure.summary_data())
 
-    #     section_curves = np.array([curve.data for curve in surface.curves])
+        if self.ext_spars:
+            ext_properties = collect_properties(self.ext_spars, [], [])
 
-    #     ribs_geometry = vector_interpolation(rib_positions, wingspans, section_curves)
-    #     balsa = MaterialLibrary()["balsa"]
+            for values in ext_properties:
+                values["surface"] = "EXTERNAL"
 
-    #     for i, curve in enumerate(ribs_geometry):
-    #         name = f"{surface.surface_type.name[0]}_rib_{i}"
-    #         rib = StructuralRib(
-    #             curve=GeometricCurve(name=name, data=curve),
-    #             thickness=3 / 16 * 2.54 / 100,
-    #             material=balsa,
-    #         )
-    #         ribs.append(rib)
+            properties.extend(ext_properties)
 
-    #     return ribs
+        return properties
 
-    # def calculate_spars(self):
-    #     """Calculate the position and characteristics of wing spars."""
-    #     # Loop through each AeroSurface in the aircraft
-    #     for surface in self.aircraft.surfaces:
-    #         spar = StructuralSpar.from_surface_and_plane(
-    #             surface, p=np.array([0.43, 0, 0]), n=np.array([1, 0, 0])
-    #         )
-    #         self.spars.append(spar)
 
-    # def calculate_main_spar(self, surface):
+def compute_mass_center(point_masses: Iterable[PointMass], tag="") -> PointMass:
+    """Performs center of mass operations
 
-    #     p = np.array([0.43, 0, 0])
-    #     n = np.array([1, 0, 0])
+    Parameters
+    ----------
+    point_masses : list[PointMass]
+        List of point masses
+    tag : str, optional
+        resulting tag, by default ""
 
-    #     StructuralSpar.from_surface_and_plane(surface, p=p, n=n)
+    Returns
+    -------
+    PointMass
+        Center of Mass of the point masses.
+    """
 
-    # def surface_coating(self):
+    point_masses = tuple(point_masses)
 
-    #     for surface in self.aircraft.surfaces:
-    #         coating = SurfaceCoating(surface)
+    weighted_coordinates = np.array(
+        [point_mass.mass * point_mass.coordinates for point_mass in point_masses]
+    )
+
+    weighted_coordinates = np.sum(weighted_coordinates, axis=0)
+
+    total_mass = sum(point_mass.mass for point_mass in point_masses)
+
+    coordinates = weighted_coordinates / total_mass
+
+    return PointMass(total_mass, SpatialArray(coordinates), tag=tag)
+
+
+def collect_properties(
+    spars: list[StructuralSpar],
+    ribs: list[StructuralRib],
+    coatings: list[SurfaceCoating],
+) -> list[dict]:
+    """Creates a list of dictionaries with the weight properties of components
+
+    Parameters
+    ----------
+    spars : list[StructuralSpar]
+
+    ribs : list[StructuralRib]
+
+    coatings : list[SurfaceCoating]
+
+
+    Returns
+    -------
+    list[dict]
+        list of component weight data dictionaries
+    """
+    component_properties = []
+
+    # Collect properties for spars
+    for index, spar in enumerate(spars, start=0):
+        properties = get_mass_properties(spar.mass)
+        properties["comp_id"] = index
+        properties["material"] = spar.material.name
+        properties["structure"] = spar.__class__.__name__
+        component_properties.append(properties)
+
+    # Collect properties for ribs
+    for index, rib in enumerate(ribs, start=0):
+        properties = get_mass_properties(rib.mass)
+        properties["comp_id"] = index
+        properties["material"] = rib.material.name
+        properties["structure"] = rib.__class__.__name__
+        component_properties.append(properties)
+
+    # Collect properties for coatings
+    for index, coating in enumerate(coatings, start=0):
+        properties = get_mass_properties(coating.mass)
+        properties["comp_id"] = index
+        properties["material"] = coating.material.name
+        properties["structure"] = coating.__class__.__name__
+        component_properties.append(properties)
+
+    return component_properties
+
+
+# Helper function to create property dictionary for each item
+def get_mass_properties(point_mass: PointMass) -> dict[str, Any]:
+    """Helper function to create property dictionary for each item
+
+    Parameters
+    ----------
+    point_mass : PointMass
+        point mass object
+
+    Returns
+    -------
+    dict[str, Any]
+        properties dictionary
+    """
+    return {
+        "mass": point_mass.mass,
+        "x": point_mass.coordinates.x,
+        "y": point_mass.coordinates.y,
+        "z": point_mass.coordinates.z,
+        "tag": point_mass.tag,
+    }
 
 
 if __name__ == "__main__":

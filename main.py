@@ -71,6 +71,23 @@ def main():
 
     structure = StructuralModel(aircraft_geom, structure_config)
 
+    import pandas as pd
+
+    df = pd.DataFrame(structure.summary_data())
+    categories = df.select_dtypes(include="object").columns
+    df[categories] = df[categories].astype("category")
+    df.dtypes
+
+    # Group by 'surface' and calculate the mean of 'mass', 'x', 'y', 'z'
+    aggregated_data = df.groupby(by=["surface", "tag"]).agg(
+        {
+            "mass": "sum",  # Sum of masses
+            "x": "mean",  # Mean of x coordinates
+            "y": "mean",  # Mean of y coordinates
+            "z": "mean",  # Mean of z coordinates
+        }
+    )
+
 
 if __name__ == "__main__":
     main()

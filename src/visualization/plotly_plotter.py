@@ -14,6 +14,7 @@ from src.geometry.aircraft_geometry import (
     GeometricCurve,
     GeometricSurface,
 )
+from src.structures.structural_model import StructuralModel, SurfaceStructure
 from src.visualization.base_class import BaseAircraftPlotter
 
 
@@ -176,6 +177,32 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
         surfacecolor = np.zeros_like(z) + 1
         colorscale = [[0, color_str], [1, color_str]]
         return surfacecolor, colorscale
+
+    def plot_structure(self, structure: StructuralModel):
+
+        fig = go.Figure()
+
+        # # Add the 3D curve
+        # fig.add_trace(
+        #     go.Scatter3d(x=x, y=y, z=z, mode="lines", line=dict(color="blue", width=10))
+        # )
+
+        for component_structure in structure.structures:
+            for rib in component_structure.ribs:
+                curve = rib.curve
+                x, y, z = curve.x, curve.y, curve.z
+
+                fig.add_trace(
+                        go.Mesh3d(x=x, y=y, z=z, opacity=0.5)
+                    )
+
+
+        # Add a surface under the curve to simulate filling
+        
+
+    @staticmethod
+    def plot_component(component: SurfaceStructure):
+
 
 
 def add_subplot_synchronization(
