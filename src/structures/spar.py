@@ -6,9 +6,12 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 import numpy as np
+from matplotlib import contour
+from matplotlib.pyplot import box
 
 # Create a sliding window view of size 2
 from scipy.optimize import NonlinearConstraint, differential_evolution, minimize
+from sklearn.neighbors import LocalOutlierFactor
 
 from src.aerodynamics.data_structures import PointMass
 from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
@@ -19,6 +22,7 @@ from src.geometry.surfaces import (
     project_points_to_plane,
 )
 from src.materials import Material
+from src.utils.interpolation import resample_curve, vector_interpolation
 from src.utils.intersection import (
     calculate_intersection_curve,
     enforce_closed_curve,
@@ -418,6 +422,7 @@ class TorsionBoxSpar(SparStrategy):
         )
 
         local_origin = SpatialArray(np.mean(box_contour, axis=0))
+        box_contour = box_contour - local_origin
 
         orthonormal_basis = construct_orthonormal_basis(plane_normal)
         u, v, w = orthonormal_basis
@@ -488,7 +493,25 @@ class TorsionBoxSpar(SparStrategy):
     def mesh(self) -> tuple[np.ndarray, ...]:
         """Returns the 2D mesh of the spar."""
 
-        origin
+        origin = self.origin
+        length = self.length
+
+        u, v, w = self.basis
+        contour = self.contour
+
+        contour_3d = np.c_[contour.x] * v + np.c_[contour.y] * w + origin
+        tip_contour = contour_3d + length * u
+        curves = np.array([contour_3d, tip_contour])
+        curves = resample_curve(curves, 7)
+
+        geo_curves = [
+            GeometricCurve(name=f"TorsionBox_Section_{i}", data=data)
+            for i, data in enumerate(curves)
+        ]
+
+        xx = np.array([curve.x for curve in geo_curves])
+        yy = np.array([curve.y for curve in geo_curves])
+        zz = np.array([curve.z for curve in geo_curves])
 
         return x, y, z, i, j, k
 

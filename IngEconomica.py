@@ -342,6 +342,24 @@ calcular_salario_integrado(**ILSP_prestaciones)
 calcular_salario_integrado(**bluetab_prestaciones)
 calcular_salario_integrado(**scotiabank_prestaciones)
 
+pana_javo = scotiabank_prestaciones.copy()
+pana_javo["base_salary"] = 63000
+
+Javo_reckit = dict(
+    base_salary=50210,
+    dias_vacaciones=12,
+    bono_asistencia=0.1,
+    bono_puntualidad=0.1,
+    monto_vales=1200,
+    p_bono_desemp=0.08,
+)
+
+calcular_salario_integrado(**Javo_reckit)
+
+calcular_salario_integrado(**pana_javo)
+
+calcular_salario_integrado(**pana_javo)
+
 
 def calcular_salario_base_desde_neto(
     neto_objetivo=45000,
@@ -386,6 +404,14 @@ def calcular_salario_base_desde_neto(
 
     return salario_neto
 
+
+calcular_salario_base_desde_neto(
+    50000,
+    dias_vacaciones=16,
+    bono_asistencia=0.1,
+    bono_puntualidad=0.1,
+    monto_vales=1500,
+)
 
 # %% Impuestos Marzo por bono
 

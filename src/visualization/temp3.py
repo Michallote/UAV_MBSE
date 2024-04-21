@@ -49,3 +49,64 @@ fig.update_layout(
 
 # Show the plot
 fig.show()
+
+
+x = [0, 1, 0, 1]
+z = [0, 0, 1, 1]
+y = [0, 0, 0, -1]
+
+# Create a triangle by connecting these points
+i = [0, 1]
+j = [1, 2]
+k = [2, 3]
+
+
+indices = np.array(
+    [result for i in range(n) if all_different(result := [i, i + 1, n - i])]
+)
+i, j, k = indices.T
+
+
+i[0], j[0], k[0]
+
+fig = go.Figure()
+
+fig.add_trace(go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=0.5))
+fig.add_trace(go.Scatter3d(x=x, y=y, z=z))
+fig.show()
+
+
+fig = go.Figure(go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=0.5))
+fig.add_trace(go.Scatter3d(x=x, y=y, z=z))
+fig.show()
+
+
+curve = rib.curve.resample(15)
+x, y, z = curve.x, curve.y, curve.z
+
+n = len(curve) - 1
+indices = np.array(
+    [result for i in range(n) if all_different(result := [i, i + 1, n - i])]
+)
+i, j, k = indices.T
+
+fig.add_trace(go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=0.5))
+fig.add_trace(go.Scatter3d(x=x, y=y, z=z))
+
+
+x = [0, 1, 0]
+z = [0, 0, 1]
+y = [0, 0, 0]
+
+# Create a triangle by connecting these points
+i = [0]
+j = [1]
+k = [14]
+
+
+fig = go.Figure()
+
+fig.add_trace(go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=0.5))
+fig.add_trace(go.Scatter3d(x=x, y=y, z=z))
+fig.show()
+x[15]
