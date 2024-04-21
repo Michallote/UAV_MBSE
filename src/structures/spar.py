@@ -94,6 +94,18 @@ class StructuralSpar:
         instance._create_spar(surface, thickness, **kwargs)
         return instance
 
+    @property
+    def mesh(self) -> tuple[np.ndarray, ...]:
+        """Returns the coordinates neccessary to plot the object as a mesh object
+
+        - x, y, z are the coordinates of points in the mesh
+        - i, j, k are the indices of points that comprise each indiviual triangle
+        """
+
+        x, y, z, i, j, k = self.spar.mesh
+
+        return x, y, z, i, j, k
+
 
 class SparStrategy(ABC):
     """Represents different spar construction methods"""
@@ -125,6 +137,11 @@ class SparStrategy(ABC):
     @abstractmethod
     def centroid(self) -> SpatialArray:
         """Returns the centroid of the spar volume"""
+
+    @property
+    @abstractmethod
+    def mesh(self) -> tuple[np.ndarray, ...]:
+        """Returns the 2D mesh of the spar."""
 
 
 class FlatSpar(SparStrategy):
@@ -290,6 +307,17 @@ class FlatSpar(SparStrategy):
     def centroid(self) -> SpatialArray:
         return self.curve.centroid
 
+    @property
+    def mesh(self) -> tuple[np.ndarray, ...]:
+        """Returns the 2D mesh of the spar."""
+
+        curve = self.curve
+        x, y, z = curve.x, curve.y, curve.z
+        indices = curve.triangulation_indices()
+        i, j, k = indices.T
+
+        return x, y, z, i, j, k
+
 
 class TorsionBoxSpar(SparStrategy):
     """Creates a Torsion Box intersecting the lifting surface geometry."""
@@ -342,8 +370,12 @@ class TorsionBoxSpar(SparStrategy):
             [[x, y], [x + width, y], [x + width, y + height], [x, y + height]]
         )
 
+        contour = GeometricCurve(
+            name="Spar Cross Section", data=enforce_closed_curve(box_contour)
+        )
+
         return TorsionBoxSpar(
-            box_contour,
+            contour,
             thickness,
             origin=SpatialArray(p),
             basis=orthonormal_basis,
@@ -451,6 +483,14 @@ class TorsionBoxSpar(SparStrategy):
 
         u, v, w = self.basis
         return SpatialArray(self.origin + w * self.length)
+
+    @property
+    def mesh(self) -> tuple[np.ndarray, ...]:
+        """Returns the 2D mesh of the spar."""
+
+        origin
+
+        return x, y, z, i, j, k
 
 
 def find_domain_limits(

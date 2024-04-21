@@ -60,6 +60,21 @@ class StructuralRib:
             tag="Rib",
         )
 
+    @property
+    def mesh(self) -> tuple[np.ndarray, ...]:
+        """Returns the coordinates neccessary to plot the object as a mesh object
+
+        - x, y, z are the coordinates of points in the mesh
+        - i, j, k are the indices of points that comprise each indiviual triangle
+        """
+
+        curve = self.curve
+        x, y, z = curve.x, curve.y, curve.z
+        indices = curve.triangulation_indices()
+        i, j, k = indices.T
+
+        return x, y, z, i, j, k
+
 
 class SurfaceCoating:
     """Represents the surface coating (Monokote).

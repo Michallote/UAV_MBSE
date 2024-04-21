@@ -153,13 +153,20 @@ class GeometricCurve:
             * ((xf + xi) * ((yf - yi) * (np.cos(gamma)) + (zf - zi) * (np.sin(gamma))))
         )
 
-    def triangulate_curve(self) -> np.ndarray:
-        """Create triangulation of the enclosed curve"""
-        data = self.data
-        n = len(data) - 1
+    def triangulation_indices(self) -> np.ndarray:
+        """Returns the indices of the curve triangulation"""
+
+        n = len(self.data) - 1
         indices = np.array(
             [result for i in range(n) if all_different(result := [i, i + 1, n - i])]
         )
+        # i, j, k = indices.T
+        return indices
+
+    def triangulate_curve(self) -> np.ndarray:
+        """Create triangulation of the enclosed curve"""
+        data = self.data
+        indices = self.triangulation_indices()
         # i, j, k = indices.T
         triangles = data[indices]
         return triangles
