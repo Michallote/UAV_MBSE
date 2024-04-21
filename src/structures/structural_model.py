@@ -16,7 +16,7 @@ from src.geometry.aircraft_geometry import (
     GeometricSurface,
 )
 from src.geometry.spatial_array import SpatialArray
-from src.geometry.surfaces import surface_centroid_area
+from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material
 from src.materials.materials_library import MaterialLibrary
 from src.structures.spar import StructuralSpar
@@ -139,6 +139,15 @@ class SurfaceCoating:
             coordinates=self.centroid,
             tag="SurfaceCoating",
         )
+
+    @property
+    def mesh(self) -> tuple[np.ndarray, ...]:
+        """Returns the 2D mesh of the spar."""
+        xx = self.surface.xx
+        yy = self.surface.yy
+        zz = self.surface.zz
+        x, y, z, i, j, k = create_surface_mesh(xx, yy, zz)
+        return x, y, z, i, j, k
 
 
 class SurfaceStructure:
@@ -285,6 +294,18 @@ class SurfaceStructure:
         """
         return compute_mass_center(self.collect_masses(), tag=self.surface.name)
 
+    def components(
+        self,
+    ) -> Generator[StructuralRib | StructuralSpar | SurfaceCoating, None, None]:
+        """Returns a generator of component point masses
+
+        Returns
+        -------
+        Generator[PointMass, None, None]
+            Point Masses generator.
+        """
+        return (item for item in chain(self.spars, self.ribs, self.coatings))
+
 
 class StructuralModel:
     """
@@ -333,6 +354,20 @@ class StructuralModel:
             properties.extend(ext_properties)
 
         return properties
+
+    def components(
+        self,
+    ) -> chain[Generator[StructuralRib | StructuralSpar | SurfaceCoating, None, None]]:
+        """Returns a generator of component point masses
+
+        Returns
+        -------
+        Generator[PointMass, None, None]
+            Point Masses generator.
+        """
+        return chain(
+            *(structure.components() for structure in self.structures), self.ext_spars
+        )
 
 
 def compute_mass_center(point_masses: Iterable[PointMass], tag="") -> PointMass:

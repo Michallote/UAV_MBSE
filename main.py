@@ -70,23 +70,34 @@ def main():
     }
 
     structure = StructuralModel(aircraft_geom, structure_config)
+    main_wing = structure.structures[0]
+    main_spar = main_wing.spars[0]
+    self = main_spar.spar
 
-    import pandas as pd
+    visualizer.plot_structure(structure)
 
-    df = pd.DataFrame(structure.summary_data())
-    categories = df.select_dtypes(include="object").columns
-    df[categories] = df[categories].astype("category")
-    df.dtypes
+    # self = structure
 
-    # Group by 'surface' and calculate the mean of 'mass', 'x', 'y', 'z'
-    aggregated_data = df.groupby(by=["surface", "tag"]).agg(
-        {
-            "mass": "sum",  # Sum of masses
-            "x": "mean",  # Mean of x coordinates
-            "y": "mean",  # Mean of y coordinates
-            "z": "mean",  # Mean of z coordinates
-        }
-    )
+    # a = structure.components()
+
+    # next(a)
+
+    # import pandas as pd
+
+    # df = pd.DataFrame(structure.summary_data())
+    # categories = df.select_dtypes(include="object").columns
+    # df[categories] = df[categories].astype("category")
+    # df.dtypes
+
+    # # Group by 'surface' and calculate the mean of 'mass', 'x', 'y', 'z'
+    # aggregated_data = df.groupby(by=["surface", "tag"]).agg(
+    #     {
+    #         "mass": "sum",  # Sum of masses
+    #         "x": "mean",  # Mean of x coordinates
+    #         "y": "mean",  # Mean of y coordinates
+    #         "z": "mean",  # Mean of z coordinates
+    #     }
+    # )
 
 
 if __name__ == "__main__":

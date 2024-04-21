@@ -87,7 +87,7 @@ def _calculate_centroid_of_half_surface(xx, yy, zz) -> tuple[np.ndarray, float]:
 def _calculate_area_of_half_surface(
     xx: np.ndarray, yy: np.ndarray, zz: np.ndarray
 ) -> np.ndarray:
-    """Calculates the area of surface triangles (bottom half) and reurns the 
+    """Calculates the area of surface triangles (bottom half) and reurns the
     array of each triangle formed by
     triangle[0,0] -> (vertex[0,0], vertex[1,0], vertex[0,1])
     area[0,0] -> area(triangle[0,0])
@@ -253,6 +253,7 @@ def find_transitions(
 
     return transitions
 
+
 def find_transitions_np(sdf_arr: np.ndarray) -> list[LineSegmentIndices]:
     """
     Find indices in an array where there is a transition from True to False
@@ -284,6 +285,7 @@ def find_transitions_np(sdf_arr: np.ndarray) -> list[LineSegmentIndices]:
         transitions.append(((i, j), (i + 1, j)))
 
     return transitions
+
 
 def generate_line_segments(
     xx: np.ndarray,
@@ -391,7 +393,7 @@ def construct_orthonormal_basis(plane_normal: np.ndarray) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        A 3x3 matrix where each row represents one of the 
+        A 3x3 matrix where each row represents one of the
         unit vectors (U, V, W) of the local coordinate system.
     """
 
@@ -412,3 +414,64 @@ def construct_orthonormal_basis(plane_normal: np.ndarray) -> np.ndarray:
     u = u / np.linalg.norm(u)
 
     return np.array([u, v, w])
+
+
+def create_surface_mesh(
+    xx: np.ndarray, yy: np.ndarray, zz: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Creates a triangular mesh surface from input meshgrid matrices.
+
+    Given three 2D matrices representing the x, y, and z coordinates generated
+    by meshgrid, this function computes the vertex indices for constructing
+    triangles and outputs the vertices' coordinates and indices for mesh construction.
+
+    Parameters:
+    - xx (np.ndarray): 2D array of x coordinates.
+    - yy (np.ndarray): 2D array of y coordinates.
+    - zz (np.ndarray): 2D array of z coordinates.
+
+    Returns:
+    - tuple of six np.ndarray: (x, y, z, i, j, k) where `x`, `y`, and `z` are flattened arrays of coordinates,
+      and `i`, `j`, `k` are the corresponding vertex indices for each triangle in the mesh.
+    """
+
+    indices = np.arange(len(xx.ravel()), dtype=int).reshape(xx.shape)
+
+    tl_idx, bl_idx, tr_idx = get_triangle_indices(indices)
+    br_midx, bl_midx, tr_midx = get_triangle_indices(np.flip(indices))
+
+    x, y, z = xx.ravel(), yy.ravel(), zz.ravel()
+
+    i = np.concatenate([tl_idx, np.flip(br_midx)]).ravel()
+    j = np.concatenate([bl_idx, np.flip(bl_midx)]).ravel()
+    k = np.concatenate([tr_idx, np.flip(tr_midx)]).ravel()
+
+    return x, y, z, i, j, k
+
+    # Calculate triangle indexes from matrix, (triagle are conformed by anchor,
+    # node right and node below)
+
+
+def get_triangle_indices(
+    indices: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Calculate triangle indices for meshgrid-based surface meshes.
+
+    This function computes the indices of vertices that form triangles in a mesh.
+    Triangles are defined by the top-left, bottom-left, and top-right vertices of each
+    square in a grid formed by indices.
+
+    Parameters:
+    - indices (np.ndarray): 2D array of indices representing the mesh grid.
+
+    Returns:
+    - tuple of three np.ndarray: (tl_idx, bl_idx, tr_idx) representing the indices
+      of the top-left, bottom-left, and top-right vertices of the triangles.
+    """
+    tl_idx = indices[:-1, :-1]  # top left vertices -> 0
+    bl_idx = indices[1:, :-1]  # bottom left vertices -> 1
+    tr_idx = indices[:-1, 1:]  # top right vertices -> 2
+
+    return tl_idx, bl_idx, tr_idx

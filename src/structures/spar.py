@@ -18,6 +18,7 @@ from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import (
     construct_orthonormal_basis,
+    create_surface_mesh,
     evaluate_surface_intersection,
     project_points_to_plane,
 )
@@ -145,7 +146,7 @@ class SparStrategy(ABC):
     @property
     @abstractmethod
     def mesh(self) -> tuple[np.ndarray, ...]:
-        """Returns the 2D mesh of the spar."""
+        """Returns the 3D mesh of the spar."""
 
 
 class FlatSpar(SparStrategy):
@@ -333,12 +334,14 @@ class TorsionBoxSpar(SparStrategy):
         origin: SpatialArray,
         basis: np.ndarray,
         length: float,
+        mesh_resolution: int = 7,
     ) -> None:
         self.contour = contour
         self.thickness = thickness
         self.origin = origin
         self.basis = basis
         self.length = length
+        self.mesh_resolution = mesh_resolution
 
         inner_contour = offset_curve(contour.data, -thickness)
         self.inner_contour = GeometricCurve(name="Inner Contour", data=inner_contour)
@@ -430,7 +433,7 @@ class TorsionBoxSpar(SparStrategy):
         global_origin = u * local_origin.x + v * local_origin.y
 
         length = np.dot(
-            surface.curves[1].leading_edge - surface.curves[0].leading_edge, w
+            surface.curves[-1].leading_edge - surface.curves[0].leading_edge, w
         )
 
         contour = GeometricCurve(
@@ -492,6 +495,20 @@ class TorsionBoxSpar(SparStrategy):
     @property
     def mesh(self) -> tuple[np.ndarray, ...]:
         """Returns the 2D mesh of the spar."""
+        xx, yy, zz = self.create_surface()
+        x, y, z, i, j, k = create_surface_mesh(xx, yy, zz)
+        return x, y, z, i, j, k
+
+    def create_surface(self):
+        """Creates the surface from the curves defined in the contour.
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
+        n = self.mesh_resolution
 
         origin = self.origin
         length = self.length
@@ -499,10 +516,10 @@ class TorsionBoxSpar(SparStrategy):
         u, v, w = self.basis
         contour = self.contour
 
-        contour_3d = np.c_[contour.x] * v + np.c_[contour.y] * w + origin
-        tip_contour = contour_3d + length * u
+        contour_3d = np.c_[contour.x] * u + np.c_[contour.y] * v + origin
+        tip_contour = contour_3d + length * w
         curves = np.array([contour_3d, tip_contour])
-        curves = resample_curve(curves, 7)
+        curves = resample_curve(curves, n)
 
         geo_curves = [
             GeometricCurve(name=f"TorsionBox_Section_{i}", data=data)
@@ -513,7 +530,7 @@ class TorsionBoxSpar(SparStrategy):
         yy = np.array([curve.y for curve in geo_curves])
         zz = np.array([curve.z for curve in geo_curves])
 
-        return x, y, z, i, j, k
+        return xx, yy, zz
 
 
 def find_domain_limits(
