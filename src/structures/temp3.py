@@ -311,3 +311,11 @@ from scipy.spatial import ConvexHull
 
 hull = ConvexHull(points2D)
 points2D[hull.vertices]
+
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=curve[:, 0], y=curve[:, 1]))
+
+x, y = (contour.data + local_origin).T
+fig.add_trace(go.Scatter(x=x, y=y))
+fig.show()

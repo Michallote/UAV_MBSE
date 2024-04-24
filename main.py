@@ -20,7 +20,7 @@ def main():
     )
     visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
-    visualizer.plot_aircraft(aircraft_geom)
+    # visualizer.plot_aircraft(aircraft_geom)
 
     materials = MaterialLibrary()
     balsa = materials["balsa"]
@@ -37,7 +37,7 @@ def main():
         "strategy": FlatSpar,
         "material": balsa,
         "thickness": 0.003175,
-        "chord_position": 0.75,
+        "chord_position": 0.65,
     }
 
     main_spar_triplay = {

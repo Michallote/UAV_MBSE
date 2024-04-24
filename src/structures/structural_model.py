@@ -5,11 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
-from typing import Any, Generator, Iterable
+from msilib.schema import Component
+from typing import Any, Generator, Iterable, Iterator, Literal, Union, overload
 
 import numpy as np
 
-from src.aerodynamics.data_structures import PointMass
+from src.aerodynamics.data_structures import PointMass, SurfaceType
 from src.geometry.aircraft_geometry import (
     AircraftGeometry,
     GeometricCurve,
@@ -306,6 +307,10 @@ class SurfaceStructure:
         """
         return (item for item in chain(self.spars, self.ribs, self.coatings))
 
+    @property
+    def surface_type(self) -> SurfaceType:
+        return self.surface.surface_type
+
 
 class StructuralModel:
     """
@@ -355,19 +360,45 @@ class StructuralModel:
 
         return properties
 
+    @overload
     def components(
-        self,
-    ) -> chain[Generator[StructuralRib | StructuralSpar | SurfaceCoating, None, None]]:
-        """Returns a generator of component point masses
+        self, yield_structure: Literal[False]
+    ) -> Iterator[Union[StructuralRib, StructuralSpar, SurfaceCoating]]: ...
 
-        Returns
+    @overload
+    def components(self, yield_structure: Literal[True]) -> Iterator[
+        tuple[
+            SurfaceStructure | None,
+            Union[StructuralRib, StructuralSpar, SurfaceCoating],
+        ]
+    ]: ...
+
+    def components(self, yield_structure=True) -> Iterator:
+        """Yields each structure along with its component.
+
+        Yields
         -------
-        Generator[PointMass, None, None]
-            Point Masses generator.
+        Iterator[Tuple[SurfaceStructure, Union[StructuralRib, StructuralSpar, SurfaceCoating]]]
+            Tuples of (structure, component_structure).
         """
-        return chain(
-            *(structure.components() for structure in self.structures), self.ext_spars
-        )
+        # Assuming 'self.structures' is iterable and contains structures that have a 'components' method.
+        # Also assuming 'self.ext_spars' contains additional spars or similar components to yield.
+
+        if not yield_structure:
+            components = chain(
+                *(structure.components() for structure in self.structures),
+                self.ext_spars,
+            )
+
+            for component in components:
+                yield component
+        else:
+
+            for structure in self.structures:
+                for component in structure.components():
+                    yield (structure, component)
+            for ext_spar in self.ext_spars:
+                yield (None, ext_spar)
 
 
 def compute_mass_center(point_masses: Iterable[PointMass], tag="") -> PointMass:

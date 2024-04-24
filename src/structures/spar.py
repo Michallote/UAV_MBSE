@@ -6,12 +6,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 import numpy as np
-from matplotlib import contour
-from matplotlib.pyplot import box
 
 # Create a sliding window view of size 2
 from scipy.optimize import NonlinearConstraint, differential_evolution, minimize
-from sklearn.neighbors import LocalOutlierFactor
 
 from src.aerodynamics.data_structures import PointMass
 from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
@@ -430,7 +427,7 @@ class TorsionBoxSpar(SparStrategy):
         orthonormal_basis = construct_orthonormal_basis(plane_normal)
         u, v, w = orthonormal_basis
 
-        global_origin = u * local_origin.x + v * local_origin.y
+        global_origin = u * local_origin.x + v * local_origin.y + plane_point
 
         length = np.dot(
             surface.curves[-1].leading_edge - surface.curves[0].leading_edge, w

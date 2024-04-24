@@ -2,6 +2,7 @@ import os
 import webbrowser
 from itertools import chain
 from os.path import join, normpath
+from typing import Any
 
 import numpy as np
 import plotly.graph_objects as go
@@ -181,20 +182,117 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
 
     def plot_structure(self, structure: StructuralModel):
 
+        # Assuming `structure` is an object that has a `components` method returning iterable components
         fig = go.Figure()
 
-        # # Add the 3D curve
-        # fig.add_trace(
-        #     go.Scatter3d(x=x, y=y, z=z, mode="lines", line=dict(color="blue", width=10))
-        # )
+        labels = []
 
-        for component_structure in structure.components():
+        for surface_structure, component_structure in structure.components(
+            yield_structure=True
+        ):
 
             x, y, z, i, j, k = component_structure.mesh
 
-            fig.add_trace(go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=0.5))
+            if surface_structure is not None:
+                surface_type = surface_structure.surface_type
+                surface_name = surface_type.name
+            else:
+                surface_name = "External"
 
-        # Add a surface under the curve to simulate filling
+            component_name = type(component_structure).__name__
+            name = f"{surface_name}_{component_name}"
+            labels.append(
+                dict(
+                    name=name, surface_name=surface_name, component_name=component_name
+                )
+            )
+
+            # Add trace with a unique name and same legendgroup for toggling
+            fig.add_trace(
+                go.Mesh3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    i=i,
+                    j=j,
+                    k=k,
+                    opacity=0.5,
+                    # name=f"{name} {idx + 1}",  # Unique name for each trace
+                    legendgroup=f"{name}",  # Unique group for each trace
+                    # showlegend=True,  # Ensure the legend is shown
+                )
+            )
+
+        surfaces_n = np.array([item["surface_name"] for item in labels])
+        components_n = np.array([item["component_name"] for item in labels])
+
+        unique_surfaces = np.unique(surfaces_n)
+        unique_components = np.unique(components_n)
+
+        surface_map = {surf: (surfaces_n == surf) for surf in unique_surfaces}
+        component_map = {comp: (components_n == comp) for comp in unique_components}
+
+        def create_button(label, mask) -> dict[str, Any]:
+            return {
+                "label": f"Show {label}",
+                "method": "restyle",
+                "args": [{"visible": [(True if i else "legendonly") for i in mask]}],
+            }
+
+        buttons = [
+            create_button(label, mask)
+            for label, mask in chain(surface_map.items(), component_map.items())
+        ]
+
+        buttons.insert(
+            0,
+            {
+                "label": "Show All",
+                "method": "restyle",
+                "args": [{"visible": [True for i in range(len(labels))]}],
+            },
+        )
+
+        updatemenus = [
+            {
+                "buttons": buttons,
+                "direction": "down",  # Layout direction of buttons
+                "pad": {"r": 5, "t": 5},  # Padding from the right and top edges
+                "showactive": True,
+                "x": 0.05,  # Button group's left edge is aligned with the left edge of the plot
+                "xanchor": "left",  # Anchor the button group to the left
+                "y": 0.95,  # Position the button group above the plot
+                "yanchor": "top",  # Anchor the button group to the top
+                "font": {"size": 16},  # Increase the font size here
+            }
+        ]
+
+        # Set up the legend to toggle visibility per group
+        fig.update_layout(
+            legend=dict(
+                itemsizing="constant",
+                tracegroupgap=0,
+                title="Components",  # Optional: Add a title to the legend
+            ),
+            updatemenus=updatemenus,
+            scene=dict(
+                aspectmode="data"  # This ensures that the scaling is equal along all axes
+            ),
+        )
+
+        zoom = 1.2
+        up = {"x": 0, "y": 1, "z": 0}
+        eye = {"x": -1.5, "y": 1.5, "z": 2}
+
+        eye = {key: value / zoom for key, value in eye.items()}
+        camera = dict(up=up, eye=eye)
+
+        fig.update_layout(
+            title=structure.aircraft.name,
+            scene=dict(camera=camera),
+            scene2=dict(camera=camera),
+            template="plotly_dark",
+        )
 
         fig.show()
 
