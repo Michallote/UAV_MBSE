@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Plane_Polar>
+<Plane_Polar version="1.0">
+    <Units>
+        <length_unit_to_meter>1</length_unit_to_meter>
+        <area_unit_to_m2>1</area_unit_to_m2>
+        <mass_unit_to_kg>1</mass_unit_to_kg>
+        <speed_unit_to_ms>1</speed_unit_to_ms>
+        <inertia_unit_to_kgm2>1</inertia_unit_to_kgm2>
+    </Units>
+    <Polar>
+        <Polar_Name>T1-16.0 m/s-VLM2</Polar_Name>
+        <Plane_Name>Mobula</Plane_Name>
+        <Type>FIXEDSPEEDPOLAR</Type>
+        <Method>PANELMETHOD</Method>
+        <Ignore_Body_Panels>true</Ignore_Body_Panels>
+        <Use_VLM1>false</Use_VLM1>
+        <Viscous_Analysis>true</Viscous_Analysis>
+        <Thin_Surfaces>true</Thin_Surfaces>
+        <Tilted_Analysis>false</Tilted_Analysis>
+        <Ground_Effect>false</Ground_Effect>
+        <Ground_Height>    0.00000</Ground_Height>
+        <Viscosity>    1.5e-05</Viscosity>
+        <Density>    1.22500</Density>
+        <Fixed_Velocity>   16.00000</Fixed_Velocity>
+        <Fixed_AOA>    0.00000</Fixed_AOA>
+        <Fixed_Bank_Angle>    0.00000</Fixed_Bank_Angle>
+        <Fixed_SideSlip>    0.00000</Fixed_SideSlip>
+        <Reference_Dimensions>PROJECTEDREFDIM</Reference_Dimensions>
+        <Reference_Area>    1.54278</Reference_Area>
+        <Reference_Span_Length>    3.30000</Reference_Span_Length>
+        <Reference_Chord_Length>    0.54794</Reference_Chord_Length>
+        <ExtraDrag>
+            <ExtraDragCoef_1>    0.00000</ExtraDragCoef_1>
+            <ExtraDragArea_1>    0.00000</ExtraDragArea_1>
+            <ExtraDragCoef_2>    0.00000</ExtraDragCoef_2>
+            <ExtraDragArea_2>    0.00000</ExtraDragArea_2>
+            <ExtraDragCoef_3>    0.00000</ExtraDragCoef_3>
+            <ExtraDragArea_3>    0.00000</ExtraDragArea_3>
+            <ExtraDragCoef_4>    0.00000</ExtraDragCoef_4>
+            <ExtraDragArea_4>    0.00000</ExtraDragArea_4>
+        </ExtraDrag>
+        <Use_Plane_Inertia>true</Use_Plane_Inertia>
+        <Inertia_Value>
+            <Mass>   15.00000</Mass>
+            <CoG>    0.24476 -3.7007e-18   0.0023839</CoG>
+            <CoG_Ixx>    1.00729</CoG_Ixx>
+            <CoG_Iyy>    0.84225</CoG_Iyy>
+            <CoG_Izz>    1.81767</CoG_Izz>
+            <CoG_Ixz>    0.07757</CoG_Ixz>
+        </Inertia_Value>
+        <Inertia_gains>
+            <Mass_gain>    0.00000</Mass_gain>
+            <CoG_x_gain>    0.00000</CoG_x_gain>
+            <CoG_z_gain>    0.00000</CoG_z_gain>
+            <Ixx_gain>    0.00000</Ixx_gain>
+            <Iyy_gain>    0.00000</Iyy_gain>
+            <Izz_gain>    0.00000</Izz_gain>
+            <Ixz_gain>    0.00000</Ixz_gain>
+        </Inertia_gains>
+        <Angle_gains>
+            <Gain_1>    0.00000</Gain_1>
+            <Gain_2>   16.00000</Gain_2>
+        </Angle_gains>
+    </Polar>
+</Plane_Polar>

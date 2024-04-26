@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
-from msilib.schema import Component
 from typing import Any, Generator, Iterable, Iterator, Literal, Union, overload
 
 import numpy as np
@@ -19,7 +17,6 @@ from src.geometry.aircraft_geometry import (
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material
-from src.materials.materials_library import MaterialLibrary
 from src.structures.spar import StructuralSpar
 from src.utils.interpolation import vector_interpolation
 

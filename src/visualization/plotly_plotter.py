@@ -144,15 +144,16 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
 
     @staticmethod
     def _surface_color(z, color, transparency=True):
-        def normalize_color_value(value):
+        def normalize_color_value(value: int | float) -> float:
             if isinstance(value, (int, float)):
+                if 0 <= value <= 1:
+                    return value
+
                 return value / 255
-            elif 0 <= value <= 1:
-                return value
-            else:
-                raise ValueError(
-                    "Color value should be an integer or a float between 0 and 1", value
-                )
+
+            raise ValueError(
+                "Color value should be an integer or a float between 0 and 1", value
+            )
 
         if isinstance(color, tuple):
             if not all(isinstance(v, (int, float)) for v in color):
@@ -176,7 +177,7 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
         else:
             color_str = str(color)
 
-        surfacecolor = np.zeros_like(z) + 1
+        surfacecolor = np.zeros_like(z, dtype=float) + 1
         colorscale = [[0, color_str], [1, color_str]]
         return surfacecolor, colorscale
 
@@ -186,6 +187,7 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
         fig = go.Figure()
 
         labels = []
+        legend_added = set()
 
         for surface_structure, component_structure in structure.components(
             yield_structure=True
@@ -206,6 +208,16 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
                     name=name, surface_name=surface_name, component_name=component_name
                 )
             )
+            # Decide whether to show this trace in the legend
+            show_legend = False
+            if name not in legend_added:
+                show_legend = True
+                legend_added.add(
+                    name
+                )  # Add this name to the set so it won't be added again
+
+            # vc = np.full_like(i, 'black', dtype=str)
+            # vc = ['black' for _ in range(len(i))]
 
             # Add trace with a unique name and same legendgroup for toggling
             fig.add_trace(
@@ -217,11 +229,56 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
                     j=j,
                     k=k,
                     opacity=0.5,
-                    # name=f"{name} {idx + 1}",  # Unique name for each trace
+                    name=f"{name}",  # Unique name for each trace
                     legendgroup=f"{name}",  # Unique group for each trace
-                    # showlegend=True,  # Ensure the legend is shown
+                    showlegend=show_legend,  # Ensure the legend is shown
+                    # vertexcolor=vc,
                 )
             )
+
+            triangles = np.vstack((i, j, k)).T
+            vertices = np.vstack((x, y, z)).T
+            tri_points = vertices[triangles]
+
+            def pad_array(x: np.ndarray) -> np.ndarray:
+
+                tri_order = np.array([0, 1, 2, 0])
+                return np.pad(
+                    x[tri_order], pad_width=((0, 1), (0, 0)), constant_values=np.nan
+                )
+
+            wireframe = np.vstack([*map(pad_array, tri_points)])
+
+            xe, ye, ze = wireframe.T
+
+            show_legend = False
+            if "Wireframe" not in legend_added:
+                show_legend = True
+                legend_added.add(
+                    "Wireframe"
+                )  # Add this name to the set so it won't be added again
+
+            labels.append(
+                dict(
+                    name="Wireframe",
+                    surface_name=surface_name,
+                    component_name=component_name,
+                )
+            )
+
+            # define the trace for triangle sides
+            lines = go.Scatter3d(
+                x=xe,
+                y=ye,
+                z=ze,
+                mode="lines",
+                line=dict(color="rgb(70,70,70)", width=1),
+                name="Wireframe",  # Unique name for each trace
+                legendgroup="Wireframe",  # Unique group for each trace
+                showlegend=show_legend,  # Ensure the legend is shown
+            )
+
+            fig.add_trace(lines)
 
         surfaces_n = np.array([item["surface_name"] for item in labels])
         components_n = np.array([item["component_name"] for item in labels])
@@ -288,10 +345,23 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
         camera = dict(up=up, eye=eye)
 
         fig.update_layout(
-            title=structure.aircraft.name,
+            title=dict(
+                text=structure.aircraft.name, font=dict(size=24), automargin=True
+            ),
             scene=dict(camera=camera),
-            scene2=dict(camera=camera),
             template="plotly_dark",
+            margin=(dict(l=0, r=0, t=0, b=0)),
+            legend=dict(
+                xanchor="right",
+                x=1.0,
+                yanchor="top",
+                y=1.0,
+                # orientation="h",
+                # entrywidth=entrywidth,  # change it to 0.3
+                # entrywidthmode="fraction",
+            ),
+            paper_bgcolor="Black",
+            plot_bgcolor="black",
         )
 
         fig.show()

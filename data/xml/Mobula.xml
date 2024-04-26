@@ -54,7 +54,7 @@
                     <Twist>  1.500</Twist>
                     <x_number_of_panels>20</x_number_of_panels>
                     <x_panel_distribution>COSINE</x_panel_distribution>
-                    <y_number_of_panels>16</y_number_of_panels>
+                    <y_number_of_panels>8</y_number_of_panels>
                     <y_panel_distribution>UNIFORM</y_panel_distribution>
                     <Left_Side_FoilName>GOE 383 AIRFOIL</Left_Side_FoilName>
                     <Right_Side_FoilName>GOE 383 AIRFOIL</Right_Side_FoilName>
@@ -67,7 +67,7 @@
                     <Twist>  1.500</Twist>
                     <x_number_of_panels>20</x_number_of_panels>
                     <x_panel_distribution>COSINE</x_panel_distribution>
-                    <y_number_of_panels>10</y_number_of_panels>
+                    <y_number_of_panels>5</y_number_of_panels>
                     <y_panel_distribution>UNIFORM</y_panel_distribution>
                     <Left_Side_FoilName>GOE 383 AIRFOIL</Left_Side_FoilName>
                     <Right_Side_FoilName>GOE 383 AIRFOIL</Right_Side_FoilName>
@@ -80,7 +80,7 @@
                     <Twist>  0.750</Twist>
                     <x_number_of_panels>20</x_number_of_panels>
                     <x_panel_distribution>COSINE</x_panel_distribution>
-                    <y_number_of_panels>10</y_number_of_panels>
+                    <y_number_of_panels>5</y_number_of_panels>
                     <y_panel_distribution>UNIFORM</y_panel_distribution>
                     <Left_Side_FoilName>GOE 383 AIRFOIL-0.5 FX-73-CL-2-152</Left_Side_FoilName>
                     <Right_Side_FoilName>GOE 383 AIRFOIL-0.5 FX-73-CL-2-152</Right_Side_FoilName>
@@ -93,7 +93,7 @@
                     <Twist>  0.000</Twist>
                     <x_number_of_panels>20</x_number_of_panels>
                     <x_panel_distribution>COSINE</x_panel_distribution>
-                    <y_number_of_panels>16</y_number_of_panels>
+                    <y_number_of_panels>8</y_number_of_panels>
                     <y_panel_distribution>UNIFORM</y_panel_distribution>
                     <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
                     <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>
@@ -106,7 +106,7 @@
                     <Twist>  0.000</Twist>
                     <x_number_of_panels>20</x_number_of_panels>
                     <x_panel_distribution>COSINE</x_panel_distribution>
-                    <y_number_of_panels>16</y_number_of_panels>
+                    <y_number_of_panels>8</y_number_of_panels>
                     <y_panel_distribution>UNIFORM</y_panel_distribution>
                     <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
                     <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>
@@ -119,7 +119,7 @@
                     <Twist>  0.000</Twist>
                     <x_number_of_panels>20</x_number_of_panels>
                     <x_panel_distribution>COSINE</x_panel_distribution>
-                    <y_number_of_panels>20</y_number_of_panels>
+                    <y_number_of_panels>10</y_number_of_panels>
                     <y_panel_distribution>UNIFORM</y_panel_distribution>
                     <Left_Side_FoilName>FX 73-CL2-152</Left_Side_FoilName>
                     <Right_Side_FoilName>FX 73-CL2-152</Right_Side_FoilName>

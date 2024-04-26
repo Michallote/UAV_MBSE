@@ -18,9 +18,10 @@ def main():
     aircraft_geom.export_curves(
         output_path="data/output", ext="sldcrv", reference_system="SW", units="mm"
     )
+
     visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
-    # visualizer.plot_aircraft(aircraft_geom)
+    visualizer.plot_aircraft(aircraft_geom)
 
     materials = MaterialLibrary()
     balsa = materials["balsa"]
@@ -70,34 +71,8 @@ def main():
     }
 
     structure = StructuralModel(aircraft_geom, structure_config)
-    main_wing = structure.structures[0]
-    main_spar = main_wing.spars[0]
-    self = main_spar.spar
 
     visualizer.plot_structure(structure)
-
-    # self = structure
-
-    # a = structure.components()
-
-    # next(a)
-
-    # import pandas as pd
-
-    # df = pd.DataFrame(structure.summary_data())
-    # categories = df.select_dtypes(include="object").columns
-    # df[categories] = df[categories].astype("category")
-    # df.dtypes
-
-    # # Group by 'surface' and calculate the mean of 'mass', 'x', 'y', 'z'
-    # aggregated_data = df.groupby(by=["surface", "tag"]).agg(
-    #     {
-    #         "mass": "sum",  # Sum of masses
-    #         "x": "mean",  # Mean of x coordinates
-    #         "y": "mean",  # Mean of y coordinates
-    #         "z": "mean",  # Mean of z coordinates
-    #     }
-    # )
 
 
 if __name__ == "__main__":

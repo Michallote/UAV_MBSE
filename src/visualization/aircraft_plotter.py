@@ -1,3 +1,5 @@
+from typing import Literal, overload
+
 from src.visualization.base_class import BaseAircraftPlotter
 from src.visualization.matplotlib_plotter import MatplotlibAircraftPlotter
 from src.visualization.plotly_plotter import PlotlyAircraftPlotter
@@ -8,6 +10,18 @@ class AircraftPlotter:
     A factory class for creating aircraft plotter instances
     based on different backend technologies.
     """
+
+    @overload
+    @staticmethod
+    def get_plotter(
+        backend: Literal["Plotly"] | Literal["plotly"],
+    ) -> PlotlyAircraftPlotter: ...
+
+    @overload
+    @staticmethod
+    def get_plotter(
+        backend: Literal["Matplotlib"] | Literal["matplotlib"],
+    ) -> MatplotlibAircraftPlotter: ...
 
     @staticmethod
     def get_plotter(backend: str = "Plotly") -> BaseAircraftPlotter:
