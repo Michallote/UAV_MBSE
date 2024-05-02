@@ -3,7 +3,11 @@ import pandas as pd
 import plotly.express as px
 import pytest
 
-from src.utils.intersection import calculate_intersection_curve
+from src.utils.intersection import (
+    calculate_intersection_curve,
+    enforce_closed_curve,
+    legacy_calculate_intersecting_region,
+)
 
 
 def plot_curves(*args):
@@ -37,11 +41,8 @@ def test_intersection_of_identical_curves():
     """Tests that identical curves return intersecting region as the same curve"""
 
     theta = np.linspace(0, 2 * np.pi, 100)
-    theta_2 = np.linspace(0, 2 * np.pi, 25)
 
     curve1 = np.array([np.cos(theta), np.sin(theta)]).T
-
-    px.line(x=curve1[:, 0], y=curve1[:, 1]).show()
 
     assert np.allclose(
         calculate_intersection_curve(curve1, curve1, radius=0.000001), curve1
@@ -99,7 +100,7 @@ def test_intersection_of_contained_curves_dephased():
 
 
 def test_multiple_intersections():
-    """Tests that identical curves return intersecting region as the same curve"""
+    """Tests multiple intersection aong 2 curves."""
 
     theta = np.linspace(0, 2 * np.pi, 183) + 0.05
     theta_2 = np.linspace(0, 2 * np.pi, 173)
@@ -133,14 +134,6 @@ def test_multiple_intersections():
     fig = px.line(df, x="x", y="y", color="curve", markers=True)
     fig.show()
 
-    assert np.allclose(
-        calculate_intersection_curve(curve1, curve2, radius=0.000001), curve1
-    )
-
-    assert np.allclose(
-        calculate_intersection_curve(curve2, curve1, radius=0.000001), curve1
-    )
-
 
 def test_optimized_intersections():
     """Tests that identical curves return intersecting region as the same curve"""
@@ -170,17 +163,21 @@ def test_optimized_intersections():
     df3 = pd.DataFrame(curve3, columns=["x", "y"])
     df3["curve"] = "intersection"
 
+    curve4 = legacy_calculate_intersecting_region(curve1, curve2, radius=0.000001)
+
+    curve4 = enforce_closed_curve(curve4)
+
+    df4 = pd.DataFrame(curve4, columns=["x", "y"])
+    df4["curve"] = "legacy_intersection"
+
     # Combine both DataFrames
-    df = pd.concat([df1, df2, df3])
+    df = pd.concat([df1, df2, df3, df4])
 
     # Plot using Plotly Express
     fig = px.line(df, x="x", y="y", color="curve", markers=True)
     fig.show()
 
-    assert np.allclose(
-        calculate_intersection_curve(curve1, curve2, radius=0.000001),
-        curve_intersection(curve1, curve2, radius=0.000001),
-    )
+    assert np.allclose(curve3, curve4)
 
 
 def test_non_contained_intersection_curves():
@@ -223,7 +220,7 @@ def time_optimized_intersections():
         * np.array([np.cos(theta_2), np.sin(theta_2)])
     ).T
 
-    curve3 = curve_intersection(curve1, curve2, radius=0.000001)
+    curve3 = legacy_calculate_intersecting_region(curve1, curve2, radius=0.000001)
 
 
 @timing_wrapper

@@ -72,6 +72,8 @@ def main():
 
     structure = StructuralModel(aircraft_geom, structure_config)
 
+    structure
+
     visualizer.plot_structure(structure)
 
 

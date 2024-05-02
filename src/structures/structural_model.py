@@ -397,6 +397,12 @@ class StructuralModel:
             for ext_spar in self.ext_spars:
                 yield (None, ext_spar)
 
+    @property
+    def mass(self) -> PointMass:
+
+        masses = [wing.mass for wing in self.components(yield_structure=False)]
+        return compute_mass_center(masses, tag=self.aircraft.name)
+
 
 def compute_mass_center(point_masses: Iterable[PointMass], tag="") -> PointMass:
     """Performs center of mass operations

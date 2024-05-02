@@ -20,6 +20,3 @@ def test_parse_type():
     assert isinstance(parse_type("160.5"), float)
     assert isinstance(parse_type("160"), float)
     assert parse_type("      0.193,           0,           0") == [0.193, 0, 0]
-
-
-parse_xml_file("data/xml/test_sample.xml")

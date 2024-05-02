@@ -23,6 +23,20 @@ def triangle_area(v1, v2, v3) -> float:
     return 0.5 * np.linalg.norm(np.cross(v2 - v1, v3 - v1))  # type: ignore
 
 
+def triangle_normal(v1: np.ndarray, v2: np.ndarray, v3: np.ndarray) -> np.ndarray:
+    """Calculate the area of a triangle in 3D.
+    v1,v2,v3 are vertices of the triangle.
+
+    Returns
+    -------
+    float
+        Area of triangle
+    """
+    n = np.cross(v2 - v1, v3 - v1)
+    n = n / np.linalg.norm(n)
+    return n
+
+
 def surface_centroid_area(xx, yy, zz) -> tuple[np.ndarray, float]:
     """Calculates the centroid of a surface using triangulation methods
 
