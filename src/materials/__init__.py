@@ -1,5 +1,6 @@
 from consts import XML_MATERIAL_LIBRARY as __XML_MAT_LIB
 
+import os
 from .materials_library import (
     Material,
     MaterialLibrary,
@@ -18,5 +19,5 @@ __all__ = [
 
 __version__ = "1.0.0"
 
-
-MaterialLibrary().load_materials(__XML_MAT_LIB)
+if os.path.exists(__XML_MAT_LIB):
+    MaterialLibrary().load_materials(__XML_MAT_LIB)
