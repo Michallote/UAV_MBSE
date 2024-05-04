@@ -9,3 +9,5 @@ xflr5_files/*
 *.pyc
 data/propellers/*
 data/materials/*
+data/databases/airfoil_coordinates_db/*
+data/databases/airfoil_polars_db/*
