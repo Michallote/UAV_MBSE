@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -7,8 +6,8 @@ class OpPoint:
     def __init__(self):
         self.distributions = []
 
-    def read_file(self, OP_POINT_FILE):
-        with open(OP_POINT_FILE, "r") as f:
+    def read_file(self, op_point_file):
+        with open(op_point_file, "r") as f:
             lines = f.readlines()
 
         # Store every index of empty lines

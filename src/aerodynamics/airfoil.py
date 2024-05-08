@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import copy
 import os
-from functools import cached_property
+from functools import cached_property, lru_cache
 from typing import Self
 
 import matplotlib.pyplot as plt
@@ -159,24 +159,58 @@ class Airfoil:
             + np.interp(t, self.intrados.x, self.intrados.y)
         )
 
+    @lru_cache
+    def calculate_max_thickness(self, n_iter=4) -> tuple[float, float]:
+        """Calculates maximum thickness value and location of the airfoil
+
+        Parameters
+        ----------
+        n_iter : int, optional
+            number of iterations to find maximum, by default 4
+
+        Returns
+        -------
+        tuple[float, float]
+            x_thickness, max_thickness
+        """
+        x_thickness, max_thickness = find_max(self.thickness, n_iter=n_iter)
+        return x_thickness, max_thickness
+
+    @lru_cache
+    def calculate_max_camber(self, n_iter=4) -> tuple[float, float]:
+        """Calculates maximum camber value and location of the airfoil
+
+        Parameters
+        ----------
+        n_iter : int, optional
+            number of iterations to find maximum, by default 4
+
+        Returns
+        -------
+        tuple[float, float]
+            x_camber, max_camber
+        """
+        x_camber, max_camber = find_max(self.camber, n_iter=n_iter)
+        return x_camber, max_camber
+
     def max_thickness(self, n_iter=4) -> float:
         """Returns max thickness length"""
-        _, max_thickness = find_max(self.thickness, n_iter=n_iter)
+        _, max_thickness = self.calculate_max_thickness(n_iter)
         return max_thickness
 
     def max_camber(self, n_iter=4) -> float:
         """Returns max camber length"""
-        _, max_camber = find_max(self.camber, n_iter=n_iter)
+        _, max_camber = self.calculate_max_camber(n_iter)
         return max_camber
 
     def max_thickness_position(self, n_iter=4) -> float:
         """Returns x coordinate of max thickness"""
-        x_thickness, _ = find_max(self.thickness, n_iter=n_iter)
+        x_thickness, _ = self.calculate_max_thickness(n_iter)
         return x_thickness
 
     def max_camber_position(self, n_iter=4) -> float:
         """Returns x coordinate of max camber"""
-        x_camber, _ = find_max(self.camber, n_iter=n_iter)
+        x_camber, _ = self.calculate_max_camber(n_iter)
         return x_camber
 
     def resample(self, n_samples: int) -> Airfoil:
