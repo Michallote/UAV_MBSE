@@ -20,7 +20,7 @@ from src.geometry.surfaces import (
     project_points_to_plane,
 )
 from src.materials import Material
-from src.utils.interpolation import resample_curve, vector_interpolation
+from src.utils.interpolation import resample_curve
 from src.utils.intersection import (
     calculate_intersection_curve,
     enforce_closed_curve,

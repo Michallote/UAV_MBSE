@@ -360,15 +360,19 @@ class StructuralModel:
     @overload
     def components(
         self, yield_structure: Literal[False]
-    ) -> Iterator[Union[StructuralRib, StructuralSpar, SurfaceCoating]]: ...
+    ) -> Iterator[Union[StructuralRib, StructuralSpar, SurfaceCoating]]:
+        ...
 
     @overload
-    def components(self, yield_structure: Literal[True]) -> Iterator[
+    def components(
+        self, yield_structure: Literal[True]
+    ) -> Iterator[
         tuple[
             SurfaceStructure | None,
             Union[StructuralRib, StructuralSpar, SurfaceCoating],
         ]
-    ]: ...
+    ]:
+        ...
 
     def components(self, yield_structure=True) -> Iterator:
         """Yields each structure along with its component.

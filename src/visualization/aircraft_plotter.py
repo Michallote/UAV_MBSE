@@ -15,13 +15,15 @@ class AircraftPlotter:
     @staticmethod
     def get_plotter(
         backend: Literal["Plotly"] | Literal["plotly"],
-    ) -> PlotlyAircraftPlotter: ...
+    ) -> PlotlyAircraftPlotter:
+        ...
 
     @overload
     @staticmethod
     def get_plotter(
         backend: Literal["Matplotlib"] | Literal["matplotlib"],
-    ) -> MatplotlibAircraftPlotter: ...
+    ) -> MatplotlibAircraftPlotter:
+        ...
 
     @staticmethod
     def get_plotter(backend: str = "Plotly") -> BaseAircraftPlotter:

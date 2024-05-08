@@ -14,9 +14,8 @@ from src.geometry.aircraft_geometry import (
     AircraftGeometry,
     GeometricCurve,
     GeometricSurface,
-    all_different,
 )
-from src.structures.structural_model import StructuralModel, SurfaceStructure
+from src.structures.structural_model import StructuralModel
 from src.visualization.base_class import BaseAircraftPlotter
 
 

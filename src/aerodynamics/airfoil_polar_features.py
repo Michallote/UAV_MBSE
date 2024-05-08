@@ -6,7 +6,6 @@ import re
 
 import numpy as np
 import pandas as pd
-from pytest import param
 
 folder_path = "data/databases/airfoil_polars_db"
 polar_files = os.listdir(folder_path)
