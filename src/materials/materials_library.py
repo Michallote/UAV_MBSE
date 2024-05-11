@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Self
 
@@ -152,12 +153,12 @@ def parse_properties(
             "Data": parameter_data,
             "Qualifier": qualifier,
         }:
-            # print("case_1")
-            # print(f"{qualifier=}")
-            print(1, property_id[pr_id])
+            # logging.debug("case_1")
+            # logging.debug(f"{qualifier=}")
+            logging.debug(1, property_id[pr_id])
             physical_property = property_id[pr_id]
             params = parse_parameter(parameter_value, parameter_id)
-            print(params)
+            logging.debug(params)
             return (physical_property, params)
 
         case {
@@ -165,16 +166,16 @@ def parse_properties(
             "ParameterValue": parameter_value,
             "Data": parameter_data,
         }:
-            # print("case_2")
-            # print(property_id[pr_id])
-            print(2, property_id[pr_id])
+            # logging.debug("case_2")
+            # logging.debug(property_id[pr_id])
+            logging.debug(2, property_id[pr_id])
             physical_property = property_id[pr_id]
             params = parse_parameter(parameter_value, parameter_id)
-            print(params)
+            logging.debug(params)
             return (physical_property, params)
 
         case _:
-            print(f"No property cases: {properties}")
+            logging.debug(f"No property cases: {properties}")
 
 
 def parse_parameter(parameter_value, parameter_id: Dict[str, PhysicalProperty]):
@@ -199,7 +200,7 @@ def parse_parameter(parameter_value, parameter_id: Dict[str, PhysicalProperty]):
             return MaterialProperty(parameter_id[pa_id], value)
 
         case _:
-            print(f"Unmatched params: {parameter_value}")
+            logging.debug(f"Unmatched params: {parameter_value}")
 
 
 # Main Execution Flow

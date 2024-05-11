@@ -165,7 +165,9 @@ def aguinaldo(base_salary, startdate, aguinaldo_date, dias_aguinaldo=15):
     return monto
 
 
-def calcular_salario_integrado(monto_vales: float | None = None, p_vales: float = 0.1):
+def legacy_calcular_salario_integrado(
+    monto_vales: float | None = None, p_vales: float = 0.1
+):
 
     base_salary = 40000
     bono_puntualidad = bono_asistencia = 0.1
