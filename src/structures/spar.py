@@ -20,6 +20,10 @@ from src.geometry.surfaces import (
     project_points_to_plane,
 )
 from src.materials import Material
+from src.structures.inertia_tensor import (
+    compute_inertia_tensor_of_shell,
+    triangulate_mesh,
+)
 from src.utils.interpolation import resample_curve
 from src.utils.intersection import (
     calculate_intersection_curve,
@@ -108,12 +112,29 @@ class StructuralSpar:
 
         return x, y, z, i, j, k
 
+    def inertia(self, origin: np.ndarray) -> np.ndarray:
+        x, y, z, i, j, k = self.mesh
+
+        triangles = triangulate_mesh(x, y, z, i, j, k)
+
+        triangles = triangles - origin
+
+        return compute_inertia_tensor_of_shell(
+            triangles, thickness=self.thickness, density=self.material.density
+        )
+
+    @property
+    def thickness(self) -> float:
+        return self.spar.thickness
+
 
 class SparStrategy(ABC):
     """Represents different spar construction methods"""
 
+    thickness: float
+
     @abstractmethod
-    def __init__():
+    def __init__(self):
         """Initializes the geometry implementation"""
 
     @staticmethod
@@ -124,9 +145,7 @@ class SparStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def create_spar(
-        surface: GeometricSurface, thickness: float, **kwargs
-    ) -> SparStrategy:
+    def create_spar(*args, **kwargs) -> SparStrategy:
         """Creates a main spar choosing the optimal position for that type of spar.
         Usually by maximizing and objective function."""
 
@@ -297,7 +316,21 @@ class FlatSpar(SparStrategy):
         )
 
         data = np.vstack([curve_1, np.flip(curve_2, axis=0)])
-        curve = GeometricCurve(name="Spar", data=data)
+
+        # Eliminate repeated points to avoid triangulation errors (negative volume triangles)
+        # Finding unique rows and preserving order
+        _, idx = np.unique(data, axis=0, return_index=True)
+        unique_ordered_data = data[np.sort(idx)]
+
+        curve = GeometricCurve(name="Spar", data=unique_ordered_data)
+
+        # Improve curve resolution
+        n_original = len(curve)
+        n_seg = n_original - 1
+        resolution_level = 2
+
+        n_samples = n_original + n_seg * resolution_level
+        curve = curve.resample(n_samples)
 
         return curve
 

@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Any
 
 import numpy as np
 
@@ -31,7 +32,7 @@ def create_triangle_prism(
     return prism
 
 
-def triangulate_mesh(x, y, z, i, j, k):
+def triangulate_mesh(x, y, z, i, j, k) -> np.ndarray[Any, np.dtype[Any]]:
     triangle_indices = np.vstack((i, j, k)).T
     vertices = np.vstack((x, y, z)).T
     triangles = vertices[triangle_indices]
@@ -40,7 +41,7 @@ def triangulate_mesh(x, y, z, i, j, k):
 
 def compute_inertia_tensor_of_shell(
     triangles: np.ndarray, density: float, thickness: float, midsurface: bool = True
-):
+) -> np.ndarray:
     """$x^2$"""
 
     partial_create_prism = partial(
@@ -54,6 +55,8 @@ def compute_inertia_tensor_of_shell(
         list(map(triangle_prism_inertia_tensor, prisms_coordinates)), axis=-1
     )
     inertia_tensor = np.sum(inertia_tensor, axis=-1) * density
+
+    return inertia_tensor
 
 
 def triangle_prism_inertia_tensor(prism_coordinates):

@@ -17,6 +17,10 @@ from src.geometry.aircraft_geometry import (
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material
+from src.structures.inertia_tensor import (
+    compute_inertia_tensor_of_shell,
+    triangulate_mesh,
+)
 from src.structures.spar import StructuralSpar
 from src.utils.interpolation import vector_interpolation
 
@@ -72,6 +76,17 @@ class StructuralRib:
         i, j, k = indices.T
 
         return x, y, z, i, j, k
+
+    def inertia(self, origin: np.ndarray) -> np.ndarray:
+        x, y, z, i, j, k = self.mesh
+
+        triangles = triangulate_mesh(x, y, z, i, j, k)
+
+        triangles = triangles - origin
+
+        return compute_inertia_tensor_of_shell(
+            triangles, thickness=self.thickness, density=self.material.density
+        )
 
 
 class SurfaceCoating:
@@ -146,6 +161,17 @@ class SurfaceCoating:
         zz = self.surface.zz
         x, y, z, i, j, k = create_surface_mesh(xx, yy, zz)
         return x, y, z, i, j, k
+
+    def inertia(self, origin: np.ndarray) -> np.ndarray:
+        x, y, z, i, j, k = self.mesh
+
+        triangles = triangulate_mesh(x, y, z, i, j, k)
+
+        triangles = triangles - origin
+
+        return compute_inertia_tensor_of_shell(
+            triangles, thickness=self.thickness, density=self.material.density
+        )
 
 
 class SurfaceStructure:
@@ -316,6 +342,7 @@ class StructuralModel:
 
     aircraft: AircraftGeometry
     structures: list[SurfaceStructure]
+    ext_spars: list[StructuralSpar]
 
     def __init__(
         self,
@@ -360,19 +387,15 @@ class StructuralModel:
     @overload
     def components(
         self, yield_structure: Literal[False]
-    ) -> Iterator[Union[StructuralRib, StructuralSpar, SurfaceCoating]]:
-        ...
+    ) -> Iterator[Union[StructuralRib, StructuralSpar, SurfaceCoating]]: ...
 
     @overload
-    def components(
-        self, yield_structure: Literal[True]
-    ) -> Iterator[
+    def components(self, yield_structure: Literal[True]) -> Iterator[
         tuple[
             SurfaceStructure | None,
             Union[StructuralRib, StructuralSpar, SurfaceCoating],
         ]
-    ]:
-        ...
+    ]: ...
 
     def components(self, yield_structure=True) -> Iterator:
         """Yields each structure along with its component.
@@ -406,6 +429,70 @@ class StructuralModel:
 
         masses = [wing.mass for wing in self.components(yield_structure=False)]
         return compute_mass_center(masses, tag=self.aircraft.name)
+
+    @property
+    def inertia(self) -> np.ndarray:
+        """Returns the inertia tensor about the center of gravity"""
+
+        center_of_gravity = self.mass.coordinates
+
+        inertia_gen = [
+            component.inertia(origin=center_of_gravity)
+            for component in self.components(yield_structure=False)
+        ]
+
+        [
+            (surface, component, component.inertia(origin=center_of_gravity))
+            for surface, component in self.components(yield_structure=True)
+            if np.any(np.isnan(component.inertia(origin=center_of_gravity)))
+        ]
+
+        bad_components = [
+            i for i, tensor in enumerate(inertia_gen) if np.any(np.isnan(tensor))
+        ]
+
+        components = list(self.components(yield_structure=False))
+
+        for i, error_comp in zip(bad_components, components):
+            print(i, type(error_comp))
+            print(error_comp.inertia(origin=center_of_gravity))
+
+        n = 8
+        components[n].inertia(origin=center_of_gravity)
+        error_comp = components[n]
+        type(error_comp)
+        error_comp._strategy
+        error_comp.surface.surface_type
+        error_comp.mass
+        error_comp.thickness
+
+        x, y, z, i, j, k = error_comp.mesh
+        triangles = triangulate_mesh(x, y, z, i, j, k)
+        triangles = triangles - center_of_gravity
+
+        thickness = error_comp.thickness
+
+        wild_card = next(
+            i for i, tensor in enumerate(tensors) if np.any(np.isnan(tensor))
+        )
+
+        triangles[wild_card]
+
+        next(inertia_gen)
+
+        curve = error_comp.spar.curve
+        idcs = curve.triangulation_indices()
+
+        curve.data[0]
+        curve.data[-1]
+
+        idcs[wild_card]
+
+        tri = curve.triangulate_curve()[wild_card]
+
+        curve.data
+
+        return None
 
 
 def compute_mass_center(point_masses: Iterable[PointMass], tag="") -> PointMass:
