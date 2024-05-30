@@ -5,17 +5,33 @@ from __future__ import annotations
 import copy
 import os
 from functools import cached_property, lru_cache
-from typing import Self
+from typing import Optional, Self
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from src.geometry.spatial_array import SpatialArray
 from src.utils.interpolation import find_max, resample_curve
+from src.utils.intersection import line_segment_intersection
+from src.utils.transformations import rotation_matrix2d
 
 
 class Airfoil:
     """Represents airfoil data and properties."""
+
+    name: str
+
+    data: np.ndarray
+    intrados: np.ndarray
+    extrados: np.ndarray
+
+    leading_edge: SpatialArray
+    trailing_edge: SpatialArray
+    trailing_edge2: SpatialArray
+
+    index_le: int
+    index_te: int
+    index_te2: int
 
     def __init__(self, name: str, data: np.ndarray) -> None:
         self.name = name
@@ -140,7 +156,7 @@ class Airfoil:
 
         return SpatialArray([x_centroid, y_centroid])
 
-    def thickness(self, t):
+    def thickness(self, t) -> np.ndarray:
         """
         Returns the camber (camber/chord) value with %c (0->1) as input
         -------
@@ -150,7 +166,7 @@ class Airfoil:
             t, self.intrados.x, self.intrados.y
         )
 
-    def camber(self, t):
+    def camber(self, t) -> np.ndarray:
         """
         Returns the thickness (t/c) value with %c (0->1) as input
         """
@@ -251,12 +267,123 @@ class Airfoil:
         plt.xlim((-0.05, 1.05))
         plt.legend([self.name])
 
+    def save(self, filename: Optional[str] = None) -> None:
+
+        if not filename:
+            filename = f"{self.name}.dat"
+
+        write_airfoil_dat(filename, self.name, self.data)
+        print(f"Saved airfoil to {filename}")
+
+    def with_trailing_edge_gap(self, te_gap: float, blend_distance: float) -> Airfoil:
+        """
+        Calculates the new airfoil coordinates with
+        a trailing edge gap. Returns a new instance of Airfoil
+
+        Parameters:
+        - te_gap: Desired trailing edge gap. (x/c) coordinates. domain (0, 1)
+        - blend_distance: Distance over which to blend the gap. domain (0, 1)
+
+        Returns:
+        - New Airfoil object with updated coordinates.
+        """
+        coordinates = airfoil_te_gap_coordinates(self, te_gap, blend_distance)
+        return Airfoil(name=self.name, data=coordinates)
+
+
+def airfoil_te_gap_coordinates(
+    airfoil: Airfoil, te_gap: float, blend_distance: float
+) -> np.ndarray:
+    """
+    Calculate airfoil coordinates with a specified trailing edge gap and blend distance.
+
+    Parameters:
+    - airfoil: Airfoil object containing airfoil data and characteristics.
+    - te_gap: Desired trailing edge gap.
+    - blend_distance: Distance over which to blend the gap.
+
+    Returns:
+    - Updated airfoil coordinates as a NumPy array.
+    """
+    # Extract airfoil data
+    data = airfoil.data
+    trailing_edge = airfoil.trailing_edge
+    trailing_edge2 = airfoil.trailing_edge2
+    leading_edge = airfoil.leading_edge
+    le_index = airfoil.index_le
+
+    # Calculate chord and mean trailing edge
+    mean_trailing_edge: np.ndarray = np.mean([trailing_edge, trailing_edge2], axis=0)
+    chord = mean_trailing_edge - leading_edge
+    epsilon = 1e-3
+
+    # Compute the trailing edge gap vector and its magnitude
+    dt = trailing_edge - trailing_edge2
+    gap = np.linalg.norm(dt)
+
+    # Normalize the trailing edge gap vector
+    if gap > 0:
+        dt = dt / gap
+    else:
+        # Determine dt vector to offset TE perpendicular to camber line tangent
+        x_t = np.array([trailing_edge.x - epsilon, trailing_edge.x])
+        y_t = airfoil.camber(x_t)
+        mean_camber_te = np.diff(np.array([x_t, y_t]))
+        dt = rotation_matrix2d(theta=np.pi / 2) @ mean_camber_te
+        dt = dt.flatten() / np.linalg.norm(dt)
+
+    # Ensure blend distance is within the valid range
+    blend_distance = np.clip(blend_distance, 0.0, 1.0)
+    dgap = te_gap - gap
+
+    # Normalize chord coordinates
+    xoc = np.dot((data - leading_edge), chord) / np.linalg.norm(chord)
+
+    # Calculate thickness factor for blending
+    arg = np.minimum((1.0 - xoc) * (1.0 / blend_distance - 1.0), 15.0)
+    thickness_factor = np.exp(-arg)
+
+    # Determine offset direction (1 for upper surface, -1 for lower surface)
+    offset_dir = np.where(np.arange(len(data)) <= le_index, 1, -1)
+
+    # Calculate offsets for the trailing edge gap adjustment
+    offsets = 0.5 * offset_dir * dgap * thickness_factor * xoc
+    offsets = np.c_[offsets] * dt
+
+    coordinates = data + offsets
+
+    #Ensure the airfoil does not self intersect:
+    intersection = line_segment_intersection(coordinates[[0, 1]], coordinates[[-2, -1]])  # type: ignore
+
+    if te_gap == 0 or intersection is not None:
+        coordinates[-1] = coordinates[0]
+
+    # Return the adjusted airfoil coordinates
+    return coordinates
+
 
 def slice_shift(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Returns the x[i] and x[i+1] arrays for numerical calculations xi, xf
     """
     return x[:-1], x[1:]
+
+
+def write_airfoil_dat(
+    filename: str, airfoil_name: str, coordinates: np.ndarray
+) -> None:
+    with open(filename, "w") as file:
+        # Write the airfoil name on the first line
+        file.write(airfoil_name + "\n")
+
+        # Write each coordinate pair in the specified format
+        for x, y in coordinates:
+            # Format the coordinates to ensure they are exactly 9 characters long including the comma
+            x_sep, y_sep = " " if x >= 0 else "", " " * 5 if y >= 0 else " " * 4
+            formatted_coords = f"{x_sep}{x:.8f}{y_sep}{y:.8f}"
+
+            # Write the coordinates separated by 5 spaces
+            file.write(formatted_coords + "\n")
 
 
 class AirfoilFactory:

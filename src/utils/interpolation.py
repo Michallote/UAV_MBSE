@@ -1,10 +1,11 @@
 """Interpolation functions module"""
+
 from typing import Callable, Tuple
 
 import numpy as np
 
 
-def _linear_interpolate(curve: np.ndarray, indices: np.ndarray) -> np.ndarray:
+def ndarray_linear_interpolate(curve: np.ndarray, indices: np.ndarray) -> np.ndarray:
     """
     Perform linear interpolation on a curve at given indices.
 
@@ -50,7 +51,7 @@ def resample_curve(curve: np.ndarray, num_samples: int) -> np.ndarray:
     """
     original_length = curve.shape[0]
     interpolated_indices = np.linspace(0, original_length - 1, num_samples)
-    return _linear_interpolate(curve, interpolated_indices)
+    return ndarray_linear_interpolate(curve, interpolated_indices)
 
 
 def vector_interpolation(
@@ -74,7 +75,7 @@ def vector_interpolation(
         The interpolated values.
     """
     interpolation_indices = np.interp(x, xp, np.arange(len(xp)))
-    return _linear_interpolate(curve, interpolation_indices)
+    return ndarray_linear_interpolate(curve, interpolation_indices)
 
 
 def find_max(
@@ -117,3 +118,36 @@ def find_max(
         x_interp_min = x_interp[i_second_max]
 
     return x_interp_max, np.max(values)  # type: ignore
+
+
+# Pad matrix to normalize
+def pad_arrays(arr1: np.ndarray, arr2: np.ndarray, constant_values=-999) -> np.ndarray:
+    """Pads array to normalize the shape
+
+    Parameters
+    ----------
+     - arr1 : _type_
+            array 1
+     - arr2 : _type_
+            array 2
+
+    Returns
+    -------
+    np.ndarray
+        Single hstacked padded array
+    """
+    max_cols = max(arr1.shape[0], arr2.shape[0])
+    mat1_padded = np.pad(
+        arr1,
+        ((0, max_cols - arr1.shape[0]), (0, 0)),
+        mode="constant",
+        constant_values=constant_values,
+    )
+    mat2_padded = np.pad(
+        arr2,
+        ((0, max_cols - arr2.shape[0]), (0, 0)),
+        mode="constant",
+        constant_values=constant_values,
+    )
+
+    return np.hstack([mat1_padded, mat2_padded])

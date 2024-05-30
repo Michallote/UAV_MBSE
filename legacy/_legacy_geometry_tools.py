@@ -4,15 +4,16 @@ Created on Wed Nov  2 16:46:54 2022
 
 @author: Michel Gordillo
 """
-from main_MBSE import Aircraft, AeroSurface, Section, SurfaceType
-from typing import List
-import numpy as np
-import pandas as pd
 from dataclasses import dataclass
+from typing import List
 
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from matplotlib import cm
 from matplotlib.colors import LightSource
+
+from legacy._legacy_main_MBSE import AeroSurface, Aircraft, Section, SurfaceType
 
 
 @dataclass
@@ -39,7 +40,8 @@ class GeometricCurve:
 class GeometricSurface:
     """Represents a geometric surface with data as lists of the x, y, and z coordinates
     for each location of a patch. A surface from the points is specified by the matrices
-    and will then connect those points by linking the values next to each other in the matrix"""
+    and will then connect those points by linking the values next to each other in the matrix
+    """
 
     xx: np.ndarray = np.array([])
     yy: np.ndarray = np.array([])

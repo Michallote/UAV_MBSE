@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import deque
+from typing import Literal, overload
 
 import matplotlib.path as mpath
 import numpy as np
@@ -214,6 +215,18 @@ def construct_intersection_curve(curve1: np.ndarray, curve2: np.ndarray) -> np.n
             pointer_b += 1
 
     return np.array(intersection_curve)
+
+
+@overload
+def line_segment_intersection(
+    segment1: np.ndarray, segment2: np.ndarray, return_params: Literal[False]
+) -> np.ndarray | None: ...
+
+
+@overload
+def line_segment_intersection(
+    segment1: np.ndarray, segment2: np.ndarray, return_params: Literal[True]
+) -> tuple[np.ndarray, float, float] | None: ...
 
 
 def line_segment_intersection(

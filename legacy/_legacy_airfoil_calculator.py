@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.collections import PolyCollection
 
-from main_MBSE import Airfoil
+from legacy._legacy_main_MBSE import Airfoil
 
 
 def path_join(path, filename):

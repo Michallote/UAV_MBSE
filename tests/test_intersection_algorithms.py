@@ -3,7 +3,6 @@ import time
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import pytest
 
 from src.utils.intersection import (
     calculate_intersection_curve,
@@ -37,6 +36,8 @@ def plot_curves(*args):
     fig.update_yaxes(scaleanchor="x")
 
     fig.show()
+
+    return fig
 
 
 def test_intersection_of_identical_curves():

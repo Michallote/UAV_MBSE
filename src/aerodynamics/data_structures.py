@@ -1,5 +1,6 @@
 """Module providing classes with object relational mapping 
 for XFLR5 planes"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -223,7 +224,7 @@ class Section:
     dihedral: float
     twist: float
     foil_name: str
-    airfoil: Airfoil  # Replace 'Any' with the specific type if known
+    airfoil: Airfoil
     x_panels: int
     x_panel_dist: str
     y_panels: int
