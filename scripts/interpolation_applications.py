@@ -5,7 +5,7 @@ import tikzplotly
 
 from src.aerodynamics.airfoil import Airfoil
 from src.geometry.spatial_array import SpatialArray
-from src.utils.interpolation import ndarray_linear_interpolate
+from src.utils.interpolation import ndarray_linear_interpolate, resample_curve
 from src.utils.transformations import rotation_matrix2d
 from tests.test_intersection_algorithms import plot_curves
 
@@ -16,7 +16,7 @@ a3 = ndarray_linear_interpolate(
 )
 
 fig = plot_curves(*a3)
-tikzplotly.save("airfoil_blending.tex", fig)
+# tikzplotly.save("airfoil_blending.tex", fig)
 
 n = 100
 a4 = Airfoil.from_file("data/databases/airfoil_coordinates_db/s1223rtl.dat").resample(n)
@@ -25,7 +25,7 @@ a6 = a4.resample(n // 2)
 
 
 fig2 = plot_curves(a4.data, a5.data, a6.data)
-tikzplotly.save("airfoil_resampling.tex", fig2)
+# tikzplotly.save("airfoil_resampling.tex", fig2)
 
 
 import plotly.graph_objects as go
@@ -81,4 +81,53 @@ fig.update_layout(
 )
 
 fig.show()
-tikzplotly.save("spatial_interpolation.tex", fig)
+# tikzplotly.save("spatial_interpolation.tex", fig)
+
+
+curves[0].data
+
+
+import io
+
+import numpy as np
+
+# Example arrays
+array1 = np.random.rand(5, 3)
+array2 = np.random.rand(4, 3)
+array3 = np.random.rand(6, 3)
+
+
+def write_tikz_surface_file(arrays: list[np.ndarray], filename="output.dat"):
+    # Create a StringIO object
+    output = io.StringIO()
+
+    # Write each array to the StringIO object
+    for array in arrays:
+        np.savetxt(output, array, delimiter=" ")
+        output.write("\n")
+
+    # Get the content of the StringIO object
+    content = output.getvalue()
+
+    # Write the content to a .dat file
+
+    with open(filename, "w") as file:
+        file.write(content)
+
+    print(f"Arrays saved to {filename}.")
+
+
+n = 60
+arrays = [curve.resample(n_samples=n).data for curve in curves]
+
+n = len(arrays)
+ims = 0
+
+n = n + (n - 1) * ims
+
+arrays = resample_curve(np.array(arrays), num_samples=n)
+
+
+write_tikz_surface_file(
+    arrays, filename="/home/neptorqc2/Documents/TesisMich/Thesis/Graphs/CSV/output.dat"
+)

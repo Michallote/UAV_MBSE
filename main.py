@@ -20,9 +20,9 @@ def main():
     #     output_path="data/output", ext="sldcrv", reference_system="SW", units="mm"
     # )
 
-    # visualizer = AircraftPlotter.get_plotter(backend="Plotly")
+    visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
-    # visualizer.plot_aircraft(aircraft_geom)
+    visualizer.plot_aircraft(aircraft_geom)
 
     materials = MaterialLibrary()
     balsa = materials["balsa"]
@@ -75,7 +75,7 @@ def main():
 
     self = structure
 
-    # visualizer.plot_structure(structure)
+    visualizer.plot_structure(structure)
 
 
 if __name__ == "__main__":
