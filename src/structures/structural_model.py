@@ -17,6 +17,7 @@ from src.geometry.aircraft_geometry import (
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material
+from src.structures import inertia_tensor
 from src.structures.inertia_tensor import (
     compute_inertia_tensor_of_shell,
     triangulate_mesh,
@@ -436,63 +437,22 @@ class StructuralModel:
 
         center_of_gravity = self.mass.coordinates
 
-        inertia_gen = [
-            component.inertia(origin=center_of_gravity)
-            for component in self.components(yield_structure=False)
-        ]
+        return self.compute_inertia_tensor(center_of_gravity)
 
-        [
-            (surface, component, component.inertia(origin=center_of_gravity))
-            for surface, component in self.components(yield_structure=True)
-            if np.any(np.isnan(component.inertia(origin=center_of_gravity)))
-        ]
+    def compute_inertia_tensor(self, coordinate: np.ndarray) -> np.ndarray:
+        """Returns the inertia tensor about the coordinate provided"""
 
-        bad_components = [
-            i for i, tensor in enumerate(inertia_gen) if np.any(np.isnan(tensor))
-        ]
-
-        components = list(self.components(yield_structure=False))
-
-        for i, error_comp in zip(bad_components, components):
-            print(i, type(error_comp))
-            print(error_comp.inertia(origin=center_of_gravity))
-
-        n = 8
-        components[n].inertia(origin=center_of_gravity)
-        error_comp = components[n]
-        type(error_comp)
-        error_comp._strategy
-        error_comp.surface.surface_type
-        error_comp.mass
-        error_comp.thickness
-
-        x, y, z, i, j, k = error_comp.mesh
-        triangles = triangulate_mesh(x, y, z, i, j, k)
-        triangles = triangles - center_of_gravity
-
-        thickness = error_comp.thickness
-
-        wild_card = next(
-            i for i, tensor in enumerate(tensors) if np.any(np.isnan(tensor))
+        inertia_gen = np.stack(
+            [
+                component.inertia(origin=coordinate)
+                for component in self.components(yield_structure=False)
+            ],
+            axis=-1,
         )
 
-        triangles[wild_card]
+        inertia_tensor = np.sum(inertia_gen, axis=-1)
 
-        next(inertia_gen)
-
-        curve = error_comp.spar.curve
-        idcs = curve.triangulation_indices()
-
-        curve.data[0]
-        curve.data[-1]
-
-        idcs[wild_card]
-
-        tri = curve.triangulate_curve()[wild_card]
-
-        curve.data
-
-        return None
+        return inertia_tensor
 
 
 def compute_mass_center(point_masses: Iterable[PointMass], tag="") -> PointMass:

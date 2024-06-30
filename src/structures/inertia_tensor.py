@@ -3,7 +3,7 @@ from typing import Any
 
 import numpy as np
 
-from src.geometry.surfaces import triangle_normal
+from src.geometry.surfaces import triangle_area, triangle_normal
 
 
 def create_triangle_prism(
@@ -36,13 +36,32 @@ def triangulate_mesh(x, y, z, i, j, k) -> np.ndarray[Any, np.dtype[Any]]:
     triangle_indices = np.vstack((i, j, k)).T
     vertices = np.vstack((x, y, z)).T
     triangles = vertices[triangle_indices]
+    triangles = filter_degenerate_triangles(triangles)
     return triangles
+
+
+def filter_degenerate_triangles(triangles: np.ndarray) -> np.ndarray:
+    """Filter degenerate triangles (area close to 0.0)
+
+    Parameters
+    ----------
+     - triangles : np.ndarray
+            array of triangle vertices
+
+    Returns
+    -------
+    np.ndarray
+        Triangles filtered
+    """
+    return np.array([*filter(lambda x: ~np.isclose(triangle_area(*x), 0.0), triangles)])
 
 
 def compute_inertia_tensor_of_shell(
     triangles: np.ndarray, density: float, thickness: float, midsurface: bool = True
 ) -> np.ndarray:
     """$x^2$"""
+
+    triangles = filter_degenerate_triangles(triangles)
 
     partial_create_prism = partial(
         create_triangle_prism, thickness=thickness, midsurface=midsurface

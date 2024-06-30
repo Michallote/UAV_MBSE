@@ -22,7 +22,7 @@ def main():
 
     visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
-    visualizer.plot_aircraft(aircraft_geom)
+    # visualizer.plot_aircraft(aircraft_geom)
 
     materials = MaterialLibrary()
     balsa = materials["balsa"]
@@ -75,7 +75,11 @@ def main():
 
     self = structure
 
-    visualizer.plot_structure(structure)
+    structure.inertia
+
+    print("Hi")
+
+    # visualizer.plot_structure(structure)
 
 
 if __name__ == "__main__":
