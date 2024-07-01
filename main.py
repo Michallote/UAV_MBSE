@@ -5,6 +5,7 @@ from src.geometry.aircraft_geometry import AircraftGeometry
 from src.materials import MaterialLibrary
 from src.structures.spar import FlatSpar, TorsionBoxSpar
 from src.structures.structural_model import StructuralModel
+from src.utils.units import Units as units
 from src.visualization import AircraftPlotter
 
 
@@ -15,6 +16,14 @@ def main():
     airfoil_factory.cache_airfoils()
     aircraft = Aircraft.from_xml("data/xml/Mobula2.xml")
 
+    te_gap_config = {
+        SurfaceType.MAINWING: {"te_gap_width": 3.0 * units.mm, "blend_distance": 0.75},
+        SurfaceType.ELEVATOR: {"te_gap_width": 2.5 * units.mm},
+        SurfaceType.FIN: {"te_gap_width": 2.5 * units.mm},
+    }
+
+    aircraft.set_trailing_edge_gaps(te_gap_config)
+
     aircraft_geom = AircraftGeometry(aircraft)
     # aircraft_geom.export_curves(
     #     output_path="data/output", ext="sldcrv", reference_system="SW", units="mm"
@@ -22,7 +31,7 @@ def main():
 
     visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
-    # visualizer.plot_aircraft(aircraft_geom)
+    visualizer.plot_aircraft(aircraft_geom)
 
     materials = MaterialLibrary()
     balsa = materials["balsa"]

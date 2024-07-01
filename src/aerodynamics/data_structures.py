@@ -102,10 +102,46 @@ class Aircraft:
         return parse_plane(data)
 
     @staticmethod
-    def from_xml(path: str):
+    def from_xml(path: str) -> Aircraft:
         """Creates an Aircraft instance from an XML file"""
         plane_data = parse_xml_file(path)
         return Aircraft.from_dict(plane_data)
+
+    def set_trailing_edge_gaps(
+        self,
+        te_gap_config: dict[SurfaceType, dict[str, float]] | dict[SurfaceType, float],
+    ):
+        """Sets the trailing gap of all surfaces through a configuration dictionary
+
+        Parameters
+        ----------
+         - te_gap_config : dict[SurfaceType, dict]
+                Trailing edge configuration dictionary
+
+        Example
+        ----------
+        When te_gap_config is of type dict[SurfaceType, float]
+        the method will use the provided value as the te_gap_width.
+
+        te_gap_config = {SurfaceType.MAINWING: 0.0005, SurfaceType.ELEVATOR:  0.00025}
+
+        To configure the blend_distance a dictionary with the explicit keywords is to be provided:
+
+        te_gap_config = {SurfaceType.MAINWING: {"te_gap_width": 0.0005, "blend_distance": 0.5},
+                        SurfaceType.ELEVATOR: {"te_gap_width": 0.00025},
+                        SurfaceType.FIN: {"te_gap_width": 0.00025}}
+
+        aircraft.set_trailing_edge_gaps(te_gap_config)
+        """
+
+        for surface in self.surfaces:
+            surf_config = te_gap_config.get(surface.surface_type)
+            if surf_config is not None:
+
+                if isinstance(surf_config, (float, int)):
+                    surface.set_te_gap(surf_config)
+                else:
+                    surface.set_te_gap(**surf_config)
 
     def __iter__(self) -> Iterator[AeroSurface]:
         for surface in self.surfaces:
@@ -208,6 +244,26 @@ class AeroSurface:
     @property
     def wingspans(self) -> np.ndarray:
         return np.array([section.wingspan for section in self.sections])
+
+    def set_te_gap(self, te_gap_width: float, blend_distance: float = 1.0):
+        """Sets the trailing edge gap of airfoils to a constant width (in meters)
+
+        Parameters
+        ----------
+         - te_gap : float
+                Gap [m] for the surface trailing edge.
+         - blend_distance : float
+                Controls how far from the TE the transition begins,
+                    ranges between 0.0 and 1.0
+        """
+
+        for section in self.sections:
+            chord = section.chord
+            te_gap = te_gap_width / chord
+            airfoil_te = section.airfoil.with_trailing_edge_gap(
+                te_gap=te_gap, blend_distance=blend_distance
+            )
+            section.airfoil = airfoil_te
 
     def __repr__(self) -> str:
         return f"({self.name}, {repr(self.surface_type)}, No. Sections: {len(self.sections)})"
