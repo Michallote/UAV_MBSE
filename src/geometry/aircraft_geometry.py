@@ -15,7 +15,9 @@ from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import triangle_area
 from src.utils.interpolation import resample_curve
 from src.utils.transformations import (
+    get_plane_normal_vector,
     get_ref_coordinate_system,
+    reflect_curve_by_plane,
     transform_coordinates,
     transform_to_global_coordinate_system,
 )
@@ -307,6 +309,31 @@ class GeometricCurve:
             name=airfoil.name, data=curve3d, airfoil=airfoil, section=section
         )
 
+    def mirror(self, mirror_plane: Literal["xy", "xz", "yz"]) -> GeometricCurve:
+        """Returns the mirrored version of the curve about the mirror_plane
+
+        Parameters
+        ----------
+         - mirror_plane : Literal[&quot;xy&quot;, &quot;xz&quot;, &quot;yz&quot;]
+                Name of the plane to mirror about
+
+        Returns
+        -------
+        GeometricCurve
+            Mirrored geometric curve
+        """
+
+        data = self.data
+        normal_vector = get_plane_normal_vector(mirror_plane)
+        mirrored_curve = reflect_curve_by_plane(data=data, normal_vector=normal_vector)
+
+        return GeometricCurve(
+            name=self.name,
+            data=mirrored_curve,
+            airfoil=self.airfoil,
+            section=self.section,
+        )
+
     def __getattr__(self, attr):
         """Delegate attribute access to Section if not found in GeometricCurve."""
         if hasattr(self.section, attr):
@@ -455,6 +482,30 @@ class GeometricSurface:
         # Combine both sets of attributes, excluding callable ones from _aero_surface
         combined_attrs = geo_surface_attrs.union(aero_surface_attrs)
         return list(combined_attrs)
+
+    def mirror(
+        self, mirror_plane: Literal["xy", "xz", "yz"] = "xy"
+    ) -> GeometricSurface:
+        """Creates a mirrored version of the surface through a particular mirror plane
+
+        Parameters
+        ----------
+         - mirror_plane : Literal[&quot;xy&quot;, &quot;xz&quot;, &quot;yz&quot;], optional
+            Plane on which to perform the reflection, by default "xy"
+
+        Returns
+        -------
+        GeometricSurface
+            Mirrored instance of the GeometricSurface
+        """
+
+        # mirrored_curves = list(
+        #     reversed([curve.mirror(mirror_plane) for curve in self.curves])
+        # )
+
+        mirrored_curves = [curve.mirror(mirror_plane) for curve in self.curves]
+
+        return GeometricSurface(curves=mirrored_curves, surface=self._aero_surface)
 
 
 class AircraftGeometry:

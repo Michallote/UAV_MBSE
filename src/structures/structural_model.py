@@ -17,7 +17,6 @@ from src.geometry.aircraft_geometry import (
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material
-from src.structures import inertia_tensor
 from src.structures.inertia_tensor import (
     compute_inertia_tensor_of_shell,
     triangulate_mesh,
@@ -87,6 +86,25 @@ class StructuralRib:
 
         return compute_inertia_tensor_of_shell(
             triangles, thickness=self.thickness, density=self.material.density
+        )
+
+    def mirror(self, mirror_plane: Literal["xy", "xz", "yz"] = "xy") -> StructuralRib:
+        """Returns the mirrored curve about a plane.
+
+        Parameters
+        ----------
+         - mirror_plane : Literal[&quot;xy&quot;, &quot;xz&quot;, &quot;yz&quot;], optional
+            Plane about which to perform the mirroring, by default "xy".
+
+        Returns
+        -------
+        StructuralRib
+            Mirrored version of the rib
+        """
+        curve = self.curve
+        mirror_curve = curve.mirror(mirror_plane)
+        return StructuralRib(
+            curve=mirror_curve, thickness=self.thickness, material=self.material
         )
 
 
@@ -174,9 +192,20 @@ class SurfaceCoating:
             triangles, thickness=self.thickness, density=self.material.density
         )
 
+    def mirror(self, mirror_plane: Literal["xy", "xz", "yz"] = "xy") -> SurfaceCoating:
+
+        mirrored_surface = self.surface.mirror(mirror_plane)
+        return SurfaceCoating(
+            surface=mirrored_surface, thickness=self.thickness, material=self.material
+        )
+
 
 class SurfaceStructure:
     """Mirrors a surface on the aircraft, holding structural elements."""
+
+    spars: list[StructuralSpar]
+    ribs: list[StructuralRib]
+    coatings: list[SurfaceCoating]
 
     def __init__(self, surface: GeometricSurface, config: dict):
         self.surface = surface
@@ -335,6 +364,22 @@ class SurfaceStructure:
     def surface_type(self) -> SurfaceType:
         return self.surface.surface_type
 
+    def mirror(self, mirror_plane: Literal["xy", "xz", "yz"]) -> SurfaceStructure:
+
+        structure = self
+        mirrored_structure = SurfaceStructure(self.surface, self.config)
+
+        for rib in structure.ribs:
+            mirrored_structure.add_rib(rib.mirror(mirror_plane))
+
+        for spar in structure.spars:
+            mirrored_structure.add_spar(spar.mirror(mirror_plane))
+
+        for coating in structure.coatings:
+            mirrored_structure.add_coating(coating.mirror(mirror_plane))
+
+        return mirrored_structure
+
 
 class StructuralModel:
     """
@@ -360,6 +405,7 @@ class StructuralModel:
             struct = SurfaceStructure(surface, configuration[surface_type])
             struct.initialize_structure()
             self.structures.append(struct)
+            self.structures.append(struct.mirror(mirror_plane="xy"))
 
     def summary_data(self) -> list[Any]:
         """Gather the weight summary

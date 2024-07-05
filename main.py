@@ -25,9 +25,9 @@ def main():
     aircraft.set_trailing_edge_gaps(te_gap_config)
 
     aircraft_geom = AircraftGeometry(aircraft)
-    # aircraft_geom.export_curves(
-    #     output_path="data/output", ext="sldcrv", reference_system="SW", units="mm"
-    # )
+    aircraft_geom.export_curves(
+        output_path="data/output", ext="sldcrv", reference_system="SW", units="mm"
+    )
 
     visualizer = AircraftPlotter.get_plotter(backend="Plotly")
 
@@ -82,13 +82,10 @@ def main():
 
     structure = StructuralModel(aircraft_geom, structure_config)
 
-    self = structure
+    print("Structure Mass Center of Gravity: \n", structure.mass)
+    print("Structure Tensor of Inertia: \n", structure.inertia)
 
-    structure.inertia
-
-    print("Hi")
-
-    # visualizer.plot_structure(structure)
+    visualizer.plot_structure(structure)
 
 
 if __name__ == "__main__":

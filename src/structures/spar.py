@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import numpy as np
 
@@ -31,6 +31,7 @@ from src.utils.intersection import (
     generate_intersection_registry,
     offset_curve,
 )
+from src.utils.transformations import get_plane_normal_vector, reflect_curve_by_plane
 
 
 class UnconvergedException(Exception):
@@ -127,6 +128,18 @@ class StructuralSpar:
     def thickness(self) -> float:
         return self.spar.thickness
 
+    def mirror(self, mirror_plane: Literal["xy", "xz", "yz"] = "xy") -> StructuralSpar:
+
+        self.spar
+        mirrored_spar_struct = StructuralSpar(
+            surface=self.surface,
+            strategy=self._strategy,
+            material=self.material,
+            thickness=self.thickness,
+        )
+        mirrored_spar_struct.spar = self.spar.mirror(mirror_plane)
+        return mirrored_spar_struct
+
 
 class SparStrategy(ABC):
     """Represents different spar construction methods"""
@@ -163,6 +176,10 @@ class SparStrategy(ABC):
     @abstractmethod
     def mesh(self) -> tuple[np.ndarray, ...]:
         """Returns the 3D mesh of the spar."""
+
+    @abstractmethod
+    def mirror(self, mirror_plane: Literal["xy", "xz", "yz"]) -> SparStrategy:
+        """Returns the mirrored geometry of the Spar"""
 
 
 class FlatSpar(SparStrategy):
@@ -353,6 +370,25 @@ class FlatSpar(SparStrategy):
 
         return x, y, z, i, j, k
 
+    def mirror(
+        self, mirror_plane: Literal["xy"] | Literal["xz"] | Literal["yz"] = "xy"
+    ) -> FlatSpar:
+        """Creates a mirrored version of the Spar's Geometry
+
+        Parameters
+        ----------
+         - mirror_plane : Literal[&#39;xy&#39;] | Literal[&#39;xz&#39;] | Literal[&#39;yz&#39;]
+                plane about to make the reflection
+
+        Returns
+        -------
+        SparStrategy
+            Mirrored Spar Strategy
+        """
+        mirrored_curve = self.curve.mirror(mirror_plane)
+
+        return FlatSpar(curve=mirrored_curve, thickness=self.thickness)
+
 
 class TorsionBoxSpar(SparStrategy):
     """Creates a Torsion Box intersecting the lifting surface geometry."""
@@ -386,7 +422,7 @@ class TorsionBoxSpar(SparStrategy):
         height: float,
         length: float,
     ) -> TorsionBoxSpar:
-        """Creates the main spar by optimizing th position of the spar as to maximize surface area
+        """Creates the main spar by optimizing the position of the spar as to maximize surface area
 
         Parameters
         ----------
@@ -561,6 +597,44 @@ class TorsionBoxSpar(SparStrategy):
         zz = np.array([curve.z for curve in geo_curves])
 
         return xx, yy, zz
+
+    def mirror(
+        self, mirror_plane: Literal["xy"] | Literal["xz"] | Literal["yz"] = "xy"
+    ) -> TorsionBoxSpar:
+        """Creates a mirrored version of the Spar's Geometry
+
+        Parameters
+        ----------
+         - mirror_plane : Literal[&#39;xy&#39;] | Literal[&#39;xz&#39;] | Literal[&#39;yz&#39;]
+                plane about to make the reflection
+
+        Returns
+        -------
+        SparStrategy
+            Mirrored Spar Strategy
+        """
+
+        contour = self.contour
+        thickness = self.thickness
+        origin = self.origin
+        basis = self.basis
+        length = self.length
+        mesh_resolution = self.mesh_resolution
+
+        mirror_normal = get_plane_normal_vector(mirror_plane)
+
+        data = np.vstack([origin, basis])
+        data = reflect_curve_by_plane(data, normal_vector=mirror_normal)
+        origin, basis = data[0], data[1:]
+
+        return TorsionBoxSpar(
+            contour=contour,
+            thickness=thickness,
+            origin=origin,
+            basis=basis,
+            length=length,
+            mesh_resolution=mesh_resolution,
+        )
 
 
 def find_domain_limits(

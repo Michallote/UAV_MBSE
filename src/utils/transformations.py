@@ -1,5 +1,7 @@
 """Geometric Transformations module."""
 
+from typing import Literal
+
 import numpy as np
 
 
@@ -145,3 +147,48 @@ def get_ref_coordinate_system(
     reflect_axis = reflections[reference_system]
 
     return units_factor, reference_system_order, reflect_axis
+
+
+def reflect_curve_by_plane(data: np.ndarray, normal_vector: np.ndarray) -> np.ndarray:
+    """
+    Reflects a set of 3D points (a curve) across a plane defined by a normal vector passing through the origin.
+
+    Args:
+        data (np.ndarray): A 3D numpy array of shape (n, 3) representing the coordinates of n points.
+        normal_vector (np.ndarray): A 1D numpy array of shape (3,) representing the normal vector of the plane.
+
+    Returns:
+        np.ndarray: A 3D numpy array of the reflected points with the same shape as `data`.
+    """
+    # Normalize the normal vector
+    normal_vector = normal_vector / np.linalg.norm(normal_vector)
+
+    # Calculate the dot product of each point with the normal vector
+    dot_product = np.dot(data, normal_vector)
+
+    # Calculate the reflected points
+    reflected_points = data - 2 * np.outer(dot_product, normal_vector)
+
+    return reflected_points
+
+
+def get_plane_normal_vector(plane: Literal["xy", "xz", "yz"]) -> np.ndarray:
+    """Returns the normal vector associated with a basis plane in 3D cartesian coordinates
+
+    Parameters
+    ----------
+     - mirror_plane : Literal[&quot;xy&quot;, &quot;xz&quot;, &quot;yz&quot;]
+            The mirror plane to retrieve the normal vector
+
+    Returns
+    -------
+    np.ndarray
+        Normal vector of the input plane
+    """
+
+    normal_vectors = {
+        "xy": np.array([0, 0, 1]),
+        "xz": np.array([0, 1, 0]),
+        "yz": np.array([0, 1, 0]),
+    }
+    return normal_vectors[plane]
