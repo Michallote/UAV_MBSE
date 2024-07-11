@@ -9,6 +9,7 @@ class Units:
     ft = 0.3048
     yd = 0.9144
     mile = 1609.34
+    mils = 0.0254 / 1000
 
     # Mass units (kilograms)
     g = 1e-3
