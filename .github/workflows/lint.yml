@@ -21,6 +21,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install black ruff black[jupyter] isort
 
+      - name: Run Ruff
+        if: always()
+        run: |
+          ruff check .
+
       - name: Run Black
         if: always()
         run: |
@@ -31,7 +36,3 @@ jobs:
         run: |
           isort . --check
 
-      - name: Run Ruff
-        if: always()
-        run: |
-          ruff check .
