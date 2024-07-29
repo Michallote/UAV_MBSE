@@ -22,16 +22,16 @@ jobs:
           pip install black ruff black[jupyter] isort
 
       - name: Run Black
-        continue-on-error: true
+        if: always()
         run: |
           black --check .
 
       - name: Run isort
-        continue-on-error: true
+        if: always()
         run: |
           isort . --check
 
       - name: Run Ruff
-        continue-on-error: true
+        if: always()
         run: |
           ruff check .
