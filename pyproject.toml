@@ -1,5 +1,9 @@
 [tool.ruff]
-extend-exclude = ["legacy/", "tests/"]
+extend-exclude = ["legacy/", "tests/", "scripts/"]
 
-[wily]
-path = "src"
+[tool.wily]
+path = "src/"
+
+[tool.isort]
+profile = "black"
+
