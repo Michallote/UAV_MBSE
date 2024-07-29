@@ -86,5 +86,3 @@ def test_transition_function():
     # import tikzplotly
 
     # tikzplotly.save("figure.tex", fig)
-
-

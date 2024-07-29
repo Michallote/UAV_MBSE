@@ -1,0 +1,37 @@
+# .github/workflows/lint.yml
+
+name: Lint black-isort-ruff
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black ruff black[jupyter] isort
+
+      - name: Run Black
+        continue-on-error: true
+        run: |
+          black --check .
+
+      - name: Run isort
+        continue-on-error: true
+        run: |
+          isort . --check
+
+      - name: Run Ruff
+        continue-on-error: true
+        run: |
+          ruff check .
