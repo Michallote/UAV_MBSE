@@ -3,3 +3,4 @@ black
 isort
 ruff
 wily
+pytest

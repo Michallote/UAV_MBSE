@@ -1,11 +1,13 @@
+"""
 "Reynolds" "Cl_Cd_max" "alpha_0" "alpha_i" "Cd_min" "Cl_i" "alpha_s" "Cl_max" "Cl_alpha" "grado_perdida" "Cm_0"
-
+"""
 
 import os
 import re
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
 
 folder_path = "data/databases/airfoil_polars_db"
 polar_files = os.listdir(folder_path)
@@ -50,7 +52,6 @@ df["CL_CD"] = df["CL"] / df["CD"]
 
 "Reynolds" "Cl_Cd_max" "alpha_0" "alpha_i" "Cd_min" "Cl_i" "alpha_s" "Cl_max" "Cl_alpha" "grado_perdida" "Cm_0"
 
-import plotly.express as px
 
 # Assuming df is your DataFrame
 # You can customize the title, x-axis, and y-axis labels as needed

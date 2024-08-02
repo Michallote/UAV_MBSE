@@ -16,17 +16,19 @@ import os
 import tkinter as tk
 from tkinter import filedialog  # Open File Explorer to select files
 
-# Modules
-import SolidWorksVBA as SWVBA
-
-# from geometry_tools import GeometryProcessor
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
 
 # Scientific & Engineering
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+
+# Modules
+import SolidWorksVBA as SWVBA
 from matplotlib import cm
 from matplotlib.colors import LightSource
+
+# from geometry_tools import GeometryProcessor
+
 
 # plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
@@ -38,14 +40,15 @@ plt.rcParams["figure.autolayout"] = True
 # Data Management
 
 import xml.etree.ElementTree as ET
-import pandas as pd
-
-# Software Design Tools
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List
+
+import pandas as pd
+
+# Software Design Tools
+
 
 # %% Global Variables
 
@@ -789,7 +792,8 @@ class GeometricCurve:
 class GeometricSurface:
     """Represents a geometric surface with data as lists of the x, y, and z coordinates
     for each location of a patch. A surface from the points is specified by the matrices
-    and will then connect those points by linking the values next to each other in the matrix"""
+    and will then connect those points by linking the values next to each other in the matrix
+    """
 
     xx: np.ndarray = np.array([])
     yy: np.ndarray = np.array([])

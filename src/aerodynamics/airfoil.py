@@ -352,7 +352,7 @@ def airfoil_te_gap_coordinates(
 
     coordinates = data + offsets
 
-    #Ensure the airfoil does not self intersect:
+    # Ensure the airfoil does not self intersect:
     intersection = line_segment_intersection(coordinates[[0, 1]], coordinates[[-2, -1]])  # type: ignore
 
     if te_gap == 0 or intersection is not None:

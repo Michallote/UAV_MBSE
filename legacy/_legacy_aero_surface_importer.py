@@ -9,12 +9,12 @@ Created on Sat Oct 29 04:25:05 2022
 
 import os
 import xml.etree.ElementTree as ET
-import numpy as np
-import pandas as pd
-
 from dataclasses import dataclass
 from typing import Any
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 plt.rcParams["svg.fonttype"] = "none"
 

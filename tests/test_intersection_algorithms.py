@@ -10,6 +10,8 @@ from src.utils.intersection import (
     legacy_calculate_intersecting_region,
 )
 
+ENABLE_RETURN = False
+
 
 def plot_curves(*args):
 
@@ -67,8 +69,8 @@ def test_intersection_of_contained_curves():
     assert np.allclose(
         calculate_intersection_curve(curve2, curve1, radius=0.000001), curve1
     )
-
-    return curve1, curve2, curve3
+    if ENABLE_RETURN:
+        return curve1, curve2, curve3
 
 
 def test_intersection_of_contained_curves_dephased():
@@ -80,8 +82,8 @@ def test_intersection_of_contained_curves_dephased():
     curve1 = np.array([np.cos(theta), np.sin(theta)]).T
     curve2 = np.array([np.cos(theta_2), np.sin(theta_2)]).T - np.array([0.25, 0.0])
     curve3 = calculate_intersection_curve(curve1, curve2, radius=0.000001)
-
-    return curve1, curve2, curve3
+    if ENABLE_RETURN:
+        return curve1, curve2, curve3
 
 
 def test_multiple_intersections():
@@ -101,8 +103,8 @@ def test_multiple_intersections():
 
     curve4 = calculate_intersection_curve(curve1, curve2, radius=0.000001)
     curve5 = calculate_intersection_curve(curve4, curve3, radius=0.000001)
-
-    return curve1, curve2, curve3, curve4, curve5
+    if ENABLE_RETURN:
+        return curve1, curve2, curve3, curve4, curve5
 
 
 def test_optimized_intersections():
@@ -126,8 +128,8 @@ def test_optimized_intersections():
     curve4 = enforce_closed_curve(curve4)
 
     assert np.allclose(curve3, curve4)
-
-    return curve1, curve2, curve3, curve4
+    if ENABLE_RETURN:
+        return curve1, curve2, curve3, curve4
 
 
 def test_sequential_intersections():
@@ -155,8 +157,8 @@ def test_non_contained_intersection_curves():
     curve2 = (np.array([np.cos(theta_2), np.sin(theta_2)])).T
 
     curve3 = calculate_intersection_curve(curve1, curve2)
-
-    return curve1, curve2, curve3
+    if ENABLE_RETURN:
+        return curve1, curve2, curve3
 
 
 def timing_wrapper(func):
@@ -217,13 +219,16 @@ def test_extreme_cases():
     curve2 = (np.array([np.cos(theta2), np.sin(theta2)])).T
 
     curve3 = calculate_intersection_curve(curve1, curve2, radius=0.000001)
-
-    plot_curves(curve1, curve2, curve3)
+    if ENABLE_RETURN:
+        return (curve1, curve2, curve3)
 
 
 if __name__ == "__main__":
+
+    ENABLE_RETURN = True
 
     plot_curves(*test_intersection_of_contained_curves())
     plot_curves(*test_multiple_intersections())
     plot_curves(*test_optimized_intersections())
     plot_curves(*test_multiple_intersections())
+    plot_curves(*test_extreme_cases())

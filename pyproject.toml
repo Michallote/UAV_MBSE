@@ -1,5 +1,25 @@
 [tool.ruff]
-extend-exclude = ["legacy/", "tests/"]
+extend-exclude = ["legacy/", "tests/", "scripts/"]
 
-[wily]
-path = "src"
+[tool.wily]
+path = "src/"
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+minversion = "6.0"  # Minimum pytest version
+addopts = "-ra"  # Additional options: show extra test summary info and run quietly
+testpaths = ["tests"]
+python_files = [
+    "test_*.py",  # Patterns to discover test files
+    "*_test.py"
+]
+python_classes = [
+    "Test*",  # Patterns to discover test classes
+    "*Tests"
+]
+python_functions = [
+    "test_*",  # Patterns to discover test functions
+    "*_test"
+]
