@@ -1,2 +1,5 @@
 [tool.ruff]
 extend-exclude = ["legacy/", "tests/"]
+
+[wily]
+path = "src"
