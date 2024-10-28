@@ -31,13 +31,10 @@ def transform_coordinates(
     # chord = section.chord
     # offset = np.array([section.xOffset,section.yOffset])
     # wingspan = section.wingspan
-
-    # coordinates = section.airfoil.get_data( dim = '2D', output_format = 'np')
-    # center = section.airfoil.center
+    # center = section.airfoil.center <- aerodynamic center of airfoil (0.25 MAC, 0.5 thickness)
 
     if twist != 0:
         rotmat = rotation_matrix2d(twist)
-        # coordinates = [rotmat@r for r in (coordinates-center)] + center
         coordinates = np.dot(coordinates - center, rotmat.T) + center
 
     coordinates = coordinates * chord + offset
@@ -45,8 +42,6 @@ def transform_coordinates(
     matrix_to_r3 = np.array([[1, 0], [0, 1], [0, 0]])
     # Broadcast the result over the rows of B
     cords3d = np.dot(coordinates, matrix_to_r3.T) + np.array([0, 0, wingspan])
-
-    # cords3d = np.c_[coordinates, wingspan*np.ones(len(coordinates))]
 
     return cords3d
 

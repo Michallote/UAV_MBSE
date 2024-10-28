@@ -1,5 +1,50 @@
+[project]
+name = "uav-mbse"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4==4.12.3",
+    "matplotlib==3.9.2",
+    "numpy==1.26.4",
+    "pandas==2.2.2",
+    "plotly==5.22.0",
+    "ruff>=0.6.9",
+    "scipy==1.13.0",
+    "shapely==2.0.4",
+]
+
+[project.scripts]
+uav-mbse = "uav_mbse:main"
+
+[project.optional-dependencies]
+code-quality = [
+    "ruff>=0.6.9",
+    "wily>=1.25.0",
+]
+
+profiler = [
+    "psutil",
+    "snakeviz",
+    "gprof2dot"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+dev-dependencies = [
+    "black>=24.8.0",
+    "isort>=5.13.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 extend-exclude = ["legacy/", "tests/"]
 
-[wily]
+[tool.wily]
 path = "src"
