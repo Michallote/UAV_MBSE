@@ -13,14 +13,14 @@ from src.aerodynamics.airfoil import Airfoil
 from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import triangle_area
-from src.utils.interpolation import resample_curve
-from src.utils.transformations import (
+from src.geometry.transformations import (
     get_plane_normal_vector,
     get_ref_coordinate_system,
     reflect_curve_by_plane,
     transform_coordinates,
     transform_to_global_coordinate_system,
 )
+from src.utils.interpolation import resample_curve
 
 
 class GeometricCurve:

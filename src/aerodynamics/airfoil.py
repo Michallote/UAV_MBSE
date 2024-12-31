@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.geometry.spatial_array import SpatialArray
+from src.geometry.transformations import rotation_matrix2d
 from src.utils.interpolation import find_max, resample_curve
 from src.utils.intersection import line_segment_intersection
-from src.utils.transformations import rotation_matrix2d
 
 
 class Airfoil:
@@ -352,7 +352,7 @@ def airfoil_te_gap_coordinates(
 
     coordinates = data + offsets
 
-    #Ensure the airfoil does not self intersect:
+    # Ensure the airfoil does not self intersect:
     intersection = line_segment_intersection(coordinates[[0, 1]], coordinates[[-2, -1]])  # type: ignore
 
     if te_gap == 0 or intersection is not None:

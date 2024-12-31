@@ -19,6 +19,7 @@ from src.geometry.surfaces import (
     evaluate_surface_intersection,
     project_points_to_plane,
 )
+from src.geometry.transformations import get_plane_normal_vector, reflect_curve_by_plane
 from src.materials import Material
 from src.structures.inertia_tensor import (
     compute_inertia_tensor_of_shell,
@@ -31,7 +32,6 @@ from src.utils.intersection import (
     generate_intersection_registry,
     offset_curve,
 )
-from src.utils.transformations import get_plane_normal_vector, reflect_curve_by_plane
 
 
 class UnconvergedException(Exception):

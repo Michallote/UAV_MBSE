@@ -3,8 +3,8 @@ import pandas as pd
 import plotly.express as px
 
 from src.aerodynamics.airfoil import Airfoil
+from src.geometry.transformations import rotation_matrix2d
 from src.utils.interpolation import pad_arrays
-from src.utils.transformations import rotation_matrix2d
 from tests.test_intersection_algorithms import plot_curves
 
 
@@ -86,5 +86,3 @@ def test_transition_function():
     # import tikzplotly
 
     # tikzplotly.save("figure.tex", fig)
-
-
