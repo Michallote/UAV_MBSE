@@ -16,11 +16,11 @@ import psutil
 
 def log_resource_usage(interval=1, output_file="resource_usage.log"):
     """Logs the CPU usage per core and memory usage in both percentage and MB every `interval` seconds."""
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
 
         core_columns = "\t".join(
             map(lambda i: f"Core {i}[%]", range(psutil.cpu_count()))
-        )
+        )  # type: ignore
         f.write(f"Total CPU[%]\tMemory[%]\tMemory[MB]\t{core_columns}\tTime\n")
         while True:
             # Overall CPU and memory usage

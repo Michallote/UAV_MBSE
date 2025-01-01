@@ -1,6 +1,6 @@
 import json
 
-from utils.xml_parser import parse_xml_file
+from src.utils.xml_parser import parse_xml_file
 
 
 def main():
