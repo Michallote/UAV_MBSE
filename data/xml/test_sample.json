@@ -1,0 +1,160 @@
+{
+    "Aircraft": {
+        "@attributes": {
+            "version": 1.0
+        },
+        "Units": {
+            "length_unit_to_meter": 1.0,
+            "mass_unit_to_kg": 1.0
+        },
+        "Plane": {
+            "Name": "Plane Name",
+            "Description": null,
+            "Inertia": null,
+            "has_body": false,
+            "wing": [
+                {
+                    "Name": "Main Wing",
+                    "Type": "MAINWING",
+                    "Color": {
+                        "red": 135.0,
+                        "green": 154.0,
+                        "blue": 126.0,
+                        "alpha": 255.0
+                    },
+                    "Description": null,
+                    "Position": "[0.0,0.0,0.0]",
+                    "Tilt_angle": 0.0,
+                    "Symetric": true,
+                    "isFin": false,
+                    "isDoubleFin": false,
+                    "isSymFin": false,
+                    "Sections": {
+                        "Section": [
+                            {
+                                "y_position": 0.0,
+                                "Chord": 0.18,
+                                "xOffset": 0.0,
+                                "Dihedral": 0.0,
+                                "Twist": 0.0,
+                                "x_number_of_panels": 13.0,
+                                "x_panel_distribution": "COSINE",
+                                "y_number_of_panels": 19.0,
+                                "y_panel_distribution": "INVERSE SINE",
+                                "Left_Side_FoilName": "S1014",
+                                "Right_Side_FoilName": "S1014"
+                            },
+                            {
+                                "y_position": 1.0,
+                                "Chord": 0.11,
+                                "xOffset": 0.07,
+                                "Dihedral": 0.0,
+                                "Twist": 0.0,
+                                "x_number_of_panels": 13.0,
+                                "x_panel_distribution": "COSINE",
+                                "y_number_of_panels": 5.0,
+                                "y_panel_distribution": "UNIFORM",
+                                "Left_Side_FoilName": "S1014",
+                                "Right_Side_FoilName": "S1014"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Name": "Elevator",
+                    "Type": "ELEVATOR",
+                    "Color": {
+                        "red": 155.0,
+                        "green": 133.0,
+                        "blue": 114.0,
+                        "alpha": 255.0
+                    },
+                    "Description": null,
+                    "Position": "[0.6,0.0,0.0]",
+                    "Tilt_angle": 0.0,
+                    "Symetric": true,
+                    "isFin": false,
+                    "isDoubleFin": false,
+                    "isSymFin": false,
+                    "Sections": {
+                        "Section": [
+                            {
+                                "y_position": 0.0,
+                                "Chord": 0.1,
+                                "xOffset": 0.0,
+                                "Dihedral": 0.0,
+                                "Twist": 0.0,
+                                "x_number_of_panels": 7.0,
+                                "x_panel_distribution": "SINE",
+                                "y_number_of_panels": 19.0,
+                                "y_panel_distribution": "UNIFORM",
+                                "Left_Side_FoilName": "NACA 0012",
+                                "Right_Side_FoilName": "NACA 0012"
+                            },
+                            {
+                                "y_position": 0.17,
+                                "Chord": 0.08,
+                                "xOffset": 0.02,
+                                "Dihedral": 0.0,
+                                "Twist": 0.0,
+                                "x_number_of_panels": 13.0,
+                                "x_panel_distribution": "COSINE",
+                                "y_number_of_panels": 7.0,
+                                "y_panel_distribution": "UNIFORM",
+                                "Left_Side_FoilName": "NACA 0012",
+                                "Right_Side_FoilName": "NACA 0012"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Name": "Fin",
+                    "Type": "FIN",
+                    "Color": {
+                        "red": 161.0,
+                        "green": 162.0,
+                        "blue": 126.0,
+                        "alpha": 255.0
+                    },
+                    "Description": null,
+                    "Position": "[0.65,0.0,0.0]",
+                    "Tilt_angle": 0.0,
+                    "Symetric": true,
+                    "isFin": true,
+                    "isDoubleFin": false,
+                    "isSymFin": false,
+                    "Sections": {
+                        "Section": [
+                            {
+                                "y_position": 0.0,
+                                "Chord": 0.1,
+                                "xOffset": 0.0,
+                                "Dihedral": 0.0,
+                                "Twist": 0.0,
+                                "x_number_of_panels": 7.0,
+                                "x_panel_distribution": "UNIFORM",
+                                "y_number_of_panels": 7.0,
+                                "y_panel_distribution": "COSINE",
+                                "Left_Side_FoilName": "NACA 0009",
+                                "Right_Side_FoilName": "NACA 0009"
+                            },
+                            {
+                                "y_position": 0.12,
+                                "Chord": 0.06,
+                                "xOffset": 0.04,
+                                "Dihedral": 0.0,
+                                "Twist": 0.0,
+                                "x_number_of_panels": 13.0,
+                                "x_panel_distribution": "COSINE",
+                                "y_number_of_panels": 5.0,
+                                "y_panel_distribution": "UNIFORM",
+                                "Left_Side_FoilName": "NACA 0009",
+                                "Right_Side_FoilName": "NACA 0009"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

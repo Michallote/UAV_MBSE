@@ -23,11 +23,13 @@ code-quality = [
     "ruff>=0.6.9",
     "wily>=1.25.0",
 ]
-
 profiler = [
     "psutil",
     "snakeviz",
     "gprof2dot"
+]
+graph = [
+    "pydot>=3.0.2",
 ]
 
 [build-system]

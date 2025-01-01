@@ -289,14 +289,13 @@ class GeometricCurve:
         airfoil = section.airfoil
         twist = -np.radians(section.twist)
         chord = section.chord
-        offset = np.array([section.x_offset, section.y_offset])
-        wingspan = section.wingspan
+        offset = np.array([section.x_offset, section.y_offset, section.wingspan])
         coordinates = airfoil.data
         center = airfoil.center
 
         # Section Curve 3D
         airfoil_cordinates = transform_coordinates(
-            coordinates, center, twist, chord, offset, wingspan
+            coordinates, center, twist, chord, offset
         )
 
         is_fin = surface_type is SurfaceType.FIN

@@ -11,37 +11,37 @@ def transform_coordinates(
     twist: float,
     chord: float,
     offset: np.ndarray,
-    wingspan: float,
 ) -> np.ndarray:
-    """
-    Applies translations and rotations to airfoil data points
+    """Applies geometric transformations (rotation, scaling & translation) to a curve
 
     Parameters
     ----------
-    section : Section object
-        Contains all relevant information about the transformation.
+     - coordinates : np.ndarray
+            Airfoil coodinates
+     - center : np.ndarray
+            Center of the rotation
+     - twist : float
+            Degrees to rotate the curve
+     - chord : float
+            Scale factor to apply to the coordinates
+     - offset : np.ndarray
+            3D vector to offset the curve
 
     Returns
     -------
-    cords3d : np.ndarray
-        Curve Coordinates.
-
+    np.ndarray
+        Transformed Coordinates
     """
-    # twist = -np.radians(section.Twist)
-    # chord = section.chord
-    # offset = np.array([section.xOffset,section.yOffset])
-    # wingspan = section.wingspan
-    # center = section.airfoil.center <- aerodynamic center of airfoil (0.25 MAC, 0.5 thickness)
 
     if twist != 0:
         rotmat = rotation_matrix2d(twist)
         coordinates = np.dot(coordinates - center, rotmat.T) + center
 
-    coordinates = coordinates * chord + offset
+    coordinates = coordinates * chord
     # Dimension adder  (3 x 2) @ (2 x 1) = (3 x 1)
     matrix_to_r3 = np.array([[1, 0], [0, 1], [0, 0]])
     # Broadcast the result over the rows of B
-    cords3d = np.dot(coordinates, matrix_to_r3.T) + np.array([0, 0, wingspan])
+    cords3d = np.dot(coordinates, matrix_to_r3.T) + offset
 
     return cords3d
 
