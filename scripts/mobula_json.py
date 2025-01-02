@@ -1,6 +1,7 @@
 import json
 
 from src.utils.xml_parser import parse_xml_file
+import graphviz
 
 
 def main():
@@ -11,7 +12,6 @@ def main():
         json.dump(plane_data, f)
 
 
-import graphviz
 
 # Load JSON graph data
 with open("data/xml/test_sample.json") as f:
