@@ -1,7 +1,7 @@
 import os
 
 
-def create_prompt_file(file_list, output_file="prompt.txt"):
+def create_prompt_file(file_list: str, output_file="prompt.txt"):
     """
     Takes a list of file paths and creates a prompt file for LLM processing.
 
@@ -12,7 +12,7 @@ def create_prompt_file(file_list, output_file="prompt.txt"):
     Returns:
         None
     """
-    with open(output_file, "w") as prompt_file:
+    with open(output_file, "w", encoding="utf-8") as prompt_file:
         for file_path in file_list:
             # Ensure the file exists
             if not os.path.exists(file_path):
@@ -43,19 +43,22 @@ def create_prompt_file(file_list, output_file="prompt.txt"):
 if __name__ == "__main__":
 
     file_list = [
-        "main.py",
-        "consts.py",
-        "src/aerodynamics/data_structures.py",
-        "src/aerodynamics/airfoil.py",
+        # "main.py",
+        # "consts.py",
+        # "src/aerodynamics/data_structures.py",
+        # "src/aerodynamics/airfoil.py",
+        # "src/geometry/aircraft_geometry.py",
+        # "src/geometry/surfaces.py",
+        # "src/structures/structural_model.py",
+        # "src/structures/spar.py",
+        # "src/structures/inertia_tensor.py",
+        # "src/utils/interpolation.py",
+        # "src/utils/intersection.py",
+        # "src/utils/transformations.py",
+        # "src/utils/xml_parser.py",
         "src/geometry/aircraft_geometry.py",
         "src/geometry/surfaces.py",
-        "src/structures/structural_model.py",
-        "src/structures/spar.py",
-        "src/structures/inertia_tensor.py",
-        "src/utils/interpolation.py",
-        "src/utils/intersection.py",
-        "src/utils/transformations.py",
-        "src/utils/xml_parser.py",
+        "src/geometry/transformations.py",
     ]
 
-    create_prompt_file(file_list, "system_core.txt")
+    create_prompt_file(file_list, "geometry_core.txt")
