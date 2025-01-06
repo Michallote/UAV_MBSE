@@ -43,22 +43,31 @@ def create_prompt_file(file_list: str, output_file="prompt.txt"):
 if __name__ == "__main__":
 
     file_list = [
-        # "main.py",
-        # "consts.py",
-        # "src/aerodynamics/data_structures.py",
-        # "src/aerodynamics/airfoil.py",
-        # "src/geometry/aircraft_geometry.py",
-        # "src/geometry/surfaces.py",
-        # "src/structures/structural_model.py",
-        # "src/structures/spar.py",
-        # "src/structures/inertia_tensor.py",
-        # "src/utils/interpolation.py",
-        # "src/utils/intersection.py",
-        # "src/utils/transformations.py",
-        # "src/utils/xml_parser.py",
-        "src/geometry/aircraft_geometry.py",
-        "src/geometry/surfaces.py",
-        "src/geometry/transformations.py",
+        "main.py",
+        "src/structures/structural_model.py",
+        "src/structures/spar.py",
+        "src/structures/inertia_tensor.py",
+        "src/utils/intersection.py",
     ]
 
-    create_prompt_file(file_list, "geometry_core.txt")
+    create_prompt_file(file_list, "structures_summary.txt")
+
+
+def list_files(directory: str) -> list:
+    """
+    List all files in a directory.
+
+    Args:
+        directory (str): Path to the directory to list files from.
+
+    Returns:
+        list: List of file paths in the directory.
+    """
+    return [
+        os.path.join(directory, f)
+        for f in os.listdir(directory)
+        if os.path.isfile(os.path.join(directory, f))
+    ]
+
+
+list_files("src/utils")

@@ -387,6 +387,7 @@ class StructuralModel:
     """
 
     aircraft: AircraftGeometry
+    configuration: dict
     structures: list[SurfaceStructure]
     ext_spars: list[StructuralSpar]
 

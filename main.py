@@ -1,4 +1,4 @@
-from consts import MONOKOTE_THICKNESS
+from consts import MONOKOTE_THICKNESS, XML_MATERIAL_LIBRARY
 from src.aerodynamics.airfoil import AirfoilFactory
 from src.aerodynamics.data_structures import Aircraft, SurfaceType
 from src.geometry.aircraft_geometry import AircraftGeometry
@@ -34,6 +34,7 @@ def main():
     visualizer.plot_aircraft(aircraft_geom)
 
     materials = MaterialLibrary()
+    materials.load_materials(XML_MATERIAL_LIBRARY)
     balsa = materials["balsa"]
     triplay = materials["triplay"]
     monokote = materials["monokote"]
