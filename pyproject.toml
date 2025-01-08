@@ -10,9 +10,12 @@ dependencies = [
     "numpy>1.26.4",
     "pandas>2.2.2",
     "plotly>5.22.0",
+    "pygame>=2.6.1",
     "ruff>=0.6.9",
     "scipy>1.13.0",
     "shapely>2.0.4",
+    "tqdm>=4.67.1",
+    "triangle>=20250106",
 ]
 
 [project.scripts]
@@ -40,6 +43,7 @@ build-backend = "setuptools.build_meta"
 dev-dependencies = [
     "black>=24.8.0",
     "graphviz>=0.20.3",
+    "ipykernel>=6.29.5",
     "isort>=5.13.2",
     "pydot>=3.0.3",
 ]

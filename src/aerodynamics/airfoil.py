@@ -290,6 +290,11 @@ class Airfoil:
         coordinates = airfoil_te_gap_coordinates(self, te_gap, blend_distance)
         return Airfoil(name=self.name, data=coordinates)
 
+    @property
+    def trailing_edge_gap(self) -> float:
+        """Returns the trailing edge gap of the airfoil"""
+        return np.linalg.norm(self.trailing_edge - self.trailing_edge2)  # type: ignore
+
 
 def airfoil_te_gap_coordinates(
     airfoil: Airfoil, te_gap: float, blend_distance: float

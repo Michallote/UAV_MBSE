@@ -54,6 +54,42 @@ def resample_curve(curve: np.ndarray, num_samples: int) -> np.ndarray:
     return ndarray_linear_interpolate(curve, interpolated_indices)
 
 
+def resample_curve_with_element_length(
+    curve: np.ndarray, element_length: float
+) -> np.ndarray:
+    """
+    Resample a curve (array) based on linear interpolation with a given element length.
+
+    Parameters
+    ----------
+    curve : np.ndarray
+        The curve to be resampled, can be (n, m) dimensional.
+    element_length : float
+        The length of each element in the resampled curve.
+
+    Returns
+    -------
+    np.ndarray
+        The resampled curve.
+    """
+
+    node_distances = np.linalg.norm(np.diff(curve, axis=0), axis=1)
+    node_distances = np.insert(node_distances, 0, 0)
+    cumulative_distances = np.cumsum(node_distances)
+    original_length = cumulative_distances[-1]
+
+    num_samples = max(int(np.round(original_length / element_length)), 1)
+    requested_node_distances = np.linspace(0, original_length, num_samples + 1)
+
+    interpolated_indices = np.interp(
+        requested_node_distances,
+        cumulative_distances,
+        np.arange(len(cumulative_distances)),
+    )
+
+    return ndarray_linear_interpolate(curve, interpolated_indices)
+
+
 def vector_interpolation(
     x: np.ndarray, xp: np.ndarray, curve: np.ndarray
 ) -> np.ndarray:
