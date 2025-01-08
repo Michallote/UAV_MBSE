@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.path import Path
 from scipy.spatial import Voronoi, voronoi_plot_2d
 from shapely.geometry import Point, Polygon
 from tqdm import tqdm
 
+from geometry.meshing import random_points_inside_curve
 from src.aerodynamics.airfoil import Airfoil
 from src.utils.interpolation import resample_curve_with_element_length
 
@@ -65,40 +65,6 @@ def test_voronoi():
 
     fig = voronoi_plot_2d(vor)
     plt.savefig("voronoi2.png")
-
-
-def random_points_inside_curve(curve, num_points):
-    """
-    Generate points inside a closed curve.
-
-    Parameters
-    ----------
-    curve : np.ndarray
-        The curve to generate points inside.
-    num_points : int
-        The number of points to generate.
-
-    Returns
-    -------
-    np.ndarray
-        The points inside the curve.
-    """
-    # Compute the bounding box of the curve
-    min_x, min_y = np.min(curve, axis=0)
-    max_x, max_y = np.max(curve, axis=0)
-
-    boundary = Path(curve)
-
-    inner_points = np.mean(curve, axis=0)
-
-    while len(inner_points) < num_points:
-        new_points = np.random.uniform(
-            low=[min_x, min_y], high=[max_x, max_y], size=(num_points, 2)
-        )
-        inside = boundary.contains_points(new_points)
-        inner_points = np.vstack((inner_points, new_points[inside]))
-
-    return inner_points[:num_points]
 
 
 def repulsion_force(p1, p2, k=1.0, min_dist=1e-6):
