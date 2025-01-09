@@ -10,10 +10,10 @@ from typing import Optional, Self
 import matplotlib.pyplot as plt
 import numpy as np
 
+from geometry.interpolation import find_max, resample_curve
+from geometry.intersection import line_segment_intersection
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.transformations import rotation_matrix2d
-from src.utils.interpolation import find_max, resample_curve
-from src.utils.intersection import line_segment_intersection
 
 
 class Airfoil:

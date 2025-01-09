@@ -187,3 +187,42 @@ def get_plane_normal_vector(plane: Literal["xy", "xz", "yz"]) -> np.ndarray:
         "yz": np.array([0, 1, 0]),
     }
     return normal_vectors[plane]
+
+
+def compute_curve_normal(curve: np.ndarray) -> np.ndarray:
+    """
+    Compute the average normal vector of a 3D curve.
+
+    Parameters
+    ----------
+    curve : np.ndarray
+        A sequence of 3D points defining the curve (N x 3).
+
+    Returns
+    -------
+    np.ndarray
+        A normalized 3D vector representing the average normal.
+
+    Raises
+    ------
+    ValueError
+        If the curve has fewer than 3 points or is degenerate.
+    """
+    if curve.shape[0] < 3:
+        raise ValueError("Curve must have at least 3 points to compute normals.")
+
+    # Calculate tangent vectors as differences between successive points
+    tangents = np.diff(curve, axis=0)
+
+    # Shift arrays to compute cross product pairs
+    xi, xf = tangents[:-1], tangents[1:]
+
+    # Compute normals and check for degeneracy
+    normals = np.cross(xi, xf)
+    if np.allclose(normals, 0):
+        raise ValueError("Curve is degenerate; normals cannot be computed.")
+
+    # Normalize the resulting normal vector
+    normal = np.sum(normals, axis=0)
+    normal = normal / np.linalg.norm(normal)
+    return normal

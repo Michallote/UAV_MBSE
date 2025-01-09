@@ -6,6 +6,9 @@ from matplotlib.path import Path
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
 
+from src.geometry.surfaces import construct_orthonormal_basis, project_points_to_plane
+from src.geometry.transformations import compute_curve_normal
+
 
 def create_boundary_dict(
     polygon_points: np.ndarray,
@@ -69,10 +72,15 @@ def create_mesh_from_boundary(
         - The first element is the triangulated mesh as a dictionary returned by `triangle.triangulate`.
         - The second element is the boundary dictionary used for the triangulation.
     """
-    boundary_dict = create_boundary_dict(boundary_coordinates)
 
+    if max_area:
+        constrain = f"pqa{max_area}"
+    else:
+        constrain = "pq"
+
+    boundary_dict = create_boundary_dict(boundary_coordinates)
     # Add a maximum triangle area constraint for refinement
-    mesh_dict = triangle.triangulate(boundary_dict, f"pqa{max_area}")
+    mesh_dict = triangle.triangulate(boundary_dict, constrain)
     return mesh_dict, boundary_dict
 
 
@@ -108,3 +116,54 @@ def random_points_inside_curve(curve: np.ndarray, num_points: int) -> np.ndarray
         inner_points = np.vstack((inner_points, new_points[inside]))
 
     return inner_points[:num_points]
+
+
+def compute_3d_planar_mesh(
+    boundary: np.ndarray, plane_point: np.ndarray, plane_normal: np.ndarray
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+    """
+    Compute a 3D mesh on a given plane defined by a point and normal.
+
+    Parameters
+    ----------
+    boundary : np.ndarray
+        The boundary points defining the region to mesh (N x 3).
+    plane_point : np.ndarray
+        A point on the plane (3D vector).
+    plane_normal : np.ndarray
+        The normal vector of the plane (3D vector).
+
+    Returns
+    -------
+    tuple[dict[str, np.ndarray], dict[str, np.ndarray]]
+        mesh_dict : dict
+            Dictionary containing the mesh data, including transformed vertices.
+        boundary_dict : dict
+            Dictionary containing boundary information.
+    """
+    if plane_normal is None:
+        plane_normal = compute_curve_normal(boundary)
+
+    # Project boundary points onto the plane
+    projected_points = project_points_to_plane(
+        boundary, plane_point=plane_point, plane_normal=plane_normal
+    )
+
+    # Construct an orthonormal basis for the plane
+    u, v, _w = construct_orthonormal_basis(plane_normal)
+
+    # Create the mesh using the projected boundary points
+    mesh_dict, boundary_dict = create_mesh_from_boundary(
+        boundary_coordinates=projected_points, max_area=0.01
+    )
+
+    # Transform vertices to 3D space of the plane
+    vertices = mesh_dict["vertices"]
+    local_basis = np.array([u, v])
+    transformed_vertices = np.einsum("ij,jk->ik", vertices, local_basis) + plane_point
+    mesh_dict["vertices"] = transformed_vertices
+    boundary_dict["vertices"] = (
+        np.einsum("ij,jk->ik", boundary_dict["vertices"], local_basis) + plane_point
+    )
+
+    return mesh_dict, boundary_dict

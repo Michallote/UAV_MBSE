@@ -4,9 +4,9 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 from shapely.geometry import Point, Polygon
 from tqdm import tqdm
 
+from geometry.interpolation import resample_curve_with_element_length
 from geometry.meshing import random_points_inside_curve
 from src.aerodynamics.airfoil import Airfoil
-from src.utils.interpolation import resample_curve_with_element_length
 
 
 def test_annealing_mesh_gen():

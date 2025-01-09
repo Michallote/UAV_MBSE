@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
+from geometry.interpolation import pad_arrays
 from src.aerodynamics.airfoil import Airfoil
 from src.geometry.transformations import rotation_matrix2d
-from src.utils.interpolation import pad_arrays
 from tests.test_intersection_algorithms import plot_curves
 
 

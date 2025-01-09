@@ -3,10 +3,10 @@ import pandas as pd
 import plotly.express as px
 import tikzplotly
 
+from geometry.interpolation import ndarray_linear_interpolate, resample_curve
 from src.aerodynamics.airfoil import Airfoil
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.transformations import rotation_matrix2d
-from src.utils.interpolation import ndarray_linear_interpolate, resample_curve
 from tests.test_intersection_algorithms import plot_curves
 
 a1 = Airfoil.from_file("data/databases/airfoil_coordinates_db/s1210.dat").resample(100)

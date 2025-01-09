@@ -10,6 +10,13 @@ import numpy as np
 # Create a sliding window view of size 2
 from scipy.optimize import NonlinearConstraint, differential_evolution, minimize
 
+from geometry.interpolation import resample_curve
+from geometry.intersection import (
+    calculate_intersection_curve,
+    enforce_closed_curve,
+    generate_intersection_registry,
+    offset_curve,
+)
 from src.aerodynamics.data_structures import PointMass
 from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
 from src.geometry.spatial_array import SpatialArray
@@ -24,13 +31,6 @@ from src.materials import Material
 from src.structures.inertia_tensor import (
     compute_inertia_tensor_of_shell,
     triangulate_mesh,
-)
-from src.utils.interpolation import resample_curve
-from src.utils.intersection import (
-    calculate_intersection_curve,
-    enforce_closed_curve,
-    generate_intersection_registry,
-    offset_curve,
 )
 
 

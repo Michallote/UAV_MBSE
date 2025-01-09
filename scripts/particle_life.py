@@ -5,9 +5,9 @@ from typing import Any
 import numpy as np
 import pygame
 
+from geometry.interpolation import resample_curve_with_element_length
 from geometry.meshing import random_points_inside_curve
 from src.aerodynamics.airfoil import Airfoil
-from src.utils.interpolation import resample_curve_with_element_length
 
 atoms = []
 window_size = 1200

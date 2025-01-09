@@ -9,6 +9,7 @@ from typing import Literal
 
 import numpy as np
 
+from geometry.interpolation import resample_curve
 from src.aerodynamics.airfoil import Airfoil
 from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
 from src.geometry.spatial_array import SpatialArray
@@ -20,7 +21,6 @@ from src.geometry.transformations import (
     transform_coordinates,
     transform_to_global_coordinate_system,
 )
-from src.utils.interpolation import resample_curve
 
 
 class GeometricCurve:

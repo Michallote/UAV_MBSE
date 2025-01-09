@@ -10,13 +10,13 @@ from bs4 import BeautifulSoup
 from plotly.offline import plot
 from plotly.subplots import make_subplots
 
+from geometry.intersection import enforce_closed_curve
 from src.geometry.aircraft_geometry import (
     AircraftGeometry,
     GeometricCurve,
     GeometricSurface,
 )
 from src.structures.structural_model import StructuralModel
-from src.utils.intersection import enforce_closed_curve
 from src.visualization.base_class import BaseAircraftPlotter
 
 

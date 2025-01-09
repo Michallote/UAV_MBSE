@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.utils.interpolation import (
+from geometry.interpolation import (
     ndarray_linear_interpolate,
     resample_curve_with_element_length,
 )

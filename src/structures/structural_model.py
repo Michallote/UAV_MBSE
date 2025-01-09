@@ -8,6 +8,7 @@ from typing import Any, Generator, Iterable, Iterator, Literal, Union, overload
 
 import numpy as np
 
+from geometry.interpolation import vector_interpolation
 from src.aerodynamics.data_structures import PointMass, SurfaceType
 from src.geometry.aircraft_geometry import (
     AircraftGeometry,
@@ -22,7 +23,6 @@ from src.structures.inertia_tensor import (
     triangulate_mesh,
 )
 from src.structures.spar import StructuralSpar
-from src.utils.interpolation import vector_interpolation
 
 
 class StructuralRib:
