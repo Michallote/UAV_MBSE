@@ -85,9 +85,7 @@ points, delaunay = generate_mesh(boundary_vertices)
 # Plot the mesh
 plot_mesh(points, delaunay, boundary_vertices)
 
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.spatial import Delaunay, Voronoi
+from scipy.spatial import Voronoi
 
 
 ###############################################################################
@@ -213,8 +211,6 @@ def polygon_area_centroid(polygon):
 ###############################################################################
 # Convert Voronoi object to finite polygons (2D)
 ###############################################################################
-import numpy as np
-from scipy.spatial import Voronoi
 
 
 def voronoi_finite_polygons_2d(vor, radius=1e6):

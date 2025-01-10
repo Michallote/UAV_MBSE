@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import pygame
 
-from geometry.interpolation import resample_curve_with_element_length
+from geometry.interpolation import resample_curve_equidistant
 from geometry.meshing import random_points_inside_curve
 from src.aerodynamics.airfoil import Airfoil
 
@@ -71,7 +71,7 @@ airfoil = airfoil.with_trailing_edge_gap(te_gap=0.03, blend_distance=1.0)
 
 curve = airfoil.data
 length = np.round(airfoil.trailing_edge_gap, 2)
-curve = resample_curve_with_element_length(curve, length / 6)
+curve = resample_curve_equidistant(curve, length / 6)
 
 scaled_curve = curve * window_size + np.array([0, window_size / 2])
 

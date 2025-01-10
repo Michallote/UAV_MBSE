@@ -5,8 +5,6 @@
 # ]
 # ///
 import argparse
-import cProfile
-import os
 import subprocess
 import threading
 import time

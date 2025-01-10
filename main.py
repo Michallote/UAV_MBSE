@@ -62,7 +62,7 @@ def main():
 
     structure_config = {
         SurfaceType.MAINWING: dict(
-            main_spar=main_spar_triplay,
+            main_spar=main_flat_spar_balsa,
             secondary_spar=secondary_flat_spar_balsa,
             ribs=rib_config,
             surface_coating=coating_config,

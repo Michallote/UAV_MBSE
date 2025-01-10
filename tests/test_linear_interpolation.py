@@ -3,7 +3,7 @@ import pytest
 
 from geometry.interpolation import (
     ndarray_linear_interpolate,
-    resample_curve_with_element_length,
+    resample_curve_equidistant,
 )
 
 
@@ -102,6 +102,6 @@ def test_resampling_algorithm_with_element_length():
     element_length = 0.5
     expected = np.c_[np.repeat(0, 7), np.linspace(0, 3, 7)]
     assert np.allclose(
-        resample_curve_with_element_length(curve, element_length=element_length),
+        resample_curve_equidistant(curve, target_segment_length=element_length),
         expected,
     )

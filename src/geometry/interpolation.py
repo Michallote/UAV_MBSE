@@ -35,7 +35,8 @@ def ndarray_linear_interpolate(curve: np.ndarray, indices: np.ndarray) -> np.nda
 
 def resample_curve(curve: np.ndarray, num_samples: int) -> np.ndarray:
     """
-    Resample a curve (array) based on linear interpolation.
+    Resamples the curve (array) to a target number of points while preserving
+    the distribution of the original points. Based on linear interpolation.
 
     Parameters
     ----------
@@ -54,35 +55,42 @@ def resample_curve(curve: np.ndarray, num_samples: int) -> np.ndarray:
     return ndarray_linear_interpolate(curve, interpolated_indices)
 
 
-def resample_curve_with_element_length(
-    curve: np.ndarray, element_length: float
+def resample_curve_equidistant(
+    curve: np.ndarray, target_segment_length: float
 ) -> np.ndarray:
     """
-    Resample a curve (array) based on linear interpolation with a given element length.
+    Resamples the curve (array) to ensure equidistant points, irrespective of the
+    original point distribution, based on linear interpolation with a given element length.
 
     Parameters
     ----------
     curve : np.ndarray
         The curve to be resampled, can be (n, m) dimensional.
-    element_length : float
-        The length of each element in the resampled curve.
+    target_segment_length : float
+        The desired length of each element in the resampled curve.
 
     Returns
     -------
     np.ndarray
         The resampled curve.
     """
+    # Compute distances between consecutive points in the curve
+    segment_lengths = np.linalg.norm(np.diff(curve, axis=0), axis=1)
+    # Start cumulative distances at 0
+    segment_lengths = np.insert(segment_lengths, 0, 0)
 
-    node_distances = np.linalg.norm(np.diff(curve, axis=0), axis=1)
-    node_distances = np.insert(node_distances, 0, 0)
-    cumulative_distances = np.cumsum(node_distances)
+    # Cumulative distances along the curve
+    cumulative_distances = np.cumsum(segment_lengths)
     original_length = cumulative_distances[-1]
 
-    num_samples = max(int(np.round(original_length / element_length)), 1)
-    requested_node_distances = np.linspace(0, original_length, num_samples + 1)
+    # Determine the number of segments based on the target segment length
+    num_samples = max(int(np.round(original_length / target_segment_length)), 1)
+    # Generate evenly spaced distances along the curve
+    target_distances = np.linspace(0, original_length, num_samples + 1)
 
+    # Map the target distances to indices for interpolation
     interpolated_indices = np.interp(
-        requested_node_distances,
+        target_distances,
         cumulative_distances,
         np.arange(len(cumulative_distances)),
     )

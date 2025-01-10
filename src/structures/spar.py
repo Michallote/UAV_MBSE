@@ -17,15 +17,11 @@ from geometry.intersection import (
     generate_intersection_registry,
     offset_curve,
 )
+from geometry.projections import construct_orthonormal_basis, project_points_to_plane
 from src.aerodynamics.data_structures import PointMass
 from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
 from src.geometry.spatial_array import SpatialArray
-from src.geometry.surfaces import (
-    construct_orthonormal_basis,
-    create_surface_mesh,
-    evaluate_surface_intersection,
-    project_points_to_plane,
-)
+from src.geometry.surfaces import create_surface_mesh, evaluate_surface_intersection
 from src.geometry.transformations import get_plane_normal_vector, reflect_curve_by_plane
 from src.materials import Material
 from src.structures.inertia_tensor import (

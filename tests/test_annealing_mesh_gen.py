@@ -4,7 +4,7 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 from shapely.geometry import Point, Polygon
 from tqdm import tqdm
 
-from geometry.interpolation import resample_curve_with_element_length
+from geometry.interpolation import resample_curve_equidistant
 from geometry.meshing import random_points_inside_curve
 from src.aerodynamics.airfoil import Airfoil
 
@@ -17,7 +17,7 @@ def test_annealing_mesh_gen():
 
     curve = airfoil.data
     length = np.round(airfoil.trailing_edge_gap, 2)
-    curve = resample_curve_with_element_length(curve, length)
+    curve = resample_curve_equidistant(curve, length)
 
     n_points = np.round(airfoil.area / (0.5 * length * length * np.sin(np.pi / 3)))
     inner_points = random_points_inside_curve(curve, int(n_points))
@@ -46,7 +46,7 @@ def test_voronoi():
 
     curve = airfoil.data
     length = np.round(airfoil.trailing_edge_gap, 2)
-    curve = resample_curve_with_element_length(curve, length)
+    curve = resample_curve_equidistant(curve, length)
 
     n_points = np.round(airfoil.area / (0.5 * length * length * np.sin(np.pi / 3)))
     inner_points = random_points_inside_curve(curve, int(n_points))

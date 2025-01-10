@@ -16,3 +16,5 @@ data/databases/airfoil_polars_db/*
 logs/
 *.egg-info/
 *.html
+*.png
+*.svg

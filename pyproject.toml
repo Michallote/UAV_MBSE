@@ -46,6 +46,7 @@ dev-dependencies = [
     "ipykernel>=6.29.5",
     "isort>=5.13.2",
     "pydot>=3.0.3",
+    "pytest>=8.3.4",
 ]
 
 [tool.setuptools.packages.find]

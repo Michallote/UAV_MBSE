@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Optional
 
 import numpy as np
 import triangle
@@ -6,7 +6,7 @@ from matplotlib.path import Path
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
 
-from src.geometry.surfaces import construct_orthonormal_basis, project_points_to_plane
+from geometry.projections import construct_orthonormal_basis, project_points_to_plane
 from src.geometry.transformations import compute_curve_normal
 
 
@@ -49,7 +49,7 @@ def create_boundary_dict(
 
 
 def create_mesh_from_boundary(
-    boundary_coordinates: np.ndarray, max_area: float
+    boundary_coordinates: np.ndarray, max_area: Optional[float] = None
 ) -> tuple[dict, dict]:
     """
     Generate a triangulated mesh from polygon boundary coordinates.
@@ -81,6 +81,10 @@ def create_mesh_from_boundary(
     boundary_dict = create_boundary_dict(boundary_coordinates)
     # Add a maximum triangle area constraint for refinement
     mesh_dict = triangle.triangulate(boundary_dict, constrain)
+
+    assert (
+        "triangles" in mesh_dict
+    ), f"Discretization faled on points: \n{boundary_coordinates}"
     return mesh_dict, boundary_dict
 
 
@@ -119,7 +123,10 @@ def random_points_inside_curve(curve: np.ndarray, num_points: int) -> np.ndarray
 
 
 def compute_3d_planar_mesh(
-    boundary: np.ndarray, plane_point: np.ndarray, plane_normal: np.ndarray
+    boundary: np.ndarray,
+    plane_point: Optional[np.ndarray] = None,
+    plane_normal: Optional[np.ndarray] = None,
+    max_area: Optional[float] = None,
 ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
     """
     Compute a 3D mesh on a given plane defined by a point and normal.
@@ -144,6 +151,9 @@ def compute_3d_planar_mesh(
     if plane_normal is None:
         plane_normal = compute_curve_normal(boundary)
 
+    if plane_point is None:
+        plane_point = np.array(boundary[0])
+
     # Project boundary points onto the plane
     projected_points = project_points_to_plane(
         boundary, plane_point=plane_point, plane_normal=plane_normal
@@ -154,7 +164,7 @@ def compute_3d_planar_mesh(
 
     # Create the mesh using the projected boundary points
     mesh_dict, boundary_dict = create_mesh_from_boundary(
-        boundary_coordinates=projected_points, max_area=0.01
+        boundary_coordinates=projected_points, max_area=max_area
     )
 
     # Transform vertices to 3D space of the plane

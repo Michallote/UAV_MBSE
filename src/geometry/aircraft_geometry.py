@@ -10,6 +10,8 @@ from typing import Literal
 import numpy as np
 
 from geometry.interpolation import resample_curve
+from geometry.planar import curve_area
+from geometry.projections import project_points_to_plane
 from src.aerodynamics.airfoil import Airfoil
 from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
 from src.geometry.spatial_array import SpatialArray
@@ -175,12 +177,19 @@ class GeometricCurve:
 
     @property
     def area(self) -> float:
-        """Calculate the centroid of the shape."""
+        """Calculate the area of the shape."""
 
-        triangles = self.triangulate_curve()
-        areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
+        plane_point = self.data[0]
+        plane_normal = self.normal
+        coordinates = self.data
 
-        return np.sum(areas)
+        projected_coordinates = project_points_to_plane(
+            coordinates, plane_point, plane_normal
+        )
+
+        area = curve_area(projected_coordinates)
+
+        return area
 
     @property
     def centroid(self) -> SpatialArray:
