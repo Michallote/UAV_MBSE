@@ -8,5 +8,5 @@ lint:
 .PHONY: tests
 tests:
 	@echo "Running test suite for the project"
-	PYTHONPATH=$(pwd) pytest --rootdir='.' --cov=src tests/
+	pytest --rootdir='.' --cov=src tests/ --cov-report=html:logs/cov/
 	

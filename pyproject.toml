@@ -59,3 +59,6 @@ extend-exclude = ["legacy/", "tests/"]
 
 [tool.wily]
 path = "src"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
