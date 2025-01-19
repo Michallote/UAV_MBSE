@@ -28,7 +28,7 @@ def test_basic_functions():
     # Plot using Plotly Express
     plot_curves(airfoil_te_gap.data, airfoil_te_gap_1.data, airfoil_te_gap_2.data)
 
-    airfoil = Airfoil.from_file("data/databases/airfoil_coordinates_db/s1223.dat")
+    airfoil = Airfoil.from_file("data/airfoils/GOE 383 AIRFOIL.dat")
 
     airfoil_te_gap = airfoil.with_trailing_edge_gap(te_gap=0.01, blend_distance=0.5)
 
