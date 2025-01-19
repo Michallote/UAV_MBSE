@@ -7,6 +7,10 @@ Created on Wed Jan 11 15:42:43 2023
 # System Commands
 import os
 
+import matplotlib.pyplot as plt
+# Scientific & Engineering
+import numpy as np
+
 # import tkinter as tk
 # from tkinter import filedialog #Open File Explorer to select files
 
@@ -14,9 +18,6 @@ import os
 # import geometry_tools
 # from geometry_tools import GeometryProcessor
 
-# Scientific & Engineering
-import numpy as np
-import matplotlib.pyplot as plt
 
 plt.rcParams["figure.autolayout"] = True
 # plt.rcParams['svg.fonttype'] = 'none'

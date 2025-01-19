@@ -8,21 +8,16 @@ from typing import Any, Generator, Iterable, Iterator, Literal, Union, overload
 
 import numpy as np
 
+from geometry.interpolation import vector_interpolation
+from geometry.meshing import triangulate_mesh
 from src.aerodynamics.data_structures import PointMass, SurfaceType
-from src.geometry.aircraft_geometry import (
-    AircraftGeometry,
-    GeometricCurve,
-    GeometricSurface,
-)
+from src.geometry.aircraft_geometry import (AircraftGeometry, GeometricCurve,
+                                            GeometricSurface)
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material
-from src.structures.inertia_tensor import (
-    compute_inertia_tensor_of_shell,
-    triangulate_mesh,
-)
+from src.structures.inertia_tensor import compute_inertia_tensor_of_shell
 from src.structures.spar import StructuralSpar
-from src.utils.interpolation import vector_interpolation
 
 
 class StructuralRib:
@@ -71,10 +66,7 @@ class StructuralRib:
         """
 
         curve = self.curve
-        x, y, z = curve.x, curve.y, curve.z
-        indices = curve.triangulation_indices()
-        i, j, k = indices.T
-
+        x, y, z, i, j, k = curve.triangulation()
         return x, y, z, i, j, k
 
     def inertia(self, origin: np.ndarray) -> np.ndarray:
@@ -387,6 +379,7 @@ class StructuralModel:
     """
 
     aircraft: AircraftGeometry
+    configuration: dict
     structures: list[SurfaceStructure]
     ext_spars: list[StructuralSpar]
 

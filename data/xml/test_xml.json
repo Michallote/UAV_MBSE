@@ -1,0 +1,167 @@
+{
+	"explane": {
+		"Units": {
+			"length_unit_to_meter": "1",
+			"mass_unit_to_kg": "1"
+		},
+		"Plane": {
+			"Name": "Plane Name",
+			"Description": "",
+			"Inertia": "",
+			"has_body": "false",
+			"wing": [
+				{
+					"Name": "Main Wing",
+					"Type": "MAINWING",
+					"Color": {
+						"red": "135",
+						"green": "154",
+						"blue": "126",
+						"alpha": "255"
+					},
+					"Description": "",
+					"Position": "0,           0,           0",
+					"Tilt_angle": "0.000",
+					"Symetric": "true",
+					"isFin": "false",
+					"isDoubleFin": "false",
+					"isSymFin": "false",
+					"Inertia": {
+						"Volume_Mass": "0.000"
+					},
+					"Sections": {
+						"Section": [
+							{
+								"y_position": "0.000",
+								"Chord": "0.180",
+								"xOffset": "0.000",
+								"Dihedral": "0.000",
+								"Twist": "0.000",
+								"x_number_of_panels": "13",
+								"x_panel_distribution": "COSINE",
+								"y_number_of_panels": "19",
+								"y_panel_distribution": "INVERSE SINE",
+								"Left_Side_FoilName": "S1014",
+								"Right_Side_FoilName": "S1014"
+							},
+							{
+								"y_position": "1.000",
+								"Chord": "0.110",
+								"xOffset": "0.070",
+								"Dihedral": "0.000",
+								"Twist": "0.000",
+								"x_number_of_panels": "13",
+								"x_panel_distribution": "COSINE",
+								"y_number_of_panels": "5",
+								"y_panel_distribution": "UNIFORM",
+								"Left_Side_FoilName": "S1014",
+								"Right_Side_FoilName": "S1014"
+							}
+						]
+					}
+				},
+				{
+					"Name": "Elevator",
+					"Type": "ELEVATOR",
+					"Color": {
+						"red": "155",
+						"green": "133",
+						"blue": "114",
+						"alpha": "255"
+					},
+					"Description": "",
+					"Position": "0.6,           0,           0",
+					"Tilt_angle": "0.000",
+					"Symetric": "true",
+					"isFin": "false",
+					"isDoubleFin": "false",
+					"isSymFin": "false",
+					"Inertia": {
+						"Volume_Mass": "0.000"
+					},
+					"Sections": {
+						"Section": [
+							{
+								"y_position": "0.000",
+								"Chord": "0.100",
+								"xOffset": "0.000",
+								"Dihedral": "0.000",
+								"Twist": "0.000",
+								"x_number_of_panels": "7",
+								"x_panel_distribution": "SINE",
+								"y_number_of_panels": "19",
+								"y_panel_distribution": "UNIFORM",
+								"Left_Side_FoilName": "NACA 0012",
+								"Right_Side_FoilName": "NACA 0012"
+							},
+							{
+								"y_position": "0.170",
+								"Chord": "0.080",
+								"xOffset": "0.020",
+								"Dihedral": "0.000",
+								"Twist": "0.000",
+								"x_number_of_panels": "13",
+								"x_panel_distribution": "COSINE",
+								"y_number_of_panels": "7",
+								"y_panel_distribution": "UNIFORM",
+								"Left_Side_FoilName": "NACA 0012",
+								"Right_Side_FoilName": "NACA 0012"
+							}
+						]
+					}
+				},
+				{
+					"Name": "Fin",
+					"Type": "FIN",
+					"Color": {
+						"red": "161",
+						"green": "162",
+						"blue": "126",
+						"alpha": "255"
+					},
+					"Description": "",
+					"Position": "0.65,           0,           0",
+					"Tilt_angle": "0.000",
+					"Symetric": "true",
+					"isFin": "true",
+					"isDoubleFin": "false",
+					"isSymFin": "false",
+					"Inertia": {
+						"Volume_Mass": "0.000"
+					},
+					"Sections": {
+						"Section": [
+							{
+								"y_position": "0.000",
+								"Chord": "0.100",
+								"xOffset": "0.000",
+								"Dihedral": "0.000",
+								"Twist": "0.000",
+								"x_number_of_panels": "7",
+								"x_panel_distribution": "UNIFORM",
+								"y_number_of_panels": "7",
+								"y_panel_distribution": "COSINE",
+								"Left_Side_FoilName": "NACA 0009",
+								"Right_Side_FoilName": "NACA 0009"
+							},
+							{
+								"y_position": "0.120",
+								"Chord": "0.060",
+								"xOffset": "0.040",
+								"Dihedral": "0.000",
+								"Twist": "0.000",
+								"x_number_of_panels": "13",
+								"x_panel_distribution": "COSINE",
+								"y_number_of_panels": "5",
+								"y_panel_distribution": "UNIFORM",
+								"Left_Side_FoilName": "NACA 0009",
+								"Right_Side_FoilName": "NACA 0009"
+							}
+						]
+					}
+				}
+			]
+		},
+		"_version": "1.0"
+	}
+}

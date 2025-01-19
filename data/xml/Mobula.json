@@ -1,0 +1,274 @@
+{
+    "@attributes": {
+        "version": 1.0
+    },
+    "Units": {
+        "length_unit_to_meter": 1.0,
+        "mass_unit_to_kg": 1.0
+    },
+    "Plane": {
+        "Name": "Mobula",
+        "Description": null,
+        "Inertia": {
+            "Point_Mass": [
+                {
+                    "Tag": null,
+                    "Mass": 12.9,
+                    "coordinates": [
+                        0.193,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "Tag": null,
+                    "Mass": 0.25,
+                    "coordinates": [
+                        0.265,
+                        1.05,
+                        -0.1
+                    ]
+                },
+                {
+                    "Tag": null,
+                    "Mass": 0.25,
+                    "coordinates": [
+                        0.265,
+                        -1.05,
+                        -0.1
+                    ]
+                }
+            ]
+        },
+        "has_body": false,
+        "wing": [
+            {
+                "Name": "Main Wing",
+                "Type": "MAINWING",
+                "Color": {
+                    "red": 124.0,
+                    "green": 156.0,
+                    "blue": 251.0,
+                    "alpha": 255.0
+                },
+                "Description": null,
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Tilt_angle": 0.0,
+                "Symetric": true,
+                "isFin": false,
+                "isDoubleFin": false,
+                "isSymFin": false,
+                "Inertia": {
+                    "Volume_Mass": 1.2
+                },
+                "Sections": {
+                    "Section": [
+                        {
+                            "y_position": 0.0,
+                            "Chord": 0.78,
+                            "xOffset": 0.0,
+                            "Dihedral": 0.0,
+                            "Twist": 1.5,
+                            "x_number_of_panels": 20.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 16.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "GOE 383 AIRFOIL",
+                            "Right_Side_FoilName": "GOE 383 AIRFOIL"
+                        },
+                        {
+                            "y_position": 0.297,
+                            "Chord": 0.78,
+                            "xOffset": 0.0,
+                            "Dihedral": 9.0,
+                            "Twist": 1.5,
+                            "x_number_of_panels": 20.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 10.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "GOE 383 AIRFOIL",
+                            "Right_Side_FoilName": "GOE 383 AIRFOIL"
+                        },
+                        {
+                            "y_position": 0.479,
+                            "Chord": 0.597,
+                            "xOffset": 0.11,
+                            "Dihedral": 9.0,
+                            "Twist": 0.75,
+                            "x_number_of_panels": 20.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 10.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "GOE 383 AIRFOIL-0.5 FX-73-CL-2-152",
+                            "Right_Side_FoilName": "GOE 383 AIRFOIL-0.5 FX-73-CL-2-152"
+                        },
+                        {
+                            "y_position": 0.661,
+                            "Chord": 0.413,
+                            "xOffset": 0.22,
+                            "Dihedral": 0.0,
+                            "Twist": 0.0,
+                            "x_number_of_panels": 20.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 16.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "FX 73-CL2-152",
+                            "Right_Side_FoilName": "FX 73-CL2-152"
+                        },
+                        {
+                            "y_position": 0.994,
+                            "Chord": 0.363,
+                            "xOffset": 0.22,
+                            "Dihedral": 0.0,
+                            "Twist": 0.0,
+                            "x_number_of_panels": 20.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 16.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "FX 73-CL2-152",
+                            "Right_Side_FoilName": "FX 73-CL2-152"
+                        },
+                        {
+                            "y_position": 1.252,
+                            "Chord": 0.314,
+                            "xOffset": 0.22,
+                            "Dihedral": 0.0,
+                            "Twist": 0.0,
+                            "x_number_of_panels": 20.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 20.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "FX 73-CL2-152",
+                            "Right_Side_FoilName": "FX 73-CL2-152"
+                        },
+                        {
+                            "y_position": 1.65,
+                            "Chord": 0.219,
+                            "xOffset": 0.23,
+                            "Dihedral": 0.0,
+                            "Twist": -3.0,
+                            "x_number_of_panels": 13.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 1.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "FX 73-CL2-152",
+                            "Right_Side_FoilName": "FX 73-CL2-152"
+                        }
+                    ]
+                }
+            },
+            {
+                "Name": "Elevator",
+                "Type": "ELEVATOR",
+                "Color": {
+                    "red": 181.0,
+                    "green": 203.0,
+                    "blue": 182.0,
+                    "alpha": 255.0
+                },
+                "Description": null,
+                "Position": [
+                    1.5,
+                    0.0,
+                    0.1
+                ],
+                "Tilt_angle": 0.0,
+                "Symetric": true,
+                "isFin": false,
+                "isDoubleFin": false,
+                "isSymFin": false,
+                "Inertia": {
+                    "Volume_Mass": 0.3
+                },
+                "Sections": {
+                    "Section": [
+                        {
+                            "y_position": 0.0,
+                            "Chord": 0.256,
+                            "xOffset": 0.0,
+                            "Dihedral": 0.0,
+                            "Twist": -2.5,
+                            "x_number_of_panels": 14.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 15.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "NACA 0009",
+                            "Right_Side_FoilName": "NACA 0009"
+                        },
+                        {
+                            "y_position": 0.6,
+                            "Chord": 0.256,
+                            "xOffset": 0.0,
+                            "Dihedral": 0.0,
+                            "Twist": -2.5,
+                            "x_number_of_panels": 13.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 5.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "NACA 0009",
+                            "Right_Side_FoilName": "NACA 0009"
+                        }
+                    ]
+                }
+            },
+            {
+                "Name": "Fin",
+                "Type": "FIN",
+                "Color": {
+                    "red": 212.0,
+                    "green": 144.0,
+                    "blue": 140.0,
+                    "alpha": 255.0
+                },
+                "Description": null,
+                "Position": [
+                    1.5,
+                    0.625,
+                    0.126
+                ],
+                "Tilt_angle": 0.0,
+                "Symetric": true,
+                "isFin": true,
+                "isDoubleFin": true,
+                "isSymFin": false,
+                "Inertia": {
+                    "Volume_Mass": 0.1
+                },
+                "Sections": {
+                    "Section": [
+                        {
+                            "y_position": 0.0,
+                            "Chord": 0.25,
+                            "xOffset": 0.0,
+                            "Dihedral": 0.0,
+                            "Twist": 0.0,
+                            "x_number_of_panels": 7.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 7.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "NACA 0009",
+                            "Right_Side_FoilName": "NACA 0009"
+                        },
+                        {
+                            "y_position": 0.3,
+                            "Chord": 0.15,
+                            "xOffset": 0.1,
+                            "Dihedral": 0.0,
+                            "Twist": 0.0,
+                            "x_number_of_panels": 13.0,
+                            "x_panel_distribution": "COSINE",
+                            "y_number_of_panels": 5.0,
+                            "y_panel_distribution": "UNIFORM",
+                            "Left_Side_FoilName": "NACA 0009",
+                            "Right_Side_FoilName": "NACA 0009"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -7,7 +7,6 @@ from typing import Literal, overload
 
 import matplotlib.path as mpath
 import numpy as np
-
 # Create a sliding window view of size 2
 from numpy.lib.stride_tricks import sliding_window_view
 from shapely.geometry import Polygon
@@ -402,6 +401,22 @@ def enforce_closed_curve(coordinates: np.ndarray) -> np.ndarray:
         return np.vstack([coordinates, coordinates[0]])
 
     return coordinates
+
+
+def is_closed_curve(coordinates: np.ndarray) -> np.bool[bool]:
+    """Checks if a curve is closed
+
+    Parameters
+    ----------
+    coordinates : np.ndarray
+        Curve coordinates
+
+    Returns
+    -------
+    np.bool[bool]
+        True if curve is closed
+    """
+    return np.all(np.isclose(coordinates[0], coordinates[-1]))
 
 
 def generate_intersection_registry(

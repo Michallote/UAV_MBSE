@@ -1,4 +1,4 @@
-from src.utils.xml_parser import is_float, parse_type, parse_xml_file
+from src.utils.xml_parser import is_float, parse_type
 
 
 def test_is_float_cases():

@@ -1,12 +1,8 @@
 import numpy as np
-import pandas as pd
-import plotly.express as px
-import tikzplotly
 
+from geometry.interpolation import ndarray_linear_interpolate, resample_curve
 from src.aerodynamics.airfoil import Airfoil
 from src.geometry.spatial_array import SpatialArray
-from src.utils.interpolation import ndarray_linear_interpolate, resample_curve
-from src.utils.transformations import rotation_matrix2d
 from tests.test_intersection_algorithms import plot_curves
 
 a1 = Airfoil.from_file("data/databases/airfoil_coordinates_db/s1210.dat").resample(100)
@@ -31,7 +27,7 @@ fig2 = plot_curves(a4.data, a5.data, a6.data)
 import plotly.graph_objects as go
 
 from src.aerodynamics.airfoil import AirfoilFactory
-from src.aerodynamics.data_structures import Aircraft, SurfaceType
+from src.aerodynamics.data_structures import Aircraft
 from src.geometry.aircraft_geometry import AircraftGeometry
 
 airfoil_factory = AirfoilFactory()

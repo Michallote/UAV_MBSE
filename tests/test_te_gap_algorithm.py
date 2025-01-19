@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
+from geometry.interpolation import pad_arrays
 from src.aerodynamics.airfoil import Airfoil
-from src.utils.interpolation import pad_arrays
-from src.utils.transformations import rotation_matrix2d
+from src.geometry.transformations import rotation_matrix2d
 from tests.test_intersection_algorithms import plot_curves
 
 
@@ -30,30 +30,6 @@ def test_basic_functions():
     airfoil_te_gap_2 = airfoil.with_trailing_edge_gap(te_gap=0.02, blend_distance=1.0)
 
     plot_curves(airfoil.data, airfoil_te_gap.data, airfoil_te_gap_2.data)
-
-    np.savetxt(
-        "S1223_te_gap.csv",
-        pad_arrays(
-            pad_arrays(airfoil.data, airfoil_te_gap.data), airfoil_te_gap_2.data
-        ),
-        delimiter=",",
-        fmt="%.8f",
-        header="s1223_x,s1223_y,s1223_TE_x,s1223_TE_y,s1223_TE2_x,s1223_TE2_y",
-    )
-
-    tuple(map(tuple, airfoil_te_gap_2.data[[0, -1]]))
-
-    vec = airfoil_te_gap_2.data[[0, -1]]
-    vec = np.diff(vec, axis=0).T
-
-    airfoil_te_gap_2.data[[0, -1]] + np.dot(rotation_matrix2d(np.pi / 2), vec).T
-
-    t = 0.02
-    dc = np.array((t, airfoil.camber(1.0) - airfoil.camber(1 - t)))
-    airfoil.trailing_edge + dc
-
-    dt = np.dot(rotation_matrix2d(np.pi / 2), dc)
-    airfoil.trailing_edge + dt
 
 
 def test_transition_function():
@@ -86,5 +62,3 @@ def test_transition_function():
     # import tikzplotly
 
     # tikzplotly.save("figure.tex", fig)
-
-

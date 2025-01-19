@@ -11,42 +11,37 @@ def transform_coordinates(
     twist: float,
     chord: float,
     offset: np.ndarray,
-    wingspan: float,
 ) -> np.ndarray:
-    """
-    Applies translations and rotations to airfoil data points
+    """Applies geometric transformations (rotation, scaling & translation) to a curve
 
     Parameters
     ----------
-    section : Section object
-        Contains all relevant information about the transformation.
+     - coordinates : np.ndarray
+            Airfoil coodinates
+     - center : np.ndarray
+            Center of the rotation
+     - twist : float
+            Degrees to rotate the curve
+     - chord : float
+            Scale factor to apply to the coordinates
+     - offset : np.ndarray
+            3D vector to offset the curve
 
     Returns
     -------
-    cords3d : np.ndarray
-        Curve Coordinates.
-
+    np.ndarray
+        Transformed Coordinates
     """
-    # twist = -np.radians(section.Twist)
-    # chord = section.chord
-    # offset = np.array([section.xOffset,section.yOffset])
-    # wingspan = section.wingspan
-
-    # coordinates = section.airfoil.get_data( dim = '2D', output_format = 'np')
-    # center = section.airfoil.center
 
     if twist != 0:
         rotmat = rotation_matrix2d(twist)
-        # coordinates = [rotmat@r for r in (coordinates-center)] + center
         coordinates = np.dot(coordinates - center, rotmat.T) + center
 
-    coordinates = coordinates * chord + offset
+    coordinates = coordinates * chord
     # Dimension adder  (3 x 2) @ (2 x 1) = (3 x 1)
     matrix_to_r3 = np.array([[1, 0], [0, 1], [0, 0]])
     # Broadcast the result over the rows of B
-    cords3d = np.dot(coordinates, matrix_to_r3.T) + np.array([0, 0, wingspan])
-
-    # cords3d = np.c_[coordinates, wingspan*np.ones(len(coordinates))]
+    cords3d = np.dot(coordinates, matrix_to_r3.T) + offset
 
     return cords3d
 
@@ -192,3 +187,42 @@ def get_plane_normal_vector(plane: Literal["xy", "xz", "yz"]) -> np.ndarray:
         "yz": np.array([0, 1, 0]),
     }
     return normal_vectors[plane]
+
+
+def compute_curve_normal(curve: np.ndarray) -> np.ndarray:
+    """
+    Compute the average normal vector of a 3D curve.
+
+    Parameters
+    ----------
+    curve : np.ndarray
+        A sequence of 3D points defining the curve (N x 3).
+
+    Returns
+    -------
+    np.ndarray
+        A normalized 3D vector representing the average normal.
+
+    Raises
+    ------
+    ValueError
+        If the curve has fewer than 3 points or is degenerate.
+    """
+    if curve.shape[0] < 3:
+        raise ValueError("Curve must have at least 3 points to compute normals.")
+
+    # Calculate tangent vectors as differences between successive points
+    tangents = np.diff(curve, axis=0)
+
+    # Shift arrays to compute cross product pairs
+    xi, xf = tangents[:-1], tangents[1:]
+
+    # Compute normals and check for degeneracy
+    normals = np.cross(xi, xf)
+    if np.allclose(normals, 0):
+        raise ValueError("Curve is degenerate; normals cannot be computed.")
+
+    # Normalize the resulting normal vector
+    normal = np.sum(normals, axis=0)
+    normal = normal / np.linalg.norm(normal)
+    return normal

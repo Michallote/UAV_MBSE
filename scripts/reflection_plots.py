@@ -1,7 +1,7 @@
 import numpy as np
 import plotly.graph_objs as go
 
-from src.utils.transformations import reflect_curve_by_plane
+from src.geometry.transformations import reflect_curve_by_plane
 
 # Example usage
 data = np.arange(10 * 3).reshape(-1, 3)
