@@ -1,5 +1,64 @@
+[project]
+name = "uav-mbse"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4==4.12.3",
+    "matplotlib>3.9.2",
+    "numpy>1.26.4",
+    "pandas>2.2.2",
+    "plotly>5.22.0",
+    "scipy>1.13.0",
+    "shapely>2.0.4",
+    "tqdm>=4.67.1",
+    "triangle>=20250106",
+]
+
+[project.scripts]
+uav-mbse = "uav_mbse:main"
+
+[project.optional-dependencies]
+code-quality = [
+    "ruff>=0.8.4",
+    "wily>=1.25.0",
+]
+profiler = [
+    "psutil",
+    "snakeviz",
+    "gprof2dot"
+]
+graph = [
+    "pydot>=3.0.2",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+dev-dependencies = [
+    "black>=24.8.0",
+    "graphviz>=0.20.3",
+    "ipykernel>=6.29.5",
+    "isort>=5.13.2",
+    "pydot>=3.0.3",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.4",
+    "uv>=0.5.16",
+    "wily>=1.25.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 extend-exclude = ["legacy/", "tests/"]
 
-[wily]
+[tool.wily]
 path = "src"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

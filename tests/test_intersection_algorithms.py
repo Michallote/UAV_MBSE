@@ -4,11 +4,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
-from src.utils.intersection import (
-    calculate_intersection_curve,
-    enforce_closed_curve,
-    legacy_calculate_intersecting_region,
-)
+from geometry.intersection import (calculate_intersection_curve,
+                                   enforce_closed_curve,
+                                   legacy_calculate_intersecting_region)
 
 
 def plot_curves(*args):

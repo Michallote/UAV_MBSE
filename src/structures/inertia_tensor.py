@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Any
 
 import numpy as np
 
@@ -30,14 +29,6 @@ def create_triangle_prism(
     if midsurface:
         prism = prism - 0.5 * thickness * normal
     return prism
-
-
-def triangulate_mesh(x, y, z, i, j, k) -> np.ndarray[Any, np.dtype[Any]]:
-    triangle_indices = np.vstack((i, j, k)).T
-    vertices = np.vstack((x, y, z)).T
-    triangles = vertices[triangle_indices]
-    triangles = filter_degenerate_triangles(triangles)
-    return triangles
 
 
 def filter_degenerate_triangles(triangles: np.ndarray) -> np.ndarray:
