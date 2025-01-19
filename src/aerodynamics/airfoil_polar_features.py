@@ -24,7 +24,8 @@ def extract_parameters(file_path) -> tuple[dict[str, float], pd.DataFrame]:
     for i, line in enumerate(lines):
 
         if "Calculated polar for:" in line:
-            name = ""
+            # name = ""
+            pass
 
         if ("Re" in line) and ("Mach" in line) and ("Ncrit" in line):
             parameters_names = re.findall(r"\b(\w+)\s*=", line)

@@ -158,7 +158,7 @@ def parse_properties(
             logging.debug(1, property_id[pr_id])
             physical_property = property_id[pr_id]
             params = parse_parameter(parameter_value, parameter_id)
-            logging.debug(params)
+            logging.debug(params, parameter_data, qualifier)
             return (physical_property, params)
 
         case {
@@ -171,7 +171,7 @@ def parse_properties(
             logging.debug(2, property_id[pr_id])
             physical_property = property_id[pr_id]
             params = parse_parameter(parameter_value, parameter_id)
-            logging.debug(params)
+            logging.debug(params, parameter_data)
             return (physical_property, params)
 
         case _:

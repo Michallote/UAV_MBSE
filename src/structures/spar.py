@@ -883,5 +883,6 @@ def objective(params, curve, thickness):
 
 
 def safe_objective(params, *args):
+    x_bounds = (0, 1)
     params = np.clip(params, [x_bounds[0]], [x_bounds[1]])
     return objective(params, *args)
