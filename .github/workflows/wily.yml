@@ -25,7 +25,7 @@ jobs:
       - name: Build cache and diff
         id: wily
         run: |
-          wily build src/ tests/
+          wily build src/ 
           DIFF=$(wily diff src/ --no-detail -r origin/${{ github.event.pull_request.base.ref }})
           echo "$DIFF"
 
