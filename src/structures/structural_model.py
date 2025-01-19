@@ -11,8 +11,11 @@ import numpy as np
 from geometry.interpolation import vector_interpolation
 from geometry.meshing import triangulate_mesh
 from src.aerodynamics.data_structures import PointMass, SurfaceType
-from src.geometry.aircraft_geometry import (AircraftGeometry, GeometricCurve,
-                                            GeometricSurface)
+from src.geometry.aircraft_geometry import (
+    AircraftGeometry,
+    GeometricCurve,
+    GeometricSurface,
+)
 from src.geometry.spatial_array import SpatialArray
 from src.geometry.surfaces import create_surface_mesh, surface_centroid_area
 from src.materials import Material

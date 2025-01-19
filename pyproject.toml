@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4==4.12.3",
+    "black[jupyter]>=24.10.0",
     "matplotlib>3.9.2",
     "numpy>1.26.4",
     "pandas>2.2.2",
@@ -55,10 +56,31 @@ dev-dependencies = [
 where = ["src"]
 
 [tool.ruff]
-extend-exclude = ["legacy/", "tests/"]
+extend-exclude = ["legacy/", "tests/", "scripts/"]
 
 [tool.wily]
-path = "src"
+
+path = "src/"
+
+[tool.isort]
+profile = "black"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+minversion = "6.0"  # Minimum pytest version
+addopts = "-ra"  # Additional options: show extra test summary info and run quietly
+testpaths = ["tests"]
+python_files = [
+    "test_*.py",  # Patterns to discover test files
+    "*_test.py"
+]
+python_classes = [
+    "Test*",  # Patterns to discover test classes
+    "*Tests"
+]
+python_functions = [
+    "test_*",  # Patterns to discover test functions
+    "*_test"
+]
+
+

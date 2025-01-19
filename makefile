@@ -2,7 +2,7 @@
 lint:
 	@echo "Running linters for this project"
 	black .
-	isort .
+	isort . --profile=black
 	ruff check . --fix
 
 .PHONY: tests

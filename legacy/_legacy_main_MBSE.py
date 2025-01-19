@@ -18,8 +18,10 @@ from tkinter import filedialog  # Open File Explorer to select files
 
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+
 # Scientific & Engineering
 import numpy as np
+
 # Modules
 import SolidWorksVBA as SWVBA
 from matplotlib import cm

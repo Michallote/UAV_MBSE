@@ -13,8 +13,7 @@ import pandas as pd
 from matplotlib import cm
 from matplotlib.colors import LightSource
 
-from legacy._legacy_main_MBSE import (AeroSurface, Aircraft, Section,
-                                      SurfaceType)
+from legacy._legacy_main_MBSE import AeroSurface, Aircraft, Section, SurfaceType
 
 
 @dataclass
