@@ -14,6 +14,7 @@ def main():
     airfoil_factory = AirfoilFactory()
     airfoil_factory.set_folder_path("data/airfoils")
     airfoil_factory.cache_airfoils()
+
     aircraft = Aircraft.from_xml("data/xml/Mobula2.xml")
 
     te_gap_config = {
@@ -62,7 +63,7 @@ def main():
 
     structure_config = {
         SurfaceType.MAINWING: dict(
-            main_spar=main_flat_spar_balsa,
+            main_spar=main_spar_triplay,
             secondary_spar=secondary_flat_spar_balsa,
             ribs=rib_config,
             surface_coating=coating_config,

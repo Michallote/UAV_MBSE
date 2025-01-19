@@ -6,8 +6,11 @@ import numpy as np
 from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from src.geometry.aircraft_geometry import (AircraftGeometry, GeometricCurve,
-                                            GeometricSurface)
+from src.geometry.aircraft_geometry import (
+    AircraftGeometry,
+    GeometricCurve,
+    GeometricSurface,
+)
 from src.visualization.base_class import BaseAircraftPlotter
 
 

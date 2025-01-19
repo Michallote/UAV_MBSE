@@ -7,23 +7,28 @@ from src.aerodynamics.airfoil import Airfoil
 from src.geometry.transformations import rotation_matrix2d
 from tests.test_intersection_algorithms import plot_curves
 
+ENABLE_RETURN = False
+
 
 def test_basic_functions():
 
     airfoil = Airfoil.from_file("data/airfoils/FX 73-CL2-152 T.E..dat")
 
     airfoil_te_gap = airfoil.with_trailing_edge_gap(te_gap=0.0, blend_distance=1.0)
+
+    target_te = 0.03
+
     airfoil_te_gap_1 = airfoil_te_gap.with_trailing_edge_gap(
-        te_gap=0.03, blend_distance=0.15
+        te_gap=target_te, blend_distance=0.15
     )
     airfoil_te_gap_2 = airfoil_te_gap.with_trailing_edge_gap(
-        te_gap=0.03, blend_distance=1.0
+        te_gap=target_te, blend_distance=1.0
     )
 
     # Plot using Plotly Express
     plot_curves(airfoil_te_gap.data, airfoil_te_gap_1.data, airfoil_te_gap_2.data)
 
-    airfoil = Airfoil.from_file("data/databases/airfoil_coordinates_db/s1223.dat")
+    airfoil = Airfoil.from_file("data/airfoils/GOE 383 AIRFOIL.dat")
 
     airfoil_te_gap = airfoil.with_trailing_edge_gap(te_gap=0.01, blend_distance=0.5)
 
@@ -56,8 +61,8 @@ def test_transition_function():
 
     df = pd.concat(df)
 
-    fig = px.line(df, x="x", y="y", color="blend_distance", markers=True)
-    fig.show()
+    if ENABLE_RETURN:
+        return df
 
     # import tikzplotly
 

@@ -44,7 +44,7 @@ def read_propeller_apc_file(file_path: str) -> pd.DataFrame:
             line = line.strip()
             raise NotImplementedError(f"TAIR polar input file detected: {line=}")
 
-    table_headers = lines[sep[0] + 2].split()
+    _table_headers = lines[sep[0] + 2].split()
 
     # Store the beggining line and end of each table in a list to slice
     intervals = np.array([np.array(sep[:-1]) + 1, sep[1:]]).transpose()

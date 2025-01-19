@@ -92,12 +92,12 @@ for c in conn:
         B[2, 0::2] = dN[1, :]
         B[2, 1::2] = dN[0, :]
         Ke += np.dot(np.dot(B.T, C), B) * np.linalg.det(J)
-    for i, I in enumerate(c):
+    for i, Ii in enumerate(c):
         for j, J in enumerate(c):
-            K[2 * I, 2 * J] += Ke[2 * i, 2 * j]
-            K[2 * I + 1, 2 * J] += Ke[2 * i + 1, 2 * j]
-            K[2 * I + 1, 2 * J + 1] += Ke[2 * i + 1, 2 * j + 1]
-            K[2 * I, 2 * J + 1] += Ke[2 * i, 2 * j + 1]
+            K[2 * Ii, 2 * J] += Ke[2 * i, 2 * j]
+            K[2 * Ii + 1, 2 * J] += Ke[2 * i + 1, 2 * j]
+            K[2 * Ii + 1, 2 * J + 1] += Ke[2 * i + 1, 2 * j + 1]
+            K[2 * Ii, 2 * J + 1] += Ke[2 * i, 2 * j + 1]
 ###############################
 print("assign nodal forces and boundary conditions")
 f = np.zeros((2 * num_nodes))
