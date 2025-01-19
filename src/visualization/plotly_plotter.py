@@ -6,6 +6,8 @@ from typing import Any, Optional
 
 import numpy as np
 import plotly.graph_objects as go
+import plotly.io as pio
+import triangle
 from bs4 import BeautifulSoup
 from plotly.offline import plot
 from plotly.subplots import make_subplots
@@ -555,7 +557,7 @@ def plot_2d_mesh(
         "visible": {"Vertices": True, "Element Numbers": True},
     }
 
-    markers_options = {
+    markers_options: dict[str, dict] = {
         "mode": {"Vertices": "markers", "Element Numbers": "text"},
         "text": {"Vertices": vertex_labels, "Element Numbers": element_numbers},
         "visible": {"Vertices": True, "Element Numbers": False},
@@ -627,6 +629,350 @@ def plot_2d_mesh(
         yaxis=dict(title="Y", showgrid=True, zeroline=False, scaleanchor="x"),
         showlegend=True,
         updatemenus=updatemenus,
+    )
+
+    # Save the plot to a file if specified
+    if save:
+        fig.write_html(save)
+
+    # Show the plot interactively if specified
+    if show:
+        fig.show()
+
+    return fig
+
+
+def add_mesh_triangles(
+    fig: go.Figure,
+    vertices: np.ndarray,
+    triangles: np.ndarray,
+    add_numbering: bool = False,
+    element_coloring: str = "default_sequence",
+) -> go.Figure:
+    """
+    Add 3D triangular mesh elements to the Plotly figure.
+
+    Parameters
+    ----------
+    fig : go.Figure
+        The Plotly figure to which the triangles are added.
+    vertices : np.ndarray
+        Array of vertex coordinates.
+    triangles : np.ndarray
+        Array of triangle vertex indices.
+    showlegend : bool, default True
+        Whether to show the legend for this trace.
+
+    Returns
+    -------
+    go.Figure
+        The updated Plotly figure.
+    """
+
+    x, y, z = vertices.T
+    i, j, k = triangles.T
+
+    if element_coloring == "default_sequence":
+        # Get the current active template
+        current_template = pio.templates.default
+        # Retrieve the color sequence from the active template
+        color_sequence = pio.templates[current_template].layout.colorway
+
+        element_color = [
+            color_sequence[i % len(color_sequence)] for i in range(len(triangles))
+        ]
+    else:
+        element_color = None
+
+    element_numbers = list(range(len(triangles)))
+
+    text_list = [
+        f"Element {element} <br>Vertices: {idx}"
+        for element, idx in zip(element_numbers, triangles)
+    ]
+
+    fig.add_trace(
+        go.Mesh3d(
+            x=x,
+            y=y,
+            z=z,
+            i=i,
+            j=j,
+            k=k,
+            facecolor=element_color,
+            name="Elements",
+            legendgroup="Elements",
+            showlegend=True,
+            opacity=0.8,
+            text=text_list,
+            hoverinfo="text+x+y+z",
+        )
+    )
+
+    # Draw triangle borders
+    for i, triangle_indices in enumerate(triangles):
+        simplex = vertices[triangle_indices]
+        simplex = enforce_closed_curve(simplex)
+        fig.add_trace(
+            go.Scatter3d(
+                x=simplex[:, 0],
+                y=simplex[:, 1],
+                z=simplex[:, 2],
+                mode="lines",
+                line=dict(width=2, color="black"),
+                hoverinfo="none",
+                showlegend=False,
+                name=None,
+                legendgroup="Elements",
+            )
+        )
+
+    # Draw Vertices
+    vertex_numbers = list(range(len(vertices)))
+    vertex_labels = list(map(lambda s: f"Vertex: {s}", vertex_numbers))
+    fig.add_trace(
+        go.Scatter3d(
+            x=x,
+            y=y,
+            z=z,
+            mode="markers",
+            text=vertex_labels,
+            marker=dict(size=4, color="red"),
+            name="Vertices",
+            textposition="bottom center",
+            textfont=dict(size=14, color="red"),
+        )
+    )
+
+    # Draw Element Numbers on Centroid
+    centroids = np.sum(vertices[triangles], axis=1) / 3
+
+    fig.add_trace(
+        go.Scatter3d(
+            x=centroids[:, 0],
+            y=centroids[:, 1],
+            z=centroids[:, 2],
+            mode="text",
+            text=element_numbers,
+            textfont=dict(size=14, color="black"),
+            name="Element Numbers",
+            hoverinfo="none",  # Optional: Avoid hover tooltips for text
+            legendgroup="Elements",
+            textposition="middle center",
+            showlegend=False,
+            visible=False,
+        )
+    )
+
+    if add_numbering:
+        # Define the states you wish each button takes the figure to:
+
+        # No numbering enabled
+        markers_options = {
+            "button_label": "Show Geometry Only",
+            "mode": {"Vertices": "markers"},
+            "text": {"Vertices": vertex_labels},
+            "visible": {"Vertices": True, "Element Numbers": False},
+            "opacity": {"Elements": 0.85},
+        }
+        # Show numbers on top of elements and vertices
+        text_options = {
+            "button_label": "Show Numbers",
+            "mode": {"Vertices": "text+markers"},
+            "text": {"Vertices": vertex_numbers},
+            "visible": {"Vertices": True, "Element Numbers": True},
+            "opacity": {"Elements": 0.6},
+        }
+
+        traces = fig.data
+
+        # Configure updatemenus
+        buttons = [
+            create_button_options(traces, markers_options),
+            create_button_options(traces, text_options),
+        ]
+
+        updatemenus = [
+            {
+                "buttons": buttons,
+                "direction": "down",
+                "pad": {"r": 5, "t": 5},
+                "showactive": True,
+                "x": 0.05,
+                "xanchor": "left",
+                "y": 0.95,
+                "yanchor": "top",
+            }
+        ]
+
+        # Configure the layout
+        fig.update_layout(
+            updatemenus=updatemenus,
+        )
+
+    return fig
+
+
+def create_button_options(traces, options: dict) -> dict[str, Any]:
+    """
+    Creates a button configuration for Plotly's `updatemenus` to update specific trace attributes
+    based on the provided options. This function abstracts the process of defining the button's
+    behavior by dynamically mapping trace names to their desired states.
+
+    Parameters
+    ----------
+    traces : list[plotly.graph_objects.Figure.data]
+        A list of traces from the figure (e.g., `fig.data`) to which the updates will apply.
+    options : dict
+        A dictionary specifying the desired configuration for the button. Keys in the dictionary
+        include:
+        - "button_label": str
+            The label to display on the button.
+        - Other keys (e.g., "mode", "text", "visible"): dict[str, Any]
+            Dictionaries where keys are trace names and values are the desired attribute values
+            for each trace.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary defining the button's configuration. This includes:
+        - "label": The button label.
+        - "method": Always set to "update" to update the figure dynamically.
+        - "args": A list containing a dictionary mapping trace attributes (e.g., "mode", "text",
+          "visible") to their updated values for each trace.
+
+    Example
+    -------
+    Example usage with a Plotly figure:
+
+    text_options = {
+        "button_label": "Text + Markers",
+        "mode": {"Vertices": "text+markers"},
+        "text": {"Vertices": vertex_numbers},
+        "visible": {"Vertices": True, "Element Numbers": True},
+    }
+
+    traces = fig.data
+
+    # Generate a button configuration
+    button = create_button_options(traces, text_options)
+
+    updatemenus = [
+        {
+            "buttons": [button],
+            "direction": "down",
+            "showactive": True,
+        }
+    ]
+
+    fig.update_layout(updatemenus=updatemenus)
+    """
+
+    button_label = options.pop("button_label")
+
+    args = {
+        key: [value.get(trace.name, getattr(trace, key, None)) for trace in traces]
+        for key, value in options.items()
+    }
+
+    return {
+        "label": button_label,
+        "method": "update",
+        "args": [args],
+    }
+
+
+def add_boundary_trace(fig, boundary_vertices):
+    """
+    Add boundary trace for 3D mesh.
+
+    Parameters
+    ----------
+    fig : go.Figure
+        The Plotly figure to which the boundary trace is added.
+    boundary_vertices : np.ndarray
+        Array of boundary vertex coordinates.
+
+    Returns
+    -------
+    go.Figure
+        The updated Plotly figure.
+    """
+    boundary_vertices = enforce_closed_curve(boundary_vertices)
+    fig.add_trace(
+        go.Scatter3d(
+            x=boundary_vertices[:, 0],
+            y=boundary_vertices[:, 1],
+            z=boundary_vertices[:, 2],
+            mode="lines+markers",
+            line=dict(color="blue", width=3),
+            marker=dict(size=4, color="blue"),
+            name="Boundary",
+        )
+    )
+    return fig
+
+
+def plot_3d_mesh(
+    boundary_dict: dict,
+    mesh_dict: dict,
+    title: str,
+    add_numbering: bool = False,
+    element_coloring: str = "default_sequence",
+    save: Optional[str] = None,
+    show: bool = True,
+) -> go.Figure:
+    """
+    Plot a 3D mesh generated by a triangulation process using Plotly.
+
+    This function visualizes the triangulated 3D mesh, highlighting the triangles and
+    the boundary of the original polygon.
+
+    Parameters
+    ----------
+    boundary_dict : dict
+        A dictionary containing the vertices of the polygon boundary. The key "vertices"
+        refers to the array of coordinates defining the boundary.
+    mesh_dict : dict
+        A dictionary containing the triangulated mesh. It includes:
+        - 'vertices': The coordinates of all points in the triangulation.
+        - 'triangles': The indices of vertices forming each triangle.
+    title : str
+        The title of the plot.
+    save : Optional[str], default None
+        File path to save the plot as an HTML file. If None, the plot will not be saved.
+    show : bool, default True
+        Whether to display the plot interactively.
+
+    Returns
+    -------
+    go.Figure
+        The Plotly figure object.
+    """
+    fig = go.Figure()
+
+    # Add triangles to the plot
+    fig = add_mesh_triangles(
+        fig,
+        mesh_dict["vertices"],
+        mesh_dict["triangles"],
+        add_numbering=add_numbering,
+        element_coloring=element_coloring,
+    )
+
+    # Add boundary lines
+    fig = add_boundary_trace(fig, boundary_dict["vertices"])
+
+    # Configure the layout
+    fig.update_layout(
+        title=title,
+        scene=dict(
+            xaxis=dict(title="X", showgrid=True, zeroline=False),
+            yaxis=dict(title="Y", showgrid=True, zeroline=False),
+            zaxis=dict(title="Z", showgrid=True, zeroline=False),
+            aspectmode="data",  # This ensures that the scaling is equal along all axes
+        ),
+        showlegend=True,
     )
 
     # Save the plot to a file if specified

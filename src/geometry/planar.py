@@ -1,5 +1,4 @@
 import numpy as np
-from shapely import Polygon
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
 
@@ -109,7 +108,7 @@ def curve_centroid(curve: np.ndarray) -> np.ndarray:
     """
 
     curve = orient_counter_clockwise(enforce_closed_curve(curve))
-    A = curve_area(curve)
+    area = curve_area(curve)
 
     x, y = curve.T
 
@@ -117,9 +116,9 @@ def curve_centroid(curve: np.ndarray) -> np.ndarray:
     yi, yf = y[:-1], y[1:]
 
     # Centroid
-    t = 1 / (6 * A)
-    xc = t * np.sum((xi + xf) * (xi * yf - xf * yi))
-    yc = t * np.sum((yi + yf) * (xi * yf - xf * yi))
+    sc = 1 / (6 * area)
+    xc = sc * np.sum((xi + xf) * (xi * yf - xf * yi))
+    yc = sc * np.sum((yi + yf) * (xi * yf - xf * yi))
 
     return np.array([xc, yc])
 
@@ -132,7 +131,7 @@ def centroid_drang(pts):
     x = [c[0] for c in pts]
     y = [c[1] for c in pts]
     sx = sy = 0
-    a = curve_area(np.array([pts]))
+    a = curve_area(np.array(pts))
     for i in range(len(pts) - 1):
         sx += (x[i] + x[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
         sy += (y[i] + y[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
@@ -157,4 +156,4 @@ def orient_counter_clockwise(curve: np.ndarray) -> np.ndarray:
     polygon = Polygon(curve)
     # Ensure the polygon vertices are oriented counterclockwise
     polygon = orient(polygon, sign=1.0)
-    return np.array(polygon.exterior.coords[:-1])
+    return np.array(polygon.exterior.coords)

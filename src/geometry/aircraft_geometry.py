@@ -10,8 +10,10 @@ from typing import Literal
 import numpy as np
 
 from geometry.interpolation import resample_curve
+from geometry.meshing import compute_3d_planar_mesh
 from geometry.planar import curve_area
-from geometry.projections import project_points_to_plane
+from geometry.projections import compute_space_curve_area, project_points_to_plane
+from geometry.stokes_theorem import compute_stokes_centroid, compute_stokes_curve_area
 from src.aerodynamics.airfoil import Airfoil
 from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
 from src.geometry.spatial_array import SpatialArray
@@ -132,74 +134,42 @@ class GeometricCurve:
         else:
             return GeometricCurve(self.name, coordinates)
 
-    @property
-    def area_green(self) -> float:
-        """
-        Stokes theorem used for computing the area through a parameterized
-        line integral of a 3D curve.
-
-        """
-        x = self.x
-        y = self.y
-        z = self.z
-        gamma = self.gamma
-
-        def roll(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-            """Returns x_i and x_f (x_{i+1}) arrays for numerical calculations"""
-            return (x, np.roll(x, -1, axis=0))
-
-        xi, xf = roll(x)
-        yi, yf = roll(y)
-        zi, zf = roll(z)
-
-        return np.sum(
-            (0.5)
-            * ((xf + xi) * ((yf - yi) * (np.cos(gamma)) + (zf - zi) * (np.sin(gamma))))
-        )
-
-    def triangulation_indices(self) -> np.ndarray:
+    def triangulation(self) -> tuple[np.ndarray, ...]:
         """Returns the indices of the curve triangulation"""
 
-        n = len(self.data) - 1
-        indices = np.array(
-            [result for i in range(n) if all_different(result := [i, i + 1, n - i])]
-        )
-        # i, j, k = indices.T
-        return indices
+        curve = self.data
+        mesh_dict, _boundary_dict = compute_3d_planar_mesh(curve)
+
+        x, y, z = mesh_dict["vertices"].T
+        i, j, k = mesh_dict["triangles"].T
+
+        return x, y, z, i, j, k
 
     def triangulate_curve(self) -> np.ndarray:
         """Create triangulation of the enclosed curve"""
-        data = self.data
-        indices = self.triangulation_indices()
-        # i, j, k = indices.T
-        triangles = data[indices]
+
+        x, y, z, i, j, k = self.triangulation()
+        vertices = np.c_[x, y, z]
+        indices = np.c_[i, j, k]
+        triangles = vertices[indices]
         return triangles
 
     @property
     def area(self) -> float:
         """Calculate the area of the shape."""
-
-        plane_point = self.data[0]
-        plane_normal = self.normal
-        coordinates = self.data
-
-        projected_coordinates = project_points_to_plane(
-            coordinates, plane_point, plane_normal
-        )
-
-        area = curve_area(projected_coordinates)
-
-        return area
+        return compute_stokes_curve_area(self.data)
 
     @property
     def centroid(self) -> SpatialArray:
         """Calculate the centroid of the shap enclosed by curve."""
-        triangles = self.triangulate_curve()
+        # triangles = self.triangulate_curve()
 
-        centroids = np.sum(triangles, axis=1) / 3
-        areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
+        # centroids = np.sum(triangles, axis=1) / 3
+        # areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
 
-        centroid = np.sum(centroids * areas, axis=0) / np.sum(areas)
+        # centroid = np.sum(centroids * areas, axis=0) / np.sum(areas)
+
+        centroid = compute_stokes_centroid(self.data)
 
         return SpatialArray(centroid)
 

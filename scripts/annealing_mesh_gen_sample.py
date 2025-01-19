@@ -9,7 +9,7 @@ from geometry.meshing import random_points_inside_curve
 from src.aerodynamics.airfoil import Airfoil
 
 
-def test_annealing_mesh_gen():
+def sample_annealing_mesh_gen():
     """Test that the mesh created by the annealing algorithm is valid."""
 
     airfoil = Airfoil.from_file("data/airfoils/FX 73-CL2-152 T.E..dat")
@@ -39,7 +39,7 @@ def test_annealing_mesh_gen():
     plt.savefig("optimized_points.svg")
 
 
-def test_voronoi():
+def sample_voronoi():
 
     airfoil = Airfoil.from_file("data/airfoils/FX 73-CL2-152 T.E..dat")
     airfoil = airfoil.with_trailing_edge_gap(te_gap=0.03, blend_distance=1.0)

@@ -195,3 +195,19 @@ def pad_arrays(arr1: np.ndarray, arr2: np.ndarray, constant_values=-999) -> np.n
     )
 
     return np.hstack([mat1_padded, mat2_padded])
+
+
+def compute_curve_length(coordinates: np.ndarray) -> float:
+    """Computes the curve length from straight segments between coordinates.
+
+    Parameters
+    ----------
+    coordinates : np.ndarray
+        Array of curve coordinates, can be either 2D or 3D
+
+    Returns
+    -------
+    float
+        Curve length computed
+    """
+    return np.sum(np.linalg.norm(np.diff(coordinates, axis=0), axis=1))

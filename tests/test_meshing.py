@@ -11,7 +11,7 @@ from materials.materials_library import MaterialLibrary
 from src.aerodynamics.airfoil import Airfoil
 from src.geometry.meshing import create_mesh_from_boundary
 from structures.spar import FlatSpar, StructuralSpar
-from visualization.plotly_plotter import plot_2d_mesh
+from visualization.plotly_plotter import plot_2d_mesh, plot_3d_mesh
 
 
 def test_discretization_mesh_gen():
@@ -225,6 +225,8 @@ def test_flat_spar_mesh_creation():
     plane_normal = gc.normal
 
     mesh_dict, boundary_dict = compute_3d_planar_mesh(curve, plane_point, plane_normal)
+
+    plot_3d_mesh(boundary_dict, mesh_dict, title="3D Spar Mesh", add_numbering=True)
 
     vertices = mesh_dict["vertices"]
     mesh_dict["vertices"] = vertices[:, 1:]

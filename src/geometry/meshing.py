@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 import triangle
@@ -7,7 +7,9 @@ from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
 
 from geometry.projections import construct_orthonormal_basis, project_points_to_plane
+from geometry.surfaces import triangle_area
 from src.geometry.transformations import compute_curve_normal
+from structures.inertia_tensor import filter_degenerate_triangles
 
 
 def create_boundary_dict(
@@ -177,3 +179,21 @@ def compute_3d_planar_mesh(
     )
 
     return mesh_dict, boundary_dict
+
+
+def compute_triangles_area(triangles: np.ndarray) -> float:
+
+    centroids = np.sum(triangles, axis=1) / 3
+    areas = np.vstack([triangle_area(*triangle) for triangle in triangles])
+
+    centroid = np.sum(centroids * areas, axis=0) / np.sum(areas)
+
+    return centroid
+
+
+def triangulate_mesh(x, y, z, i, j, k) -> np.ndarray[Any, np.dtype[Any]]:
+    triangle_indices = np.vstack((i, j, k)).T
+    vertices = np.vstack((x, y, z)).T
+    triangles = vertices[triangle_indices]
+    triangles = filter_degenerate_triangles(triangles)
+    return triangles

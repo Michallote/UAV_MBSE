@@ -404,6 +404,22 @@ def enforce_closed_curve(coordinates: np.ndarray) -> np.ndarray:
     return coordinates
 
 
+def is_closed_curve(coordinates: np.ndarray) -> np.bool[bool]:
+    """Checks if a curve is closed
+
+    Parameters
+    ----------
+    coordinates : np.ndarray
+        Curve coordinates
+
+    Returns
+    -------
+    np.bool[bool]
+        True if curve is closed
+    """
+    return np.all(np.isclose(coordinates[0], coordinates[-1]))
+
+
 def generate_intersection_registry(
     curve1: np.ndarray, curve2: np.ndarray
 ) -> IntersectionRegistry:

@@ -10,8 +10,6 @@ dependencies = [
     "numpy>1.26.4",
     "pandas>2.2.2",
     "plotly>5.22.0",
-    "pygame>=2.6.1",
-    "ruff>=0.6.9",
     "scipy>1.13.0",
     "shapely>2.0.4",
     "tqdm>=4.67.1",
@@ -23,7 +21,7 @@ uav-mbse = "uav_mbse:main"
 
 [project.optional-dependencies]
 code-quality = [
-    "ruff>=0.6.9",
+    "ruff>=0.8.4",
     "wily>=1.25.0",
 ]
 profiler = [
@@ -47,6 +45,10 @@ dev-dependencies = [
     "isort>=5.13.2",
     "pydot>=3.0.3",
     "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.4",
+    "uv>=0.5.16",
+    "wily>=1.25.0",
 ]
 
 [tool.setuptools.packages.find]
