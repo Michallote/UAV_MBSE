@@ -367,69 +367,6 @@ def line_plane_intersection(
         return None
 
 
-def project_points_to_plane(
-    points: np.ndarray, plane_point: np.ndarray, plane_normal: np.ndarray
-) -> np.ndarray:
-    """Return a curve in 3D space proyected to a plane using a set of local coordinates"""
-    # Normalize the normal vector
-    w = plane_normal / np.linalg.norm(plane_normal)
-
-    u, v, w = construct_orthonormal_basis(w)
-
-    projected_points = []
-    for point in points:
-        # Projection of the point onto the plane
-        diff = point - plane_point
-        projected_point = point - np.dot(diff, w) * w
-
-        # Convert to local coordinates
-        x_local = np.dot(projected_point - plane_point, u)
-        y_local = np.dot(projected_point - plane_point, v)
-
-        projected_points.append((x_local, y_local))
-
-    return np.array(projected_points)
-
-
-def construct_orthonormal_basis(plane_normal: np.ndarray) -> np.ndarray:
-    """Creates a local coordinate system from a normal vector
-    plane_normal -> [0,0,1] produces u -> [1,0,0] v -> [0,1,0]
-
-    plane_normal -> [1,0,0] produces u -> [0,0,-1] v -> [0,1,0]
-
-
-
-    Parameters
-    ----------
-    plane_normal : np.ndarray
-        Vector normal to a plane where the u, v unit vectors reside
-
-    Returns
-    -------
-    np.ndarray
-        A 3x3 matrix where each row represents one of the
-        unit vectors (U, V, W) of the local coordinate system.
-    """
-
-    # Normalize the normal vector
-    w = plane_normal / np.linalg.norm(plane_normal)
-
-    # Create local coordinate system on the plane
-    # Find a vector not parallel to plane_normal
-    if not np.isclose(w[0], 0):
-        initial_vector = np.array([-w[1], w[0], 0])
-    else:
-        initial_vector = np.array([0, w[2], -w[1]])
-    # Second local axis (V)
-    v = initial_vector
-    v = v / np.linalg.norm(v)
-    # First local axis (U)
-    u = np.cross(v, w)
-    u = u / np.linalg.norm(u)
-
-    return np.array([u, v, w])
-
-
 def create_surface_mesh(
     xx: np.ndarray, yy: np.ndarray, zz: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:

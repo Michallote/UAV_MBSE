@@ -13,3 +13,8 @@ data/databases/airfoil_coordinates_db/*
 data/databases/airfoil_polars_db/*
 .conda
 .venv
+logs/
+*.egg-info/
+*.html
+*.png
+*.svg

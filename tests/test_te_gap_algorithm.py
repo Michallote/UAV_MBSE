@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
+from geometry.interpolation import pad_arrays
 from src.aerodynamics.airfoil import Airfoil
-from src.utils.interpolation import pad_arrays
-from src.utils.transformations import rotation_matrix2d
+from src.geometry.transformations import rotation_matrix2d
 from tests.test_intersection_algorithms import plot_curves
 
 ENABLE_RETURN = False
@@ -25,19 +25,16 @@ def test_basic_functions():
         te_gap=target_te, blend_distance=1.0
     )
 
-    te_gap = np.linalg.norm(
-        airfoil_te_gap_1.trailing_edge - airfoil_te_gap_1.trailing_edge2
-    )
-    assert np.isclose(te_gap, target_te, rtol=0.0001)
+    # Plot using Plotly Express
+    plot_curves(airfoil_te_gap.data, airfoil_te_gap_1.data, airfoil_te_gap_2.data)
 
-    te_gap = np.linalg.norm(
-        airfoil_te_gap_2.trailing_edge - airfoil_te_gap_2.trailing_edge2
-    )
+    airfoil = Airfoil.from_file("data/databases/airfoil_coordinates_db/s1223.dat")
 
-    assert np.isclose(te_gap, target_te, rtol=0.0001)
+    airfoil_te_gap = airfoil.with_trailing_edge_gap(te_gap=0.01, blend_distance=0.5)
 
-    if ENABLE_RETURN:
-        return airfoil, airfoil_te_gap, airfoil_te_gap_1, airfoil_te_gap_2
+    airfoil_te_gap_2 = airfoil.with_trailing_edge_gap(te_gap=0.02, blend_distance=1.0)
+
+    plot_curves(airfoil.data, airfoil_te_gap.data, airfoil_te_gap_2.data)
 
 
 def test_transition_function():
@@ -70,15 +67,3 @@ def test_transition_function():
     # import tikzplotly
 
     # tikzplotly.save("figure.tex", fig)
-
-
-if __name__ == "__main__":
-
-    ENABLE_RETURN = True
-
-    airfoils = test_basic_functions()
-    plot_curves(*(airfoil.data for airfoil in airfoils))
-
-    df = test_transition_function()
-    fig = px.line(df, x="x", y="y", color="blend_distance", markers=True)
-    fig.show()

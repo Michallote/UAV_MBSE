@@ -10,10 +10,10 @@ from typing import Optional, Self
 import matplotlib.pyplot as plt
 import numpy as np
 
+from geometry.interpolation import find_max, resample_curve
+from geometry.intersection import line_segment_intersection
 from src.geometry.spatial_array import SpatialArray
-from src.utils.interpolation import find_max, resample_curve
-from src.utils.intersection import line_segment_intersection
-from src.utils.transformations import rotation_matrix2d
+from src.geometry.transformations import rotation_matrix2d
 
 
 class Airfoil:
@@ -289,6 +289,11 @@ class Airfoil:
         """
         coordinates = airfoil_te_gap_coordinates(self, te_gap, blend_distance)
         return Airfoil(name=self.name, data=coordinates)
+
+    @property
+    def trailing_edge_gap(self) -> float:
+        """Returns the trailing edge gap of the airfoil"""
+        return np.linalg.norm(self.trailing_edge - self.trailing_edge2)  # type: ignore
 
 
 def airfoil_te_gap_coordinates(

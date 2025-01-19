@@ -1,6 +1,0 @@
--r requirements_base.txt
-black
-isort
-ruff
-wily
-pytest

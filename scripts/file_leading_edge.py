@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.aerodynamics.airfoil import Airfoil
-from src.utils.transformations import rotation_matrix2d
+from src.geometry.transformations import rotation_matrix2d
 
 airfoil = Airfoil.from_file("data/airfoils/FX 73-CL2-152 T.E..dat")
 airfoil.index_le

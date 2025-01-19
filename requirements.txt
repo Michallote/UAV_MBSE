@@ -1,7 +1,0 @@
-numpy
-pandas
-scipy
-plotly
-matplotlib
-shapely
-beautifulsoup4

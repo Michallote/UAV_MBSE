@@ -10,28 +10,26 @@ import numpy as np
 # Create a sliding window view of size 2
 from scipy.optimize import NonlinearConstraint, differential_evolution, minimize
 
-from src.aerodynamics.data_structures import PointMass
-from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
-from src.geometry.spatial_array import SpatialArray
-from src.geometry.surfaces import (
-    construct_orthonormal_basis,
-    create_surface_mesh,
-    evaluate_surface_intersection,
-    project_points_to_plane,
+from geometry.interpolation import (
+    compute_curve_length,
+    resample_curve,
+    resample_curve_equidistant,
 )
-from src.materials import Material
-from src.structures.inertia_tensor import (
-    compute_inertia_tensor_of_shell,
-    triangulate_mesh,
-)
-from src.utils.interpolation import resample_curve
-from src.utils.intersection import (
+from geometry.intersection import (
     calculate_intersection_curve,
     enforce_closed_curve,
     generate_intersection_registry,
     offset_curve,
 )
-from src.utils.transformations import get_plane_normal_vector, reflect_curve_by_plane
+from geometry.meshing import triangulate_mesh
+from geometry.projections import construct_orthonormal_basis, project_points_to_plane
+from src.aerodynamics.data_structures import PointMass
+from src.geometry.aircraft_geometry import GeometricCurve, GeometricSurface
+from src.geometry.spatial_array import SpatialArray
+from src.geometry.surfaces import create_surface_mesh, evaluate_surface_intersection
+from src.geometry.transformations import get_plane_normal_vector, reflect_curve_by_plane
+from src.materials import Material
+from src.structures.inertia_tensor import compute_inertia_tensor_of_shell
 
 
 class UnconvergedException(Exception):
@@ -325,12 +323,18 @@ class FlatSpar(SparStrategy):
                 xx[:, :le_index], yy[:, :le_index], zz[:, :le_index], p, n
             )
         )
+        # Resample to improve boundary quality
+        length = compute_curve_length(curve_1)
+        curve_1 = resample_curve_equidistant(curve_1, length / len(curve_1))
 
         curve_2 = SpatialArray(
             evaluate_surface_intersection(
                 xx[:, le_index:], yy[:, le_index:], zz[:, le_index:], p, n
             )
         )
+        # Resample to improve boundary quality
+        length = compute_curve_length(curve_2)
+        curve_2 = resample_curve_equidistant(curve_2, length / len(curve_2))
 
         data = np.vstack([curve_1, np.flip(curve_2, axis=0)])
 
@@ -364,10 +368,7 @@ class FlatSpar(SparStrategy):
         """Returns the 2D mesh of the spar."""
 
         curve = self.curve
-        x, y, z = curve.x, curve.y, curve.z
-        indices = curve.triangulation_indices()
-        i, j, k = indices.T
-
+        x, y, z, i, j, k = curve.triangulation()
         return x, y, z, i, j, k
 
     def mirror(
