@@ -1,6 +1,5 @@
 import subprocess
 from functools import reduce
-from itertools import accumulate
 
 
 def is_numeric(x: str) -> bool:

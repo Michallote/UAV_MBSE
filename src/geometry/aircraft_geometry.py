@@ -11,20 +11,15 @@ import numpy as np
 
 from geometry.interpolation import resample_curve
 from geometry.meshing import compute_3d_planar_mesh
-from geometry.planar import curve_area
-from geometry.projections import compute_space_curve_area, project_points_to_plane
-from geometry.stokes_theorem import compute_stokes_centroid, compute_stokes_curve_area
+from geometry.stokes_theorem import (compute_stokes_centroid,
+                                     compute_stokes_curve_area)
 from src.aerodynamics.airfoil import Airfoil
-from src.aerodynamics.data_structures import AeroSurface, Aircraft, Section, SurfaceType
+from src.aerodynamics.data_structures import (AeroSurface, Aircraft, Section,
+                                              SurfaceType)
 from src.geometry.spatial_array import SpatialArray
-from src.geometry.surfaces import triangle_area
 from src.geometry.transformations import (
-    get_plane_normal_vector,
-    get_ref_coordinate_system,
-    reflect_curve_by_plane,
-    transform_coordinates,
-    transform_to_global_coordinate_system,
-)
+    get_plane_normal_vector, get_ref_coordinate_system, reflect_curve_by_plane,
+    transform_coordinates, transform_to_global_coordinate_system)
 
 
 class GeometricCurve:

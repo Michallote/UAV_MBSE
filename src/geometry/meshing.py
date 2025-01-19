@@ -6,7 +6,8 @@ from matplotlib.path import Path
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
 
-from geometry.projections import construct_orthonormal_basis, project_points_to_plane
+from geometry.projections import (construct_orthonormal_basis,
+                                  project_points_to_plane)
 from geometry.surfaces import triangle_area
 from src.geometry.transformations import compute_curve_normal
 from structures.inertia_tensor import filter_degenerate_triangles

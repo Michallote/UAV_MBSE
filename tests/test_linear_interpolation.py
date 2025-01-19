@@ -1,10 +1,8 @@
 import numpy as np
 import pytest
 
-from geometry.interpolation import (
-    ndarray_linear_interpolate,
-    resample_curve_equidistant,
-)
+from geometry.interpolation import (ndarray_linear_interpolate,
+                                    resample_curve_equidistant)
 
 
 def test_basic_interpolation():

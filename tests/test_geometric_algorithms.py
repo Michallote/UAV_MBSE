@@ -1,26 +1,19 @@
 import numpy as np
 
 from geometry.aircraft_geometry import GeometricCurve, all_different
-from geometry.interpolation import compute_curve_length, resample_curve_equidistant
+from geometry.interpolation import (compute_curve_length,
+                                    resample_curve_equidistant)
 from geometry.intersection import enforce_closed_curve
 from geometry.meshing import compute_3d_planar_mesh, create_mesh_from_boundary
-from geometry.planar import (
-    centroid_drang,
-    curve_area,
-    curve_centroid,
-    orient_counter_clockwise,
-)
-from geometry.projections import (
-    compute_space_curve_centroid,
-    create_projection_and_basis,
-    project_points_to_plane,
-    transform_vertices_to_plane,
-)
-from geometry.stokes_theorem import (
-    compute_stokes_centroid,
-    compute_stokes_curve_area,
-    compute_x_centroid,
-)
+from geometry.planar import (centroid_drang, curve_area, curve_centroid,
+                             orient_counter_clockwise)
+from geometry.projections import (compute_space_curve_centroid,
+                                  create_projection_and_basis,
+                                  project_points_to_plane,
+                                  transform_vertices_to_plane)
+from geometry.stokes_theorem import (compute_stokes_centroid,
+                                     compute_stokes_curve_area,
+                                     compute_x_centroid)
 from geometry.surfaces import triangle_area
 from geometry.transformations import compute_curve_normal
 from visualization.plotly_plotter import plot_2d_mesh, plot_3d_mesh

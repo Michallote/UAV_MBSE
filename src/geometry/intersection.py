@@ -7,7 +7,6 @@ from typing import Literal, overload
 
 import matplotlib.path as mpath
 import numpy as np
-
 # Create a sliding window view of size 2
 from numpy.lib.stride_tricks import sliding_window_view
 from shapely.geometry import Polygon

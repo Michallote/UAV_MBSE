@@ -32,9 +32,7 @@ def test_discretization_mesh_gen():
         boundary_coordinates=curve, max_area=max_area
     )
 
-    plot_2d_mesh(
-        boundary_dict, mesh_dict, title="Airfoil Meshed", save="airfoil_mesh.html"
-    )
+    plot_2d_mesh(boundary_dict, mesh_dict, title="Airfoil Meshed")
 
 
 def test_flat_spar_mesh_creation():
@@ -247,9 +245,7 @@ def test_simple_meshes():
         boundary_coordinates=curve, max_area=max_area
     )
 
-    plot_2d_mesh(
-        boundary_dict, mesh_dict, title="Airfoil Meshed", save="airfoil_mesh.html"
-    )
+    plot_2d_mesh(boundary_dict, mesh_dict, title="Airfoil Meshed")
 
 
 def test_edge_case():
@@ -290,6 +286,4 @@ def test_edge_case():
         boundary_coordinates=circle, max_area=None
     )
 
-    plot_2d_mesh(
-        boundary_dict, mesh_dict, title="Airfoil Meshed", save="airfoil_mesh.html"
-    )
+    plot_2d_mesh(boundary_dict, mesh_dict, title="Airfoil Meshed")
