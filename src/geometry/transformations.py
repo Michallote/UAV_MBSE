@@ -208,8 +208,12 @@ def compute_curve_normal(curve: np.ndarray) -> np.ndarray:
     ValueError
         If the curve has fewer than 3 points or is degenerate.
     """
+
     if curve.shape[0] < 3:
         raise ValueError("Curve must have at least 3 points to compute normals.")
+
+    if curve.shape[1] < 3:
+        raise ValueError("Curve must be 3D to compute normals.")
 
     # Calculate tangent vectors as differences between successive points
     tangents = np.diff(curve, axis=0)

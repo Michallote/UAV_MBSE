@@ -10,7 +10,6 @@ from src.visualization import AircraftPlotter
 
 
 def main():
-
     airfoil_factory = AirfoilFactory()
     airfoil_factory.set_folder_path("data/airfoils")
     airfoil_factory.cache_airfoils()

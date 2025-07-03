@@ -22,6 +22,7 @@ from src.geometry.transformations import (
     transform_coordinates,
     transform_to_global_coordinate_system,
 )
+from src.geometry.planar import curve_area
 
 
 class GeometricCurve:
@@ -154,7 +155,10 @@ class GeometricCurve:
     @property
     def area(self) -> float:
         """Calculate the area of the shape."""
-        return compute_stokes_curve_area(self.data)
+        if self.data.shape[1] >= 3:
+            return compute_stokes_curve_area(self.data)
+        else:
+            return curve_area(self.data)
 
     @property
     def centroid(self) -> SpatialArray:
