@@ -1,17 +1,9 @@
 # UAV_MBSE
 
+Haciendo un cambio para demostrar funciones de git...
+
 ## Overview
 UAV_MBSE (Unmanned Aerial Vehicle Model-Based Systems Engineering) is a project aimed at applying MBSE methodologies to the design, analysis, and validation of UAV systems. This repository contains all relevant models, documentation, and code necessary for the development and simulation of UAVs using MBSE techniques.
-
-## Table of Contents
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Features](#features)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
 
 ## Introduction
 This project leverages Model-Based Systems Engineering (MBSE) to streamline the development process of UAVs. By utilizing MBSE, we aim to enhance the consistency, traceability, and integration of UAV system models throughout the development lifecycle.
