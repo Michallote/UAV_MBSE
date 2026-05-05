@@ -93,10 +93,23 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
             col,
         )
 
-    def plot_aircraft(self, aircraft: AircraftGeometry):
+    def plot_aircraft(
+        self,
+        aircraft: AircraftGeometry,
+        return_plot: bool = False,
+        dark_mode: bool = False,
+    ):
         """
         Plots the aircraft using the geometric data.
+
+        Args:
+            aircraft: Aircraft geometry to plot.
+            return_plot: Return the Plotly figure instead of writing an HTML file.
+            dark_mode: Use Plotly's dark template when True; otherwise use light mode.
         """
+        template = "plotly_dark" if dark_mode else "plotly_white"
+        border_color = "white" if dark_mode else "black"
+
         fig = make_subplots(
             rows=1,
             cols=2,
@@ -117,7 +130,7 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
                 name = _create_name(surface, curve, i)
 
                 self.plot_curve(
-                    curve, fig, row=1, col=1, showlegend=False, color="black"
+                    curve, fig, row=1, col=1, showlegend=False, color=border_color
                 )
                 self.plot_curve(
                     curve, fig, row=1, col=2, name=name, color=f"rgba{surface.color}"
@@ -134,8 +147,11 @@ class PlotlyAircraftPlotter(BaseAircraftPlotter):
             title=aircraft.name,
             scene=dict(camera=camera),
             scene2=dict(camera=camera),
-            template="plotly_dark",
+            template=template,
         )
+
+        if return_plot:
+            return fig
 
         # fig.show()
 
